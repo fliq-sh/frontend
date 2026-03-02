@@ -2,41 +2,35 @@ import { useAuth } from "@clerk/nextjs";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
-// Server-side helper (for route handlers / server actions)
-export async function apiFetchServer<T>(
-  getToken: () => Promise<string | null>,
-  path: string,
-  init?: RequestInit,
-): Promise<T> {
-  const token = await getToken();
-  const res = await fetch(`${API_URL}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...init?.headers,
-    },
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => res.statusText);
-    throw new Error(`API ${res.status}: ${text}`);
-  }
-  if (res.status === 204) return undefined as T;
-  return res.json() as Promise<T>;
-}
+// ─── Core fetch ───────────────────────────────────────────────────────────────
 
-// Client-side hook-based fetch (use inside components)
+// useApi returns an apiFetch function that automatically attaches
+// the Clerk session JWT as a Bearer token on every request.
 export function useApi() {
   const { getToken } = useAuth();
 
   async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-    return apiFetchServer<T>(() => getToken(), path, init);
+    const token = await getToken();
+    const res = await fetch(`${API_URL}${path}`, {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...init?.headers,
+      },
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => res.statusText);
+      throw new Error(`API ${res.status}: ${text}`);
+    }
+    if (res.status === 204) return undefined as T;
+    return res.json() as Promise<T>;
   }
 
   return { apiFetch };
 }
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export type JobStatus = "pending" | "running" | "completed" | "failed" | "cancelled";
 
@@ -88,6 +82,22 @@ export interface Schedule {
   last_run_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface APIToken {
+  id: string;
+  name: string;
+  prefix: string;
+  last_used_at: string | null;
+  created_at: string;
+}
+
+export interface CreateTokenResponse {
+  id: string;
+  name: string;
+  prefix: string;
+  token: string; // raw — shown once, never stored
+  created_at: string;
 }
 
 // ─── Jobs API ─────────────────────────────────────────────────────────────────
@@ -190,6 +200,25 @@ export function createSchedulesApi(apiFetch: <T>(path: string, init?: RequestIni
       return apiFetch<{ jobs: Job[]; next_cursor: string | null }>(
         `/schedules/${id}/jobs${buildQuery(params as Record<string, string | number | undefined>)}`,
       );
+    },
+  };
+}
+
+// ─── API Tokens ───────────────────────────────────────────────────────────────
+
+export function createTokensApi(apiFetch: <T>(path: string, init?: RequestInit) => Promise<T>) {
+  return {
+    list() {
+      return apiFetch<APIToken[]>("/tokens");
+    },
+    create(name: string) {
+      return apiFetch<CreateTokenResponse>("/tokens", {
+        method: "POST",
+        body: JSON.stringify({ name }),
+      });
+    },
+    revoke(id: string) {
+      return apiFetch<void>(`/tokens/${id}`, { method: "DELETE" });
     },
   };
 }
