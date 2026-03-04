@@ -282,7 +282,7 @@ function AttemptsRows({ jobId, maxRetries, colSpan }: { jobId: string; maxRetrie
         const duration = a.completed_at
           ? `${differenceInSeconds(new Date(a.completed_at), new Date(a.started_at))}s`
           : "in progress";
-        const isSuccess = !!a.http_status && a.http_status >= 200 && a.http_status < 300;
+        const isSuccess = !!a.status_code && a.status_code >= 200 && a.status_code < 300;
         const willRetry = !isSuccess && a.attempt_num < maxRetries;
         const statusClass = isSuccess
           ? "border-green-500/40 bg-green-500/10 text-green-400"
@@ -298,9 +298,9 @@ function AttemptsRows({ jobId, maxRetries, colSpan }: { jobId: string; maxRetrie
                 <span className="w-32">{formatDistanceToNow(new Date(a.started_at), { addSuffix: true })}</span>
                 <span className="w-16">{duration}</span>
                 <span className="w-12">
-                  {!!a.http_status && (
+                  {!!a.status_code && (
                     <span className={`inline-flex items-center rounded border px-1.5 py-0 text-[10px] font-medium ${statusClass}`}>
-                      {a.http_status}
+                      {a.status_code}
                     </span>
                   )}
                 </span>

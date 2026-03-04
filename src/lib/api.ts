@@ -63,7 +63,7 @@ export interface JobAttempt {
   worker_id: string;
   started_at: string;
   completed_at: string | null;
-  http_status: number | null;
+  status_code: number | null;
   error: string | null;
 }
 
