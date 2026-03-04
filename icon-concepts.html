@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fliq — Icon Concepts</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #09090b;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 60px 24px;
+    }
+
+    h1 {
+      color: rgba(255,255,255,0.9);
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: rgba(255,255,255,0.35);
+      font-size: 13px;
+      margin-bottom: 64px;
+      letter-spacing: 0.02em;
+    }
+
+    .grid {
+      display: flex;
+      gap: 48px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .concept {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .icon-wrap {
+      width: 120px;
+      height: 120px;
+      border-radius: 28px;
+      background: #111113;
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow:
+        0 0 0 1px rgba(99,102,241,0.08),
+        0 8px 32px rgba(0,0,0,0.6),
+        0 2px 8px rgba(0,0,0,0.4);
+      transition: box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+    .icon-wrap:hover {
+      border-color: rgba(99,102,241,0.3);
+      box-shadow:
+        0 0 0 1px rgba(99,102,241,0.2),
+        0 12px 48px rgba(99,102,241,0.12),
+        0 4px 16px rgba(0,0,0,0.5);
+    }
+
+    .label {
+      text-align: center;
+      max-width: 130px;
+    }
+
+    .label-title {
+      color: rgba(255,255,255,0.75);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      margin-bottom: 4px;
+    }
+
+    .label-desc {
+      color: rgba(255,255,255,0.3);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .concept-num {
+      display: inline-block;
+      background: rgba(99,102,241,0.15);
+      color: rgba(99,102,241,0.9);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+
+    /* Preview row at small sizes */
+    .small-preview {
+      margin-top: 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .small-preview h2 {
+      color: rgba(255,255,255,0.3);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .small-row {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .small-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 7px;
+      background: #111113;
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Fliq — Icon Concepts</h1>
+  <p class="subtitle">Distributed HTTP job scheduler · 4 icon explorations</p>
+
+  <div class="grid">
+
+    <!-- ─── Concept 1: Clock + Lightning Bolt ─── -->
+    <div class="concept">
+      <div class="icon-wrap">
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#6366f1" stop-opacity="0.18"/>
+              <stop offset="100%" stop-color="#6366f1" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="ring1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#818cf8"/>
+              <stop offset="100%" stop-color="#6366f1" stop-opacity="0.5"/>
+            </linearGradient>
+            <linearGradient id="bolt1" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#a5b4fc"/>
+            </linearGradient>
+            <filter id="boltGlow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="2" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <!-- Ambient glow -->
+          <ellipse cx="36" cy="36" rx="30" ry="30" fill="url(#glow1)"/>
+
+          <!-- Clock ring - outer -->
+          <circle cx="36" cy="36" r="27" stroke="url(#ring1)" stroke-width="2.5" fill="none" opacity="0.9"/>
+
+          <!-- Clock ring - inner subtle -->
+          <circle cx="36" cy="36" r="23" stroke="rgba(99,102,241,0.15)" stroke-width="1" fill="none"/>
+
+          <!-- Hour tick marks (skip 12, 6, 3, 9 — replaced by bolt visual weight) -->
+          <!-- 1 o'clock -->
+          <line x1="48.4" y1="14.3" x2="46.1" y2="18.3" stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-linecap="round"/>
+          <!-- 2 o'clock -->
+          <line x1="57.7" y1="23.6" x2="53.7" y2="25.9" stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-linecap="round"/>
+          <!-- 4 o'clock -->
+          <line x1="57.7" y1="48.4" x2="53.7" y2="46.1" stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-linecap="round"/>
+          <!-- 5 o'clock -->
+          <line x1="48.4" y1="57.7" x2="46.1" y2="53.7" stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-linecap="round"/>
+          <!-- 7 o'clock -->
+          <line x1="23.6" y1="57.7" x2="25.9" y2="53.7" stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-linecap="round"/>
+          <!-- 8 o'clock -->
+          <line x1="14.3" y1="48.4" x2="18.3" y2="46.1" stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-linecap="round"/>
+          <!-- 10 o'clock -->
+          <line x1="14.3" y1="23.6" x2="18.3" y2="25.9" stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-linecap="round"/>
+          <!-- 11 o'clock -->
+          <line x1="23.6" y1="14.3" x2="25.9" y2="18.3" stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-linecap="round"/>
+
+          <!-- 12, 3, 6, 9 cardinal ticks (brighter) -->
+          <line x1="36" y1="9" x2="36" y2="14" stroke="rgba(255,255,255,0.5)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="63" y1="36" x2="58" y2="36" stroke="rgba(255,255,255,0.5)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="36" y1="63" x2="36" y2="58" stroke="rgba(255,255,255,0.5)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="9" y1="36" x2="14" y2="36" stroke="rgba(255,255,255,0.5)" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- Center dot -->
+          <circle cx="36" cy="36" r="2.5" fill="#818cf8"/>
+
+          <!-- Lightning bolt (centered, piercing through clock) -->
+          <!-- Bolt glow layer -->
+          <path d="M39 15 L29 37 L35.5 37 L33 57 L43 35 L36.5 35 Z"
+                fill="#6366f1" opacity="0.4" filter="url(#boltGlow)"/>
+          <!-- Bolt main shape -->
+          <path d="M39 15 L29 37 L35.5 37 L33 57 L43 35 L36.5 35 Z"
+                fill="url(#bolt1)" filter="url(#boltGlow)"/>
+        </svg>
+      </div>
+      <div class="label">
+        <div class="concept-num">01</div>
+        <div class="label-title">Clock + Lightning</div>
+        <div class="label-desc">Timing meets instant dispatch</div>
+      </div>
+    </div>
+
+    <!-- ─── Concept 2: Circle + Arrow + Check ─── -->
+    <div class="concept">
+      <div class="icon-wrap">
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#6366f1" stop-opacity="0.2"/>
+              <stop offset="100%" stop-color="#6366f1" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#6366f1" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#818cf8"/>
+            </linearGradient>
+            <linearGradient id="arrowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#818cf8"/>
+              <stop offset="100%" stop-color="#ffffff"/>
+            </linearGradient>
+            <filter id="glowFilter2" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="2.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <!-- Ambient glow -->
+          <ellipse cx="36" cy="36" rx="30" ry="30" fill="url(#glow2)"/>
+
+          <!-- Outer orbit ring (dashed, subtle) -->
+          <circle cx="36" cy="36" r="26" stroke="rgba(99,102,241,0.15)"
+                  stroke-width="1" fill="none" stroke-dasharray="3 5"/>
+
+          <!-- Arc (270° arc, opening to the right where arrow shoots out) -->
+          <!-- Arc from ~100° to ~360° (bottom-left going counterclockwise to top) = 260° arc -->
+          <path d="M 36 10
+                   A 26 26 0 1 0 58.5 49"
+                stroke="url(#arcGrad)" stroke-width="2.5"
+                fill="none" stroke-linecap="round"/>
+
+          <!-- Inner circle / origin dot -->
+          <circle cx="36" cy="36" r="8" fill="rgba(99,102,241,0.15)"
+                  stroke="rgba(99,102,241,0.6)" stroke-width="1.5"/>
+          <circle cx="36" cy="36" r="3.5" fill="#818cf8"/>
+
+          <!-- Arrow head shooting right + slightly down (direction of arc terminus) -->
+          <!-- Arrow shaft -->
+          <line x1="44" y1="36" x2="58" y2="36"
+                stroke="url(#arrowGrad)" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Arrow chevron -->
+          <polyline points="53,30 59,36 53,42"
+                    stroke="#ffffff" stroke-width="2.5"
+                    fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Check mark (bottom-left, green, suggests "executed") -->
+          <circle cx="19" cy="53" r="8" fill="rgba(34,197,94,0.1)"
+                  stroke="rgba(34,197,94,0.4)" stroke-width="1.2"/>
+          <polyline points="15,53 18,56.5 23,49.5"
+                    stroke="#4ade80" stroke-width="2"
+                    fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Motion trail dots -->
+          <circle cx="49" cy="36" r="1.5" fill="rgba(129,140,248,0.6)"/>
+          <circle cx="54.5" cy="36" r="1" fill="rgba(129,140,248,0.3)"/>
+        </svg>
+      </div>
+      <div class="label">
+        <div class="concept-num">02</div>
+        <div class="label-title">Schedule → Execute</div>
+        <div class="label-desc">Orbit arc with dispatch arrow</div>
+      </div>
+    </div>
+
+    <!-- ─── Concept 3: Geometric F Lettermark ─── -->
+    <div class="concept">
+      <div class="icon-wrap">
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="fGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#818cf8"/>
+            </linearGradient>
+            <linearGradient id="fGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#818cf8"/>
+              <stop offset="100%" stop-color="#6366f1" stop-opacity="0.6"/>
+            </linearGradient>
+            <linearGradient id="fGrad3" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#a5b4fc"/>
+              <stop offset="100%" stop-color="#6366f1" stop-opacity="0.4"/>
+            </linearGradient>
+            <radialGradient id="glow3" cx="40%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#6366f1" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#6366f1" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="fGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <!-- Ambient glow -->
+          <ellipse cx="34" cy="36" rx="28" ry="28" fill="url(#glow3)"/>
+
+          <!-- F lettermark, geometric construction -->
+          <!-- Vertical stroke -->
+          <rect x="18" y="14" width="9" height="44" rx="2" fill="url(#fGrad1)"/>
+
+          <!-- Top horizontal bar (full width) -->
+          <rect x="18" y="14" width="36" height="9" rx="2" fill="url(#fGrad2)"/>
+
+          <!-- Mid horizontal bar (shorter — classic F proportion) -->
+          <rect x="18" y="31.5" width="26" height="8" rx="2" fill="url(#fGrad3)"/>
+
+          <!-- Motion lines (right side, suggesting velocity/dispatch) -->
+          <line x1="52" y1="27" x2="59" y2="27"
+                stroke="rgba(99,102,241,0.7)" stroke-width="2" stroke-linecap="round"/>
+          <line x1="54" y1="33" x2="59" y2="33"
+                stroke="rgba(99,102,241,0.45)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="56" y1="39" x2="59" y2="39"
+                stroke="rgba(99,102,241,0.25)" stroke-width="1" stroke-linecap="round"/>
+
+          <!-- Corner accent dot (top-right of top bar — gives it a pin/marker feel) -->
+          <circle cx="54" cy="18.5" r="3" fill="#6366f1" opacity="0.9" filter="url(#fGlow)"/>
+          <circle cx="54" cy="18.5" r="1.5" fill="#c7d2fe"/>
+        </svg>
+      </div>
+      <div class="label">
+        <div class="concept-num">03</div>
+        <div class="label-title">F Lettermark</div>
+        <div class="label-desc">Geometric with motion lines</div>
+      </div>
+    </div>
+
+    <!-- ─── Concept 4: Node + Radiating Dispatch Lines ─── -->
+    <div class="concept">
+      <div class="icon-wrap">
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="glow4" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#6366f1" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#6366f1" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="nodeGrad" cx="35%" cy="35%" r="70%">
+              <stop offset="0%" stop-color="#a5b4fc"/>
+              <stop offset="100%" stop-color="#6366f1"/>
+            </radialGradient>
+            <linearGradient id="line4a" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#6366f1"/>
+              <stop offset="100%" stop-color="#818cf8" stop-opacity="0.8"/>
+            </linearGradient>
+            <linearGradient id="line4b" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#6366f1"/>
+              <stop offset="100%" stop-color="#818cf8" stop-opacity="0.8"/>
+            </linearGradient>
+            <linearGradient id="line4c" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#6366f1"/>
+              <stop offset="100%" stop-color="#818cf8" stop-opacity="0.8"/>
+            </linearGradient>
+            <filter id="nodeGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="4" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="endGlow" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="2.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <!-- Ambient radial glow -->
+          <ellipse cx="36" cy="36" rx="32" ry="32" fill="url(#glow4)"/>
+
+          <!-- Dispatch line 1: center-right (→ top-right endpoint) -->
+          <line x1="36" y1="36" x2="60" y2="18"
+                stroke="url(#line4b)" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>
+          <!-- Endpoint dot 1 -->
+          <circle cx="60" cy="18" r="4" fill="rgba(99,102,241,0.2)"
+                  stroke="rgba(129,140,248,0.6)" stroke-width="1.2" filter="url(#endGlow)"/>
+          <circle cx="60" cy="18" r="2" fill="#818cf8" filter="url(#endGlow)"/>
+
+          <!-- Dispatch line 2: center → right -->
+          <line x1="36" y1="36" x2="63" y2="38"
+                stroke="url(#line4a)" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>
+          <!-- Endpoint dot 2 -->
+          <circle cx="63" cy="38" r="4" fill="rgba(99,102,241,0.2)"
+                  stroke="rgba(129,140,248,0.6)" stroke-width="1.2" filter="url(#endGlow)"/>
+          <circle cx="63" cy="38" r="2" fill="#818cf8" filter="url(#endGlow)"/>
+
+          <!-- Dispatch line 3: center → bottom-right -->
+          <line x1="36" y1="36" x2="58" y2="57"
+                stroke="url(#line4c)" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>
+          <!-- Endpoint dot 3 -->
+          <circle cx="58" cy="57" r="4" fill="rgba(99,102,241,0.2)"
+                  stroke="rgba(129,140,248,0.6)" stroke-width="1.2" filter="url(#endGlow)"/>
+          <circle cx="58" cy="57" r="2" fill="#818cf8" filter="url(#endGlow)"/>
+
+          <!-- Subtle back-lines (left side, dimmer — show bidirectional capability) -->
+          <line x1="36" y1="36" x2="12" y2="20"
+                stroke="rgba(99,102,241,0.2)" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="3 4"/>
+          <line x1="36" y1="36" x2="10" y2="40"
+                stroke="rgba(99,102,241,0.15)" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="3 4"/>
+          <line x1="36" y1="36" x2="14" y2="58"
+                stroke="rgba(99,102,241,0.12)" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="3 4"/>
+
+          <!-- Central origin node — halo ring -->
+          <circle cx="36" cy="36" r="13" fill="rgba(99,102,241,0.08)"
+                  stroke="rgba(99,102,241,0.25)" stroke-width="1"/>
+          <!-- Central origin node — body -->
+          <circle cx="36" cy="36" r="9" fill="url(#nodeGrad)" filter="url(#nodeGlow)"/>
+          <!-- Central origin node — inner highlight -->
+          <circle cx="36" cy="36" r="5" fill="rgba(255,255,255,0.15)"/>
+          <circle cx="33.5" cy="33.5" r="2" fill="rgba(255,255,255,0.3)"/>
+        </svg>
+      </div>
+      <div class="label">
+        <div class="concept-num">04</div>
+        <div class="label-title">Node Dispatch</div>
+        <div class="label-desc">Origin broadcasting to endpoints</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Small size preview -->
+  <div class="small-preview">
+    <h2>32px favicon preview</h2>
+    <div class="small-row">
+
+      <!-- C1 small -->
+      <div class="small-icon">
+        <svg width="22" height="22" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="36" cy="36" r="27" stroke="#818cf8" stroke-width="3" fill="none"/>
+          <line x1="36" y1="9" x2="36" y2="14" stroke="rgba(255,255,255,0.5)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="63" y1="36" x2="58" y2="36" stroke="rgba(255,255,255,0.5)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="36" y1="63" x2="36" y2="58" stroke="rgba(255,255,255,0.5)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="9" y1="36" x2="14" y2="36" stroke="rgba(255,255,255,0.5)" stroke-width="3" stroke-linecap="round"/>
+          <path d="M39 15 L29 37 L35.5 37 L33 57 L43 35 L36.5 35 Z" fill="#ffffff"/>
+          <circle cx="36" cy="36" r="2.5" fill="#818cf8"/>
+        </svg>
+      </div>
+
+      <!-- C2 small -->
+      <div class="small-icon">
+        <svg width="22" height="22" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 36 10 A 26 26 0 1 0 58.5 49" stroke="#818cf8" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+          <circle cx="36" cy="36" r="8" fill="rgba(99,102,241,0.3)" stroke="#818cf8" stroke-width="2"/>
+          <circle cx="36" cy="36" r="3.5" fill="#ffffff"/>
+          <line x1="44" y1="36" x2="58" y2="36" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+          <polyline points="53,30 59,36 53,42" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <!-- C3 small -->
+      <div class="small-icon">
+        <svg width="22" height="22" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="18" y="14" width="9" height="44" rx="2" fill="#ffffff"/>
+          <rect x="18" y="14" width="36" height="9" rx="2" fill="#818cf8"/>
+          <rect x="18" y="31.5" width="26" height="8" rx="2" fill="rgba(129,140,248,0.7)"/>
+          <circle cx="54" cy="18.5" r="3.5" fill="#6366f1"/>
+        </svg>
+      </div>
+
+      <!-- C4 small -->
+      <div class="small-icon">
+        <svg width="22" height="22" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="36" y1="36" x2="60" y2="18" stroke="#818cf8" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="36" y1="36" x2="63" y2="38" stroke="#818cf8" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="36" y1="36" x2="58" y2="57" stroke="#818cf8" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="60" cy="18" r="3.5" fill="#818cf8"/>
+          <circle cx="63" cy="38" r="3.5" fill="#818cf8"/>
+          <circle cx="58" cy="57" r="3.5" fill="#818cf8"/>
+          <circle cx="36" cy="36" r="10" fill="#6366f1"/>
+          <circle cx="36" cy="36" r="5" fill="rgba(255,255,255,0.3)"/>
+          <circle cx="33.5" cy="33.5" r="2.5" fill="rgba(255,255,255,0.5)"/>
+        </svg>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

@@ -30,6 +30,7 @@ export default function Hero() {
           background:
             "radial-gradient(ellipse at 48% 60%, rgba(99,102,241,0.22) 0%, rgba(139,92,246,0.10) 40%, transparent 70%)",
           filter: "blur(8px)",
+          willChange: "opacity",
         }}
       />
 

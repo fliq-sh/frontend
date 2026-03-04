@@ -142,12 +142,13 @@
 
 /* ─── Glow animation ──────────────────────────────────────────────────────── */
 @keyframes glow-breathe {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.55; transform: scale(1.1); }
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
 }
 
 .animate-glow-breathe {
   animation: glow-breathe 8s ease-in-out infinite;
+  will-change: opacity;
 }
 
 /* ─── Gradient line separators ───────────────────────────────────────────── */

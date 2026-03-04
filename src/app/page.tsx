@@ -6,17 +6,18 @@ import Footer from "@/components/landing/Footer";
 // Everything below the hero fold is lazy-loaded.
 // This keeps the initial JS bundle small and prevents the page from
 // freezing while the WebGL globe initialises.
-const Features     = dynamic(() => import("@/components/landing/Features"));
-const UseCases     = dynamic(() => import("@/components/landing/UseCases"));
-const Problem      = dynamic(() => import("@/components/landing/Problem"));
-const HowItWorks   = dynamic(() => import("@/components/landing/HowItWorks"));
-const Quickstart   = dynamic(() => import("@/components/landing/Quickstart"));
-const Comparison   = dynamic(() => import("@/components/landing/Comparison"));
-const AIFeatures   = dynamic(() => import("@/components/landing/AIFeatures"));
-const Reliability  = dynamic(() => import("@/components/landing/Reliability"));
-const PricingTeaser = dynamic(() => import("@/components/landing/PricingTeaser"));
-const Enterprise   = dynamic(() => import("@/components/landing/Enterprise"));
-const FAQ          = dynamic(() => import("@/components/landing/FAQ"));
+const noop = () => null;
+const Features      = dynamic(() => import("@/components/landing/Features"),      { loading: noop });
+const UseCases      = dynamic(() => import("@/components/landing/UseCases"),      { loading: noop });
+const Problem       = dynamic(() => import("@/components/landing/Problem"),       { loading: noop });
+const HowItWorks    = dynamic(() => import("@/components/landing/HowItWorks"),    { loading: noop });
+const Quickstart    = dynamic(() => import("@/components/landing/Quickstart"),    { loading: noop });
+const Comparison    = dynamic(() => import("@/components/landing/Comparison"),    { loading: noop });
+const AIFeatures    = dynamic(() => import("@/components/landing/AIFeatures"),    { loading: noop });
+const Reliability   = dynamic(() => import("@/components/landing/Reliability"),   { loading: noop });
+const PricingTeaser = dynamic(() => import("@/components/landing/PricingTeaser"), { loading: noop });
+const Enterprise    = dynamic(() => import("@/components/landing/Enterprise"),    { loading: noop });
+const FAQ           = dynamic(() => import("@/components/landing/FAQ"),           { loading: noop });
 
 const socialLogos = ["OpenAI", "Cloudflare", "Disney", "Stripe", "Vercel"];
 
