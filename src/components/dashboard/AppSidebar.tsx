@@ -17,7 +17,6 @@ import {
 const navItems = [
   { label: "Jobs", href: "/app", icon: "⚡" },
   { label: "Schedules", href: "/app/schedules", icon: "📅" },
-  { label: "Executions", href: "/app/executions", icon: "🔍" },
   { label: "Settings", href: "/app/settings", icon: "⚙️" },
 ];
 

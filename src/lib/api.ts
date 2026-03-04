@@ -119,7 +119,7 @@ export interface CreateJobInput {
   scheduled_at: string;
   max_retries?: number;
   timeout_seconds?: number;
-  idempotency_key: string; // required by backend; auto-generate with crypto.randomUUID()
+  idempotency_key?: string;
   backoff?: "exponential" | "linear";
 }
 
