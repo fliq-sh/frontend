@@ -5,6 +5,7 @@ import { useState } from "react";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import FliqIcon from "@/components/ui/FliqIcon";
+import { Menu, X } from "lucide-react";
 
 const companyLinks = [
   { label: "About", href: "/about", description: "Who we are and why we built Fliq" },
@@ -14,6 +15,7 @@ const companyLinks = [
 
 export default function Navbar() {
   const [companyOpen, setCompanyOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-[#09090b]/80 backdrop-blur-sm">
@@ -25,7 +27,7 @@ export default function Navbar() {
           <span className="text-base font-semibold tracking-tight">Fliq</span>
         </Link>
 
-        {/* Center — nav (always geometrically centered) */}
+        {/* Center — nav (desktop only) */}
         <nav className="hidden md:flex items-center justify-center gap-6 text-sm text-white/60">
           <Link href="/docs" className="hover:text-white transition-colors">
             Docs
@@ -69,25 +71,100 @@ export default function Navbar() {
           </div>
         </nav>
 
-        {/* Right — auth */}
-        <div className="flex items-center justify-end gap-3">
-          <SignedOut>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/sign-in">Sign in</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link href="/sign-up">Start building</Link>
-            </Button>
-          </SignedOut>
-          <SignedIn>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/app">Dashboard</Link>
-            </Button>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
+        {/* Right — auth + mobile toggle */}
+        <div className="flex items-center gap-3">
+          {/* Desktop auth buttons */}
+          <div className="hidden md:flex items-center gap-3">
+            <SignedOut>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/sign-in">Sign in</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link href="/sign-up">Start building</Link>
+              </Button>
+            </SignedOut>
+            <SignedIn>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/app">Dashboard</Link>
+              </Button>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+          </div>
+
+          {/* Mobile: signed-in avatar (always visible) */}
+          <div className="md:hidden">
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+          </div>
+
+          {/* Mobile hamburger */}
+          <button
+            className="md:hidden p-1.5 rounded-md text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
 
       </div>
+
+      {/* Mobile menu panel */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-white/10 bg-[#09090b]/95 backdrop-blur-md">
+          <nav className="flex flex-col px-4 py-3 gap-1">
+            <Link
+              href="/docs"
+              className="px-3 py-2.5 rounded-md text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Docs
+            </Link>
+            <Link
+              href="/pricing"
+              className="px-3 py-2.5 rounded-md text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Pricing
+            </Link>
+
+            {/* Company section */}
+            <div className="px-3 pt-3 pb-1">
+              <p className="text-xs text-white/30 uppercase tracking-wider">Company</p>
+            </div>
+            {companyLinks.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="px-3 py-2.5 rounded-md text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Mobile auth buttons */}
+          <SignedOut>
+            <div className="flex items-center gap-3 px-4 py-3 border-t border-white/10">
+              <Button variant="ghost" size="sm" className="flex-1" asChild>
+                <Link href="/sign-in" onClick={() => setMobileOpen(false)}>Sign in</Link>
+              </Button>
+              <Button size="sm" className="flex-1" asChild>
+                <Link href="/sign-up" onClick={() => setMobileOpen(false)}>Start building</Link>
+              </Button>
+            </div>
+          </SignedOut>
+          <SignedIn>
+            <div className="flex items-center gap-3 px-4 py-3 border-t border-white/10">
+              <Button size="sm" className="flex-1" asChild>
+                <Link href="/app" onClick={() => setMobileOpen(false)}>Dashboard</Link>
+              </Button>
+            </div>
+          </SignedIn>
+        </div>
+      )}
     </header>
   );
 }

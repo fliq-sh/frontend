@@ -16,7 +16,7 @@ export function ApiCodeBlock({ snippets }: { snippets: ApiSnippets }) {
   const [active, setActive] = useState<Lang>("curl");
 
   return (
-    <div className="rounded-lg border border-white/10 bg-black/40 overflow-hidden">
+    <div className="rounded-lg border border-white/10 bg-black/40 overflow-hidden min-w-0">
       <div className="flex border-b border-white/10 bg-white/[0.02]">
         {LANGS.map((lang) => (
           <button

@@ -14,6 +14,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -33,10 +34,15 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const { user } = useUser();
   const { signOut } = useClerk();
+  const { setOpenMobile } = useSidebar();
 
   const displayName = user?.fullName || user?.firstName || "User";
   const email = user?.primaryEmailAddress?.emailAddress || "";
   const avatarUrl = user?.imageUrl;
+
+  function closeMobile() {
+    setOpenMobile(false);
+  }
 
   return (
     <Sidebar>
@@ -61,6 +67,7 @@ export default function AppSidebar() {
                 <SidebarMenuButton asChild isActive={isActive}>
                   <Link
                     href={item.href}
+                    onClick={closeMobile}
                     className={cn(
                       "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
                       isActive && "border-l-2 border-indigo-500 bg-indigo-500/10 text-white"
@@ -126,7 +133,7 @@ export default function AppSidebar() {
             </div>
             <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem asChild>
-              <Link href="/app/settings" className="cursor-pointer">
+              <Link href="/app/settings" onClick={closeMobile} className="cursor-pointer">
                 <Settings className="h-4 w-4" />
                 Settings
               </Link>
