@@ -39,15 +39,21 @@ const GLOBE_CONFIG: COBEOptions = {
 export function Globe({
   className,
   config = GLOBE_CONFIG,
+  onFrame,
 }: {
   className?: string
   config?: COBEOptions
+  /** Called every render frame with the current phi and canvas pixel size. */
+  onFrame?: (phi: number, size: number) => void
 }) {
   let phi = 0
   let width = 0
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const pointerInteracting = useRef<number | null>(null)
   const pointerInteractionMovement = useRef(0)
+  // Keep latest onFrame ref so globe effect never needs to recreate on callback change
+  const onFrameRef = useRef(onFrame)
+  useEffect(() => { onFrameRef.current = onFrame }, [onFrame])
 
   const r = useMotionValue(0)
   const rs = useSpring(r, {
@@ -90,6 +96,7 @@ export function Globe({
         state.phi = phi + rs.get()
         state.width = width * 2
         state.height = width * 2
+        onFrameRef.current?.(state.phi, state.width)
       },
     })
 

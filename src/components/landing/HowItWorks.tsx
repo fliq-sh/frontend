@@ -21,8 +21,17 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-24 px-4 border-t border-white/10">
-      <div className="max-w-7xl mx-auto">
+    <section id="how-it-works" className="py-24 px-4 border-t border-white/10 relative overflow-hidden">
+      {/* Grid background fading at top + bottom */}
+      <div className="absolute inset-0 bg-grid-lines pointer-events-none" />
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(to bottom, #09090b 0%, transparent 12%, transparent 88%, #09090b 100%)",
+        }}
+      />
+      <div className="max-w-7xl mx-auto relative">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight">How it works</h2>
           <p className="mt-4 text-white/60 max-w-xl mx-auto">

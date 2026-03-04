@@ -4,9 +4,9 @@ import { useState } from "react";
 
 const faqs = [
   {
-    question: "What exactly is a job unit?",
+    question: "How does billing work with retries?",
     answer:
-      "One scheduled execution, no matter how many retries it takes. You pay for outcomes, not failures. If your job retries 3 times before succeeding, that counts as 1 job unit.",
+      "Each execution attempt is one billable unit — including retries. If a job fails and retries 3 times before succeeding, that's 4 executions billed. At $1 per 100k executions, even aggressive retry policies stay very affordable.",
   },
   {
     question: "How fast do jobs fire?",

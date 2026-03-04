@@ -12,8 +12,16 @@ const solutions = [
 
 export default function Problem() {
   return (
-    <section className="py-24 px-4 border-t border-white/10">
-      <div className="max-w-7xl mx-auto">
+    <section className="py-24 px-4 border-t border-white/10 relative overflow-hidden">
+      {/* Radial glow behind the solution card (right side) */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 55% 70% at 75% 55%, rgba(99,102,241,0.09) 0%, transparent 68%)",
+        }}
+      />
+      <div className="max-w-7xl mx-auto relative">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight">Why Fliq?</h2>
         </div>

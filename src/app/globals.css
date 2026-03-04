@@ -124,3 +124,40 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ─── Grid pattern utilities ──────────────────────────────────────────────── */
+.bg-grid-lines {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+.bg-grid-fine {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* ─── Glow animation ──────────────────────────────────────────────────────── */
+@keyframes glow-breathe {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.55; transform: scale(1.1); }
+}
+
+.animate-glow-breathe {
+  animation: glow-breathe 8s ease-in-out infinite;
+}
+
+/* ─── Gradient line separators ───────────────────────────────────────────── */
+.separator-glow {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(99, 102, 241, 0.5) 35%,
+    rgba(139, 92, 246, 0.4) 65%,
+    transparent 100%
+  );
+}

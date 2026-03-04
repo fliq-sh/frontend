@@ -12,7 +12,7 @@ const tiers = [
     cta: "Start for free",
     ctaHref: "/sign-up",
     features: [
-      "5,000 job units / day",
+      "5,000 executions / day",
       "10 active schedules",
       "7-day execution history",
       "3 max retries per job",
@@ -22,14 +22,14 @@ const tiers = [
   },
   {
     name: "Growth",
-    price: "$2",
-    priceNote: "per 100k job units",
+    price: "$1",
+    priceNote: "per 100k executions",
     highlight: true,
     cta: "Start building",
     ctaHref: "/sign-up",
     badge: "Most popular",
     features: [
-      "Unlimited job units",
+      "Unlimited executions",
       "Unlimited schedules",
       "1-year execution history",
       "10 max retries per job",
@@ -57,9 +57,9 @@ const tiers = [
 
 const pricingFaqs = [
   {
-    question: "What is a job unit?",
+    question: "What counts as an execution?",
     answer:
-      "One job execution, regardless of how many retries it takes to succeed. You pay for the job, not the failures.",
+      "Every HTTP attempt — the original fire and each retry. If a job retries 3 times before succeeding, that's 4 executions billed. At $1 per 100k, even aggressive retry policies cost fractions of a cent.",
   },
   {
     question: "Does the free tier reset daily or monthly?",
@@ -69,7 +69,7 @@ const pricingFaqs = [
   {
     question: "What if I exceed the free tier?",
     answer:
-      "Jobs queue until the next day's reset, or upgrade to Growth for instant throughput with no daily cap.",
+      "Scheduled jobs will start failing and new job or schedule creation will be rejected until the next daily reset at midnight UTC. Upgrade to Growth to remove the cap entirely.",
   },
   {
     question: "Can I self-host?",
@@ -91,12 +91,12 @@ export default function PricingPage() {
               Simple, transparent pricing
             </h1>
             <p className="text-lg text-white/60 max-w-xl mx-auto mb-6">
-              Pay for the job, not the failures. Retries are always included.
+              Pay per execution — original fires and retries alike. Predictable, no surprises.
             </p>
 
             {/* Key differentiator banner */}
             <div className="inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-2 text-sm text-indigo-300">
-              Retries are free. Pay for the job, not the failures.
+              $1 / 100k executions · retries count · no hidden fees
             </div>
           </div>
         </section>
@@ -181,13 +181,13 @@ export default function PricingPage() {
 
               {[
                 {
-                  label: "Job units / day",
+                  label: "Executions / day",
                   values: ["5,000", "Unlimited", "Unlimited"],
                 },
                 {
-                  label: "What's a job unit",
+                  label: "Retry billing",
                   values: [
-                    "1 execution (retries free)",
+                    "Each retry = 1 execution",
                     "same",
                     "same",
                   ],
@@ -268,7 +268,7 @@ export default function PricingPage() {
               Ready to stop babysitting cron jobs?
             </h2>
             <p className="text-white/60 mb-8">
-              Start free. No credit card required. 5,000 job units every day.
+              Start free. No credit card required. 5,000 executions every day.
             </p>
             <div className="flex items-center justify-center gap-4">
               <Button size="lg" asChild>

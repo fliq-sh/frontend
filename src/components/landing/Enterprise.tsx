@@ -13,8 +13,22 @@ export default function Enterprise() {
   return (
     <section className="py-24 px-4 border-t border-white/10">
       <div className="max-w-7xl mx-auto">
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 md:p-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div
+          className="rounded-2xl border border-indigo-500/20 p-8 md:p-12 relative overflow-hidden"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(99,102,241,0.09) 0%, rgba(67,56,202,0.05) 50%, rgba(15,15,20,0.8) 100%)",
+          }}
+        >
+          {/* Corner glow — top-right */}
+          <div
+            className="absolute top-0 right-0 w-72 h-72 pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(ellipse at top right, rgba(99,102,241,0.12) 0%, transparent 65%)",
+            }}
+          />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative">
             {/* Left */}
             <div>
               <p className="text-xs text-white/40 uppercase tracking-widest mb-4">

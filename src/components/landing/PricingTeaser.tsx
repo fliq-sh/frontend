@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 const tiers = [
   {
     name: "Free",
-    price: "5,000 jobs/day",
-    note: "No credit card",
+    price: "5,000 / day",
+    note: "No credit card · executions reset daily",
   },
   {
     name: "Growth",
-    price: "$2 / 100k jobs",
-    note: "Retries included",
+    price: "$1 / 100k",
+    note: "Pay per execution · retries billed",
     highlight: true,
   },
   {
@@ -22,13 +22,38 @@ const tiers = [
 
 export default function PricingTeaser() {
   return (
-    <section className="py-24 px-4 border-t border-white/10">
-      <div className="max-w-4xl mx-auto text-center">
+    <section className="py-24 px-4 relative overflow-hidden">
+      {/* Glowing top separator */}
+      <div className="absolute top-0 inset-x-0 separator-glow" />
+      {/* Glowing bottom separator */}
+      <div className="absolute bottom-0 inset-x-0 separator-glow" />
+
+      {/* Indigo radial glow — the visual peak of the page */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 90% 100% at 50% 50%, rgba(99,102,241,0.13) 0%, rgba(67,56,202,0.07) 45%, transparent 72%)",
+        }}
+      />
+
+      {/* Grid overlay */}
+      <div className="absolute inset-0 bg-grid-lines pointer-events-none opacity-60" />
+      {/* Fade grid at edges */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(to bottom, #09090b 0%, transparent 15%, transparent 85%, #09090b 100%)",
+        }}
+      />
+
+      <div className="max-w-4xl mx-auto text-center relative">
         <h2 className="text-3xl font-bold tracking-tight mb-4">
           Simple, transparent pricing
         </h2>
         <p className="text-white/60 mb-12 max-w-xl mx-auto">
-          Pay for the job, not the failures. Retries are always free.
+          Each execution counts — including retries. Simple, predictable pricing.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -37,7 +62,7 @@ export default function PricingTeaser() {
               key={tier.name}
               className={`p-6 rounded-2xl border ${
                 tier.highlight
-                  ? "border-indigo-500/40 bg-indigo-500/10"
+                  ? "border-indigo-400/50 bg-indigo-500/[0.12] shadow-[0_0_40px_rgba(99,102,241,0.18)]"
                   : "border-white/10 bg-white/[0.03]"
               }`}
             >
