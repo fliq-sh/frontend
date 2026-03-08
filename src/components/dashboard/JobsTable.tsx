@@ -46,6 +46,7 @@ function NewJobDialog({ onCreated }: { onCreated: () => void }) {
     max_retries: 3,
     timeout_seconds: 30,
     body: "",
+    webhook_url: "",
   });
 
   function handleOpenChange(val: boolean) {
@@ -65,6 +66,7 @@ function NewJobDialog({ onCreated }: { onCreated: () => void }) {
         max_retries: form.max_retries,
         timeout_seconds: form.timeout_seconds,
         body: form.body || undefined,
+        webhook_url: form.webhook_url || undefined,
       });
       setOpen(false);
       onCreated();
@@ -146,6 +148,15 @@ function NewJobDialog({ onCreated }: { onCreated: () => void }) {
                 onChange={(e) => setForm({ ...form, timeout_seconds: Number(e.target.value) })}
               />
             </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-white/60">Webhook URL (optional)</label>
+            <input
+              className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+              value={form.webhook_url}
+              onChange={(e) => setForm({ ...form, webhook_url: e.target.value })}
+              placeholder="https://example.com/webhook-callback"
+            />
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs text-white/60">Body (JSON, optional)</label>
@@ -230,7 +241,7 @@ function GettingStarted() {
   );
 }
 
-function AttemptsRows({ jobId, maxRetries, colSpan }: { jobId: string; maxRetries: number; colSpan: number }) {
+function AttemptsRows({ jobId, maxRetries, colSpan, webhookUrl }: { jobId: string; maxRetries: number; colSpan: number; webhookUrl?: string | null }) {
   const { apiFetch } = useApi();
   const api = createJobsApi(apiFetch);
   const [attempts, setAttempts] = useState<JobAttempt[] | null>(null);
@@ -266,6 +277,14 @@ function AttemptsRows({ jobId, maxRetries, colSpan }: { jobId: string; maxRetrie
 
   return (
     <>
+      {webhookUrl && (
+        <TableRow className="border-white/10 bg-white/[0.02] hover:bg-white/[0.02]">
+          <TableCell colSpan={colSpan} className="pt-3 pb-1 pl-10">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-white/30">Webhook:</span>{" "}
+            <span className="text-xs text-white/60 font-mono">{webhookUrl}</span>
+          </TableCell>
+        </TableRow>
+      )}
       <TableRow className="border-white/10 bg-white/[0.02] hover:bg-white/[0.02]">
         <TableCell colSpan={colSpan} className="pt-3 pb-1 pl-10">
           <div className="flex gap-6 text-[11px] font-medium uppercase tracking-wider text-white/30">
@@ -488,7 +507,7 @@ export default function JobsTable() {
                         </TableCell>
                       </TableRow>
                       {expanded && (
-                        <AttemptsRows key={`${job.id}-attempts`} jobId={job.id} maxRetries={job.max_retries} colSpan={COL_SPAN} />
+                        <AttemptsRows key={`${job.id}-attempts`} jobId={job.id} maxRetries={job.max_retries} colSpan={COL_SPAN} webhookUrl={job.webhook_url} />
                       )}
                     </>
                   );

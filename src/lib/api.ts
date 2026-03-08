@@ -52,6 +52,8 @@ export interface Job {
   max_retries: number;
   timeout_seconds: number;
   idempotency_key: string | null;
+  webhook_url?: string | null;
+  webhook_headers?: Record<string, string> | null;
   created_at: string;
   updated_at: string;
 }
@@ -83,6 +85,8 @@ export interface Schedule {
   timeout_seconds: number;
   next_run_at: string | null;
   last_run_at: string | null;
+  webhook_url?: string | null;
+  webhook_headers?: Record<string, string> | null;
   created_at: string;
   updated_at: string;
 }
@@ -121,6 +125,8 @@ export interface CreateJobInput {
   timeout_seconds?: number;
   idempotency_key?: string;
   backoff?: "exponential" | "linear";
+  webhook_url?: string;
+  webhook_headers?: Record<string, string>;
 }
 
 function buildQuery(params: Record<string, string | number | undefined>) {
@@ -174,6 +180,8 @@ export interface CreateScheduleInput {
   max_retries?: number;
   timeout_seconds?: number;
   backoff?: "exponential" | "linear";
+  webhook_url?: string;
+  webhook_headers?: Record<string, string>;
 }
 
 export function createSchedulesApi(apiFetch: <T>(path: string, init?: RequestInit) => Promise<T>) {

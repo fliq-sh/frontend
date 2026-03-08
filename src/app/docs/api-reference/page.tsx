@@ -40,7 +40,9 @@ export default function ApiReference() {
   "headers":         object,   // optional
   "body":            string,   // optional
   "max_retries":     number,   // optional — default 0
-  "idempotency_key": string    // optional
+  "idempotency_key": string,   // optional
+  "webhook_url":     string,   // optional — URL to POST when job reaches terminal state
+  "webhook_headers": object    // optional — custom headers for webhook request
 }`}</DocPre>
       <DocPre label="Response — 201 Created">{`{
   "id":           "job_01hx...",
@@ -78,12 +80,14 @@ export default function ApiReference() {
       <DocPre label="Request">{`POST /v1/schedules
 
 {
-  "url":          string,   // required
-  "http_method":  string,   // optional — default "POST"
-  "cron":         string,   // required — 5-part cron expression (UTC)
-  "headers":      object,   // optional
-  "body":         string,   // optional
-  "max_retries":  number    // optional — default 0
+  "url":             string,   // required
+  "http_method":     string,   // optional — default "POST"
+  "cron":            string,   // required — 5-part cron expression (UTC)
+  "headers":         object,   // optional
+  "body":            string,   // optional
+  "max_retries":     number,   // optional — default 0
+  "webhook_url":     string,   // optional — inherited by spawned jobs
+  "webhook_headers": object    // optional — inherited by spawned jobs
 }`}</DocPre>
       <DocPre label="Response — 201 Created">{`{
   "id":          "sched_01hx...",
@@ -103,6 +107,28 @@ export default function ApiReference() {
         Stops all future executions immediately. Already-queued executions for the current
         interval may still fire.
       </DocP>
+
+      {/* ── Webhooks ── */}
+      <DocH2>Webhooks</DocH2>
+      <DocP>
+        When a job has a <DocCode>webhook_url</DocCode>, Fliq POSTs a JSON payload to that URL
+        when the job reaches a terminal state (<DocCode>completed</DocCode>, <DocCode>failed</DocCode>, or <DocCode>cancelled</DocCode>).
+      </DocP>
+      <DocPre label="Webhook payload">{`{
+  "job_id":       "job_01hx...",
+  "status":       "completed",
+  "status_code":  200,
+  "last_error":   null,
+  "completed_at": "2026-04-01T09:00:01Z",
+  "attempt_num":  1
+}`}</DocPre>
+      <DocUL>
+        <DocLI>Delivery is <strong>best-effort, fire-and-forget</strong> — a webhook failure does not change the job&apos;s status</DocLI>
+        <DocLI>Webhook calls have a <strong>10-second timeout</strong></DocLI>
+        <DocLI>Webhook calls do <strong>not consume credits</strong></DocLI>
+        <DocLI>Custom headers can be set via <DocCode>webhook_headers</DocCode> (e.g. for auth tokens)</DocLI>
+        <DocLI>Schedules inherit <DocCode>webhook_url</DocCode> and <DocCode>webhook_headers</DocCode> — every spawned job gets the same webhook config</DocLI>
+      </DocUL>
 
       {/* ── Executions ── */}
       <DocH2>Executions</DocH2>

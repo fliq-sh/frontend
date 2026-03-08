@@ -38,6 +38,7 @@ function NewScheduleDialog({ onCreated }: { onCreated: () => void }) {
     method: "POST",
     max_retries: 3,
     timeout_seconds: 30,
+    webhook_url: "",
   });
 
   function handleOpenChange(val: boolean) {
@@ -50,7 +51,11 @@ function NewScheduleDialog({ onCreated }: { onCreated: () => void }) {
     setLoading(true);
     setError(null);
     try {
-      await api.create(form);
+      const { webhook_url, ...rest } = form;
+      await api.create({
+        ...rest,
+        webhook_url: webhook_url || undefined,
+      });
       setOpen(false);
       onCreated();
     } catch (err) {
@@ -103,6 +108,15 @@ function NewScheduleDialog({ onCreated }: { onCreated: () => void }) {
               value={form.url}
               onChange={(e) => setForm({ ...form, url: e.target.value })}
               placeholder="https://example.com/webhook"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-white/60">Webhook URL (optional)</label>
+            <input
+              className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+              value={form.webhook_url}
+              onChange={(e) => setForm({ ...form, webhook_url: e.target.value })}
+              placeholder="https://example.com/webhook-callback"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
