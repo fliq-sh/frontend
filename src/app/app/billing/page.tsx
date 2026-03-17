@@ -394,12 +394,16 @@ export default function BillingPage() {
       {loadingBalance ? (
         <>
           <BalanceSkeleton />
-          <TopUpSkeleton />
         </>
       ) : balance ? (
         <>
           <BalanceCard balance={balance} />
-          <TopUpSection creditsPerDollar={balance.credits_per_dollar} />
+          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-6">
+            <h3 className="font-medium">Add credits</h3>
+            <p className="text-sm text-white/40 mt-1">
+              Paid top-ups are coming soon. During the beta you get 100,000 free credits per day — no credit card required.
+            </p>
+          </div>
         </>
       ) : (
         <div className="rounded-lg border border-white/10 bg-white/[0.03] p-6">

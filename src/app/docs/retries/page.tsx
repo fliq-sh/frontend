@@ -66,14 +66,14 @@ Total: 3 executions`}</DocPre>
       <DocH3>Pricing</DocH3>
       <DocUL>
         <DocLI>
-          <strong>Free:</strong> 5,000 executions per day. Resets at midnight UTC.
+          <strong>Beta (free):</strong> 100,000 credits per day. Resets at midnight UTC.
           When the limit is hit, new job creation is rejected and pending jobs fail until reset.
         </DocLI>
         <DocLI>
-          <strong>Growth:</strong> $1 per 100,000 executions. No daily cap.
+          <strong>Growth:</strong> Coming soon. $1 per 100,000 executions with no daily cap.
         </DocLI>
         <DocLI>
-          <strong>Enterprise:</strong> Custom pricing. Contact us.
+          <strong>Enterprise:</strong> Coming soon. Custom pricing.
         </DocLI>
       </DocUL>
 

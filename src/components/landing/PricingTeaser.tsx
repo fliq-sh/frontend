@@ -3,20 +3,22 @@ import { Button } from "@/components/ui/button";
 
 const tiers = [
   {
-    name: "Free",
-    price: "5,000 / day",
-    note: "No credit card · executions reset daily",
+    name: "Beta",
+    price: "Free",
+    note: "100k credits / day · no credit card required",
+    highlight: true,
   },
   {
     name: "Growth",
     price: "$1 / 100k",
-    note: "Pay per execution · retries billed",
-    highlight: true,
+    note: "Coming soon",
+    comingSoon: true,
   },
   {
     name: "Enterprise",
     price: "Custom",
-    note: "On your infrastructure",
+    note: "Coming soon",
+    comingSoon: true,
   },
 ];
 
@@ -50,10 +52,10 @@ export default function PricingTeaser() {
 
       <div className="max-w-4xl mx-auto text-center relative">
         <h2 className="text-3xl font-bold tracking-tight mb-4">
-          Simple, transparent pricing
+          Free during beta
         </h2>
         <p className="text-white/60 mb-12 max-w-xl mx-auto">
-          Each execution counts — including retries. Simple, predictable pricing.
+          100,000 credits per day. No credit card required. Paid plans coming soon.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -69,12 +71,12 @@ export default function PricingTeaser() {
               <h3 className="text-lg font-semibold mb-2">{tier.name}</h3>
               <p
                 className={`text-2xl font-bold mb-1 ${
-                  tier.highlight ? "text-indigo-300" : "text-white"
+                  tier.highlight ? "text-indigo-300" : tier.comingSoon ? "text-white/40" : "text-white"
                 }`}
               >
                 {tier.price}
               </p>
-              <p className="text-xs text-white/40">{tier.note}</p>
+              <p className={`text-xs ${tier.comingSoon ? "text-white/30" : "text-white/40"}`}>{tier.note}</p>
             </div>
           ))}
         </div>

@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fliq — Distributed HTTP Scheduler",
+  title: "Fliq — Serverless HTTP Scheduling",
   description:
-    "Schedule it, walk away. We fire on time, retry on failure, full visibility.",
+    "Schedule any HTTP action. Execute it globally. Full visibility, automatic retries.",
 };
 
 export default function RootLayout({

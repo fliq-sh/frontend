@@ -17,7 +17,7 @@ export default function GettingStarted() {
 
       <DocH2>1. Create an account</DocH2>
       <DocP>
-        Sign up at <DocCode>fliq.dev/sign-up</DocCode>. The free tier gives you 5,000 executions
+        Sign up at <DocCode>fliq.dev/sign-up</DocCode>. During the beta you get 100,000 credits
         per day — no credit card required.
       </DocP>
 

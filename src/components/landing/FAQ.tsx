@@ -6,7 +6,7 @@ const faqs = [
   {
     question: "How does billing work with retries?",
     answer:
-      "Each execution attempt is one billable unit — including retries. If a job fails and retries 3 times before succeeding, that's 4 executions billed. At $1 per 100k executions, even aggressive retry policies stay very affordable.",
+      "Each execution attempt — including retries — uses one credit. If a job fails and retries 3 times before succeeding, that's 4 credits. During the beta you get 100,000 free credits per day, so even aggressive retry policies won't be a problem.",
   },
   {
     question: "How fast do jobs fire?",
@@ -17,11 +17,6 @@ const faqs = [
     question: "What happens if my endpoint is down?",
     answer:
       "Fliq retries with exponential backoff up to your configured limit. You see every attempt and its outcome — HTTP status code, response body snippet, duration — in the dashboard.",
-  },
-  {
-    question: "Can it handle 1 million jobs per second?",
-    answer:
-      "Yes. Fliq is architected to scale horizontally to 1M+ jobs/sec. Contact us for high-throughput onboarding and dedicated capacity planning.",
   },
   {
     question: "Is my data safe?",

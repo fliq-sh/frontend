@@ -1,24 +1,24 @@
 # Fliq — Frontend
 
-Next.js 16 marketing site + dashboard for the Fliq distributed job scheduler.
+Next.js 16 marketing site + dashboard for Fliq — Serverless HTTP Scheduling.
 
 ## Product overview
 
-**Fliq** is a distributed HTTP job scheduler. Customers POST a URL + fire time; Fliq executes it on time, globally, with automatic retries and full execution history.
+**Fliq** is a serverless HTTP scheduling platform. Customers POST a URL + fire time; Fliq executes it on time, globally, with automatic retries and full execution history.
 
 **Core value props:**
 - One API call to schedule any HTTP action (one-time or cron)
-- Retries are free — pay per job, not per attempt
+- Pay per execution — each attempt (including retries) is one credit
 - 30+ global edge regions, <10ms median dispatch latency, 99.9% SLA
 - 1-year execution history on paid plans
 - AI-native: MCP server lets agents schedule jobs via natural language
 
 **Pricing model (pay-as-you-go):**
-- Free: 5,000 job units/day, 7-day history, 10 schedules, 3 max retries
-- Growth: $2/100k job units, 1-year history, unlimited schedules, 10 max retries
+- Free: 5,000 executions/day, 7-day history, 10 schedules, 3 max retries
+- Growth: $1/100k executions, 1-year history, unlimited schedules, 10 max retries
 - Enterprise: custom, self-hosted, 99.99% SLA, SSO/SAML
 
-A **job unit** = one execution regardless of how many retries it takes. This is the key differentiator vs Upstash QStash (which counts retries as separate billable events).
+Each execution attempt — including retries — counts as one billable unit.
 
 ---
 

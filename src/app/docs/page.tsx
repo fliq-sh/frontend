@@ -10,7 +10,7 @@ export default function DocsIndex() {
     <article>
       <DocH1>What is Fliq?</DocH1>
       <DocLead>
-        Fliq is a hosted HTTP job scheduler. You give it a URL and a time — it fires the request,
+        Fliq is a serverless HTTP scheduling platform. You give it a URL and a time — it fires the request,
         retries on failure, and keeps a full execution history.
       </DocLead>
 

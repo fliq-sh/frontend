@@ -5,29 +5,29 @@ import Footer from "@/components/landing/Footer";
 
 const tiers = [
   {
-    name: "Free",
-    price: "$0",
-    priceNote: "forever",
-    highlight: false,
+    name: "Beta",
+    price: "Free",
+    priceNote: "during beta",
+    highlight: true,
     cta: "Start for free",
     ctaHref: "/sign-up",
+    badge: "Now open",
     features: [
-      "5,000 executions / day",
-      "10 active schedules",
+      "100,000 credits / day",
+      "Unlimited schedules",
       "7-day execution history",
       "3 max retries per job",
       "Community support",
-      "No SLA",
     ],
   },
   {
     name: "Growth",
     price: "$1",
     priceNote: "per 100k executions",
-    highlight: true,
-    cta: "Start building",
-    ctaHref: "/sign-up",
-    badge: "Most popular",
+    highlight: false,
+    comingSoon: true,
+    cta: "Coming soon",
+    ctaHref: "#",
     features: [
       "Unlimited executions",
       "Unlimited schedules",
@@ -42,8 +42,9 @@ const tiers = [
     price: "Custom",
     priceNote: "tailored to you",
     highlight: false,
-    cta: "Talk to us",
-    ctaHref: "mailto:enterprise@fliq.dev",
+    comingSoon: true,
+    cta: "Coming soon",
+    ctaHref: "#",
     features: [
       "Unlimited everything",
       "Deploy on your own infra",
@@ -57,24 +58,29 @@ const tiers = [
 
 const pricingFaqs = [
   {
-    question: "What counts as an execution?",
+    question: "What counts as a credit?",
     answer:
-      "Every HTTP attempt — the original fire and each retry. If a job retries 3 times before succeeding, that's 4 executions billed. At $1 per 100k, even aggressive retry policies cost fractions of a cent.",
+      "Every HTTP attempt — the original fire and each retry — uses one credit. If a job retries 3 times before succeeding, that's 4 credits used.",
   },
   {
-    question: "Does the free tier reset daily or monthly?",
+    question: "Does the beta limit reset daily or monthly?",
     answer:
-      "Daily at midnight UTC. You get 5,000 job units every day — more predictable than a monthly cap for small apps.",
+      "Daily at midnight UTC. You get 100,000 credits every day during the beta — more than enough for most workloads.",
   },
   {
-    question: "What if I exceed the free tier?",
+    question: "What if I exceed the daily limit?",
     answer:
-      "Scheduled jobs will start failing and new job or schedule creation will be rejected until the next daily reset at midnight UTC. Upgrade to Growth to remove the cap entirely.",
+      "New job and schedule creation will be rejected until the next daily reset at midnight UTC. Pending executions will also fail until reset.",
+  },
+  {
+    question: "Will pricing change after the beta?",
+    answer:
+      "We'll introduce paid plans (Growth and Enterprise) after the beta. Current beta users will get early-adopter benefits. We'll give plenty of notice before any changes.",
   },
   {
     question: "Can I self-host?",
     answer:
-      "Yes. The Enterprise plan includes on-prem and private cloud deployment. Same API, your infrastructure.",
+      "Yes — self-hosted deployment will be available with the Enterprise plan after beta. Same API, your infrastructure.",
   },
 ];
 
@@ -88,15 +94,15 @@ export default function PricingPage() {
         <section className="py-24 px-4 text-center">
           <div className="max-w-3xl mx-auto">
             <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
-              Simple, transparent pricing
+              Free during beta
             </h1>
             <p className="text-lg text-white/60 max-w-xl mx-auto mb-6">
-              Pay per execution — original fires and retries alike. Predictable, no surprises.
+              100,000 credits per day — no credit card required. Paid plans coming soon.
             </p>
 
-            {/* Key differentiator banner */}
+            {/* Beta banner */}
             <div className="inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-2 text-sm text-indigo-300">
-              $1 / 100k executions · retries count · no hidden fees
+              100k credits / day · free during beta · no strings attached
             </div>
           </div>
         </section>
@@ -145,14 +151,25 @@ export default function PricingPage() {
                   ))}
                 </ul>
 
-                <Button
-                  size="lg"
-                  variant={tier.highlight ? "default" : "outline"}
-                  className="w-full"
-                  asChild
-                >
-                  <Link href={tier.ctaHref}>{tier.cta}</Link>
-                </Button>
+                {tier.comingSoon ? (
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full opacity-50 cursor-not-allowed"
+                    disabled
+                  >
+                    {tier.cta}
+                  </Button>
+                ) : (
+                  <Button
+                    size="lg"
+                    variant={tier.highlight ? "default" : "outline"}
+                    className="w-full"
+                    asChild
+                  >
+                    <Link href={tier.ctaHref}>{tier.cta}</Link>
+                  </Button>
+                )}
               </div>
             ))}
           </div>
@@ -169,25 +186,28 @@ export default function PricingPage() {
               {/* Header */}
               <div className="grid grid-cols-4 bg-white/5 border-b border-white/10">
                 <div className="p-4 text-sm text-white/40" />
-                {["Free", "Growth", "Enterprise"].map((name) => (
+                {["Beta (Free)", "Growth", "Enterprise"].map((name) => (
                   <div
                     key={name}
                     className="p-4 text-sm font-semibold text-center border-l border-white/10"
                   >
                     {name}
+                    {(name === "Growth" || name === "Enterprise") && (
+                      <span className="block text-xs font-normal text-white/30 mt-0.5">Coming soon</span>
+                    )}
                   </div>
                 ))}
               </div>
 
               {[
                 {
-                  label: "Executions / day",
-                  values: ["5,000", "Unlimited", "Unlimited"],
+                  label: "Credits / day",
+                  values: ["100,000", "Unlimited", "Unlimited"],
                 },
                 {
                   label: "Retry billing",
                   values: [
-                    "Each retry = 1 execution",
+                    "Each retry = 1 credit",
                     "same",
                     "same",
                   ],
@@ -198,7 +218,7 @@ export default function PricingPage() {
                 },
                 {
                   label: "Active schedules",
-                  values: ["10", "Unlimited", "Unlimited"],
+                  values: ["Unlimited", "Unlimited", "Unlimited"],
                 },
                 {
                   label: "Max retries / job",
@@ -268,7 +288,7 @@ export default function PricingPage() {
               Ready to stop babysitting cron jobs?
             </h2>
             <p className="text-white/60 mb-8">
-              Start free. No credit card required. 5,000 executions every day.
+              Join the beta — 100,000 credits per day, completely free.
             </p>
             <div className="flex items-center justify-center gap-4">
               <Button size="lg" asChild>
