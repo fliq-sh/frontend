@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,6 +34,12 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#09090b] text-white`}
         >
           <TooltipProvider>{children}</TooltipProvider>
+          <Script
+            defer
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "e729f2a85ecc437a957a37580a04c893"}'
+            strategy="afterInteractive"
+          />
         </body>
       </html>
     </ClerkProvider>

@@ -13,7 +13,6 @@ const Problem       = dynamic(() => import("@/components/landing/Problem"),     
 const HowItWorks    = dynamic(() => import("@/components/landing/HowItWorks"),    { loading: noop });
 const Quickstart    = dynamic(() => import("@/components/landing/Quickstart"),    { loading: noop });
 const Comparison    = dynamic(() => import("@/components/landing/Comparison"),    { loading: noop });
-const AIFeatures    = dynamic(() => import("@/components/landing/AIFeatures"),    { loading: noop });
 const Reliability   = dynamic(() => import("@/components/landing/Reliability"),   { loading: noop });
 const PricingTeaser = dynamic(() => import("@/components/landing/PricingTeaser"), { loading: noop });
 const Enterprise    = dynamic(() => import("@/components/landing/Enterprise"),    { loading: noop });
@@ -67,10 +66,7 @@ export default function LandingPage() {
         {/* 7 ── Why not DIY? */}
         <Comparison />
 
-        {/* 8 ── AI / MCP features */}
-        <AIFeatures />
-
-        {/* 9 ── Reliability stats */}
+        {/* 8 ── Reliability stats */}
         <Reliability />
 
         {/* 10 ── Pricing teaser */}
