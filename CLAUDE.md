@@ -1,10 +1,10 @@
 # Fliq — Frontend
 
-Next.js 16 marketing site + dashboard for Fliq — Serverless HTTP Scheduling.
+Next.js 16 marketing site + dashboard for Fliq — Serverless HTTP Workflows.
 
 ## Product overview
 
-**Fliq** is a serverless HTTP scheduling platform. Customers POST a URL + fire time; Fliq executes it on time, globally, with automatic retries and full execution history.
+**Fliq** is a serverless HTTP workflow platform. Customers POST a URL + fire time; Fliq executes it on time, globally, with automatic retries and full execution history.
 
 **Core value props:**
 - One API call to schedule any HTTP action (one-time or cron)

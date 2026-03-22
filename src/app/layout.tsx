@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fliq — Serverless HTTP Scheduling",
+  title: "Fliq — Serverless HTTP Workflows",
   description:
     "Schedule any HTTP action. Execute it globally. Full visibility, automatic retries.",
 };

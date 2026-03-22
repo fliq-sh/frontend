@@ -44,15 +44,15 @@ export default function Hero() {
         </div>
 
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight">
-          Serverless{" "}
+          The backbone your{" "}
           <span className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
-            HTTP Scheduling
-          </span>
+            AI agents
+          </span>{" "}
+          are missing.
         </h1>
 
         <p className="text-lg text-white/60 max-w-xl">
-          Schedule it, walk away.{" "}
-          <span className="text-white/80">On time. Every time.</span>
+          Schedule, retry, and orchestrate any HTTP request with one API call.
         </p>
 
         <div className="flex items-center gap-4">

@@ -4,7 +4,7 @@ import DocsSidebar from "./DocsSidebar";
 
 export const metadata = {
   title: { template: "%s — Fliq Docs", default: "Fliq Docs" },
-  description: "Documentation for Fliq — Serverless HTTP Scheduling.",
+  description: "Documentation for Fliq — Serverless HTTP Workflows.",
 };
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
