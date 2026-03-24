@@ -1,0 +1,317 @@
+---
+title: "How to Schedule Background Jobs in Cloudflare Workers (Without Durable Objects)"
+description: "Learn how to schedule HTTP callbacks, cron jobs, and retries in Cloudflare Workers without Durable Objects — using one API call."
+date: "2026-03-25"
+author: "Erlan"
+tags: ["cloudflare-workers", "serverless", "cron", "tutorial"]
+image: "/blog/og/cloudflare-workers-scheduling.png"
+readingTime: 10
+featured: true
+---
+
+Cloudflare Workers are fast, cheap, and globally distributed. But there's one thing they're terrible at: **running code later**.
+
+Need to send a welcome email 30 minutes after signup? Process a webhook retry after a failed delivery? Run a cleanup job every night at midnight? Workers don't have a built-in way to do any of this without reaching for [Durable Objects](https://developers.cloudflare.com/durable-objects/) — which adds complexity, cost, and a new programming model you probably don't want to learn just to schedule a task.
+
+In this tutorial, you'll learn how to schedule background jobs from Cloudflare Workers using **Fliq** — an HTTP workflow engine that handles scheduling, retries, and execution history with a single API call. No Durable Objects. No Queues. No external Redis. Just HTTP.
+
+## The problem with scheduling in Workers
+
+Cloudflare Workers run in a V8 isolate with strict execution limits. You can't set a timeout for 30 minutes. You can't keep a WebSocket connection alive between requests. The execution context dies after the response is sent (unless you use waitUntil, which still has a 30-second cap).
+
+Your options today:
+
+- **Cron Triggers** — limited to the cron syntax Cloudflare supports. Can't schedule one-off future events. Can't pass dynamic payloads.
+- **Durable Objects** — powerful, but you're now managing stateful actors. Overkill for "call this URL in 5 minutes."
+- **Cloudflare Queues** — great for fan-out, but no built-in delayed delivery or scheduling.
+- **External services** — AWS EventBridge, Google Cloud Scheduler, etc. Now you're managing credentials across cloud providers.
+
+What you actually want is simple: **"Call this URL at this time, and retry if it fails."**
+
+That's exactly what Fliq does.
+
+## What is Fliq?
+
+[Fliq](https://fliq.sh) is a serverless HTTP workflow engine. You send it one API call with a URL and a time, and Fliq executes the HTTP request on schedule — globally, with automatic retries and full execution history.
+
+Think of it as a cloud-native setTimeout that actually works in production.
+
+Key features:
+- **One-time and recurring jobs** (cron expressions)
+- **Automatic retries** with exponential backoff
+- **Full execution history** — see every attempt, status code, response time
+- **30+ edge regions** — sub-10ms median dispatch latency
+- **Pay per execution** — $1 per 100k executions on the Growth plan
+
+## Setting up your Worker
+
+Let's build a practical example: a Cloudflare Worker that handles user signups and schedules a welcome email to be sent 30 minutes later.
+
+### Step 1: Create a new Workers project
+
+```bash
+npm create cloudflare@latest -- my-scheduled-worker
+cd my-scheduled-worker
+```
+
+Choose "Hello World" as the template when prompted.
+
+### Step 2: Get your Fliq API token
+
+Sign up at [fliq.sh](https://fliq.sh) and grab your API token from the [dashboard settings](https://fliq.sh/app/settings). You'll need this to authenticate API calls.
+
+Store it as a Workers secret:
+
+```bash
+npx wrangler secret put FLIQ_API_TOKEN
+```
+
+Paste your fliq_sk token when prompted.
+
+### Step 3: Write the Worker
+
+Replace src/index.ts with the following:
+
+```typescript
+export interface Env {
+  FLIQ_API_TOKEN: string;
+}
+
+export default {
+  async fetch(request: Request, env: Env) {
+    const url = new URL(request.url);
+
+    if (url.pathname === "/api/signup" && request.method === "POST") {
+      return handleSignup(request, env);
+    }
+
+    if (url.pathname === "/api/send-welcome-email" && request.method === "POST") {
+      return handleSendWelcomeEmail(request);
+    }
+
+    return new Response("Not found", { status: 404 });
+  },
+};
+
+async function handleSignup(request: Request, env: Env) {
+  const body = await request.json() as { email: string; name: string };
+
+  // 1. Save user to your database (D1, Turso, PlanetScale, etc.)
+
+  // 2. Schedule welcome email for 30 minutes from now
+  const scheduledAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+  const workerUrl = new URL("/api/send-welcome-email", request.url).toString();
+
+  const fliqResponse = await fetch("https://api.fliq.sh/v1/jobs", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + env.FLIQ_API_TOKEN,
+    },
+    body: JSON.stringify({
+      url: workerUrl,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: body.email,
+        name: body.name,
+        type: "welcome",
+      }),
+      scheduled_at: scheduledAt,
+      max_retries: 3,
+    }),
+  });
+
+  if (!fliqResponse.ok) {
+    return new Response("Failed to schedule welcome email", { status: 500 });
+  }
+
+  const job = await fliqResponse.json() as { id: string };
+
+  return Response.json({
+    message: "Signup successful! Welcome email scheduled.",
+    job_id: job.id,
+  });
+}
+
+async function handleSendWelcomeEmail(request: Request) {
+  const body = await request.json() as {
+    email: string;
+    name: string;
+    type: string;
+  };
+
+  // Send the email using your provider (Resend, SendGrid, Mailgun, etc.)
+  console.log("Sending welcome email to " + body.email);
+
+  return Response.json({ sent: true });
+}
+```
+
+### Step 4: Deploy and test
+
+```bash
+npx wrangler deploy
+```
+
+Test the signup endpoint:
+
+```bash
+curl -X POST https://my-scheduled-worker.your-account.workers.dev/api/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "name": "Alice"}'
+```
+
+You'll get back a response with the scheduled job ID. In 30 minutes, Fliq will POST to your /api/send-welcome-email endpoint with the user's data. If the request fails, Fliq retries up to 3 times with exponential backoff.
+
+## Adding recurring jobs with cron
+
+Fliq also supports cron expressions for recurring jobs. Here's how to schedule a daily cleanup job that runs every night at midnight UTC:
+
+```typescript
+const response = await fetch("https://api.fliq.sh/v1/jobs", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer " + env.FLIQ_API_TOKEN,
+  },
+  body: JSON.stringify({
+    url: "https://my-worker.example.com/api/daily-cleanup",
+    method: "POST",
+    cron: "0 0 * * *",
+    max_retries: 5,
+  }),
+});
+```
+
+<Callout type="tip" title="Cron vs Cloudflare Cron Triggers">
+Cloudflare's built-in Cron Triggers are tied to your Worker and limited to the schedules you define in wrangler.toml. Fliq cron jobs can be created and updated dynamically via API, pass custom payloads, and target any HTTP endpoint — not just your Workers.
+</Callout>
+
+## Handling retries and failures
+
+Fliq automatically retries failed jobs (any non-2xx response). You can configure the retry behavior per job:
+
+```json
+{
+  "url": "https://my-worker.example.com/api/process-payment",
+  "method": "POST",
+  "body": "{\"invoice_id\": \"inv_123\"}",
+  "scheduled_at": "2026-03-26T10:00:00Z",
+  "max_retries": 5
+}
+```
+
+Each retry is a separate execution attempt. You can see every attempt — including the status code, response time, and response body — in the [Fliq dashboard](https://fliq.sh/app).
+
+<Callout type="info" title="Idempotency matters">
+Since Fliq may retry your endpoint, make sure your handlers are idempotent. Use unique identifiers (like invoice_id) to prevent duplicate processing.
+</Callout>
+
+## Monitoring execution history
+
+Every job in Fliq has a full execution history. You can check the status of any job via the API:
+
+```bash
+curl https://api.fliq.sh/v1/jobs/job_abc123 \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Or view it in the [Fliq dashboard](https://fliq.sh/app), which shows:
+- Job status (pending, running, completed, failed)
+- Every execution attempt with timestamps
+- HTTP status codes and response times
+- Request and response bodies
+
+## Cost comparison
+
+Let's compare the cost of scheduling 100,000 background jobs per month:
+
+| Approach | Monthly cost | Setup time | Maintenance |
+| --- | --- | --- | --- |
+| Fliq | $1 | 5 minutes | None |
+| Durable Objects | ~$5-15 | Hours | Manage state, handle alarms |
+| AWS EventBridge + Lambda | ~$10-20 | Hours | IAM, CloudFormation, monitoring |
+| Self-hosted Redis + BullMQ | $20-50+ | Days | Server, monitoring, on-call |
+
+## Complete example: multi-step onboarding flow
+
+Here's a more realistic example — scheduling a complete onboarding sequence when a user signs up:
+
+```typescript
+async function scheduleOnboarding(
+  env: Env,
+  baseUrl: string,
+  user: { email: string; name: string; id: string }
+) {
+  const now = Date.now();
+  const MINUTE = 60 * 1000;
+  const DAY = 24 * 60 * MINUTE;
+
+  const jobs = [
+    {
+      url: baseUrl + "/api/emails/welcome",
+      scheduled_at: new Date(now + 30 * MINUTE).toISOString(),
+      body: { userId: user.id, type: "welcome" },
+    },
+    {
+      url: baseUrl + "/api/emails/getting-started",
+      scheduled_at: new Date(now + 1 * DAY).toISOString(),
+      body: { userId: user.id, type: "getting-started" },
+    },
+    {
+      url: baseUrl + "/api/emails/tips",
+      scheduled_at: new Date(now + 3 * DAY).toISOString(),
+      body: { userId: user.id, type: "tips" },
+    },
+    {
+      url: baseUrl + "/api/check-activation",
+      scheduled_at: new Date(now + 7 * DAY).toISOString(),
+      body: { userId: user.id, type: "activation-check" },
+    },
+  ];
+
+  const results = await Promise.all(
+    jobs.map((job) =>
+      fetch("https://api.fliq.sh/v1/jobs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + env.FLIQ_API_TOKEN,
+        },
+        body: JSON.stringify({
+          ...job,
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(job.body),
+          max_retries: 3,
+        }),
+      })
+    )
+  );
+
+  return results;
+}
+```
+
+Four API calls, and you've scheduled a complete onboarding sequence spanning a week. No cron jobs, no state management, no infrastructure.
+
+## Wrapping up
+
+Cloudflare Workers are great for handling requests. Fliq is great for scheduling them. Together, they give you a fully serverless stack for any time-based workflow — without the complexity of Durable Objects or external queue infrastructure.
+
+**What you get with Fliq + Workers:**
+- Schedule any HTTP request for any future time
+- Automatic retries with exponential backoff
+- Full execution history and monitoring
+- Dynamic cron schedules created via API
+- No infrastructure to manage
+
+<CTA text="Try Fliq free — 5,000 executions/day" href="https://fliq.sh/sign-up" />
+
+## Further reading
+
+- [Fliq API reference](/docs/api-reference) — full API documentation
+- [Fliq retry behavior](/docs/retries) — how retries and backoff work
+- [Cloudflare Workers docs](https://developers.cloudflare.com/workers/) — Workers platform reference
+- [Build a SaaS billing system with Next.js and Fliq](/blog/nextjs-stripe-billing-with-fliq) — another tutorial using Fliq

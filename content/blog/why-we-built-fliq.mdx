@@ -1,0 +1,180 @@
+---
+title: "Why We Built Fliq: The Case Against Self-Hosted Job Queues"
+description: "The story of how a Go learning project turned into a serverless HTTP workflow platform — and why we think self-hosted job queues are on their way out."
+date: "2026-03-23"
+author: "Erlan"
+tags: ["engineering", "serverless", "architecture"]
+image: "/blog/og/why-we-built-fliq.png"
+readingTime: 9
+featured: false
+---
+
+We didn't set out to build a product. We set out to learn Go.
+
+In late 2025, my co-founder and I wanted to build something real with Go — not a toy project, but something that would force us to deal with concurrency, database transactions, graceful shutdowns, and all the other things you only learn by actually shipping production software.
+
+We picked a distributed job scheduler because it hit all those requirements. Schedule HTTP requests. Execute them on time. Retry on failure. Simple in concept, deeply complex in implementation.
+
+Somewhere along the way, we realized we were building something people actually needed.
+
+## The pain we kept seeing
+
+Both of us had spent years building web applications. And in every project, at some point, someone would say: "We need to run this thing later."
+
+Send a follow-up email in 3 days. Retry a failed webhook in 5 minutes. Expire a session after 24 hours. Check if a payment cleared tomorrow morning. Archive old records every night.
+
+The patterns are universal. The solutions are not.
+
+### The self-hosted path
+
+In most teams, "run this later" turns into a ticket for the infrastructure team. The conversation goes something like:
+
+1. **"Let's just use cron."** Works for simple recurring jobs. Breaks down when you need dynamic scheduling, per-user jobs, or retry logic.
+
+2. **"Let's add Redis + BullMQ."** Now you're running a Redis instance. You need to monitor it, scale it, handle failures when Redis goes down. Your application code is now tightly coupled to a specific queue library.
+
+3. **"Let's use Celery/Sidekiq."** Same problems as BullMQ, but now with more moving parts. Celery needs a message broker (Redis or RabbitMQ) *and* a result backend (Redis or PostgreSQL). That's three services for "run this later."
+
+4. **"Let's use AWS Step Functions."** Powerful, but the JSON state machine DSL is painful to write and debug. Costs add up fast. And now your application logic lives in AWS instead of your codebase.
+
+Every path adds infrastructure. Every piece of infrastructure needs monitoring, scaling, and on-call coverage.
+
+<Callout type="info" title="The hidden cost of self-hosting">
+A Redis instance for BullMQ costs $15-50/month. But the real cost is the engineer-hours spent setting it up, monitoring it, and debugging it at 2 AM when it runs out of memory. For most teams, that's thousands of dollars per year in hidden costs.
+</Callout>
+
+## The insight: it's just HTTP
+
+The realization that changed everything was simple: **most background jobs are just HTTP requests that need to happen later.**
+
+Think about it:
+- Send an email — POST to your email API
+- Retry a webhook — POST to the webhook URL again
+- Expire a trial — POST to your billing endpoint
+- Generate a report — POST to your report generation endpoint
+
+You don't need a sophisticated message queue for this. You don't need a task graph. You don't need distributed state machines. You need someone to **call a URL at a specific time, and retry if it fails.**
+
+That's Fliq in one sentence.
+
+## What Fliq actually is
+
+Fliq is an HTTP workflow engine. You tell it:
+- **What URL to call**
+- **When to call it** (specific time or cron expression)
+- **What to send** (method, headers, body)
+- **How to handle failures** (retry count)
+
+And it handles the rest: dispatching the request from the nearest edge region, retrying on failure with exponential backoff, and recording the full execution history.
+
+```bash
+curl -X POST https://api.fliq.sh/v1/jobs \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-app.com/api/send-reminder",
+    "method": "POST",
+    "body": "{\"userId\": \"user_123\", \"type\": \"trial-expiry\"}",
+    "headers": {"Content-Type": "application/json"},
+    "scheduled_at": "2026-03-30T10:00:00Z",
+    "max_retries": 3
+  }'
+```
+
+That's it. One API call. No Redis, no queue workers, no infrastructure.
+
+## Why HTTP beats message queues for most use cases
+
+Message queues (Kafka, RabbitMQ, SQS) are designed for high-throughput, ordered message processing between tightly coupled services. They're the right tool when you need:
+- Ordered processing guarantees
+- Fan-out to multiple consumers
+- Back-pressure and flow control
+- Exactly-once delivery semantics
+
+But most background jobs don't need any of that. They need: "Call this URL at this time. Retry if it fails."
+
+HTTP-based scheduling has several advantages for this use case:
+
+### 1. Universal compatibility
+
+Every framework, every language, every platform can receive HTTP requests. Your job handler is just an API endpoint. There's no SDK to install, no queue library to learn, no consumer process to run.
+
+```typescript
+// This is a Fliq job handler. It's also just a normal API route.
+export async function POST(request: Request) {
+  const { userId } = await request.json();
+  await sendReminderEmail(userId);
+  return Response.json({ sent: true });
+}
+```
+
+### 2. Works with serverless
+
+Serverless functions (Vercel, Cloudflare Workers, AWS Lambda) can't run persistent queue consumers. They're designed for request-response. Fliq works perfectly with serverless because it *sends* HTTP requests — which is exactly what serverless functions are built to receive.
+
+### 3. No infrastructure to manage
+
+No Redis instance. No RabbitMQ cluster. No Kafka topics. No consumer groups. No dead letter queues. Fliq is a managed service — you make API calls, we handle the infrastructure.
+
+### 4. Built-in observability
+
+Every HTTP request has a status code, a response body, and a response time. Fliq records all of this for every execution attempt. You get full observability without setting up Prometheus, Grafana, or custom dashboards.
+
+<Callout type="warning" title="When HTTP isn't enough">
+HTTP-based scheduling isn't the right fit for everything. If you need ordered processing, sub-second latency, or complex event-driven workflows with branching logic, a proper message queue or workflow engine (like Temporal) might be a better choice. Fliq is optimized for the 80% of use cases where you just need "call this URL at this time."
+</Callout>
+
+## The technical challenges we solved
+
+Building a reliable job scheduler sounds simple. It's not. Here are some of the harder problems we tackled:
+
+### Exactly-once execution (approximately)
+
+The hardest problem in distributed systems: making sure a job runs exactly once, even when machines crash and networks fail. We use a FOR UPDATE SKIP LOCKED pattern in PostgreSQL for job claiming. Each worker claims a batch of jobs atomically, and a heartbeat + reaper pattern handles crash recovery.
+
+If a worker crashes mid-execution, the reaper detects the missing heartbeat and makes the job available for another worker to claim. The job runs again — which is why we emphasize that your handlers must be idempotent.
+
+### Global dispatch
+
+Fliq runs in 30+ edge regions. When a job fires, it's dispatched from the region closest to the target URL's server. This gives us sub-10ms median dispatch latency — the time between "the clock says it's time" and "the HTTP request is sent."
+
+### Two-phase attempt tracking
+
+We open an execution attempt record *before* making the HTTP call, and close it *after*. If the worker crashes during the HTTP call, we have a record of the attempt — including the fact that it didn't complete. This is crucial for debugging and for preventing silent failures.
+
+### No HTTP inside transactions
+
+A lesson learned the hard way: never make an HTTP call inside a database transaction. The HTTP call might take seconds (or time out), holding a database connection the entire time. Under load, this exhausts your connection pool and takes down the entire service.
+
+We structure every job execution as: read from DB, close transaction, make HTTP call, write result to DB. The HTTP call happens outside any transaction.
+
+## Where we are today
+
+Fliq processes millions of job executions per month with a 99.9% SLA. Our median dispatch latency is under 10ms. We offer:
+
+- **Free tier**: 5,000 executions/day, 7-day history
+- **Growth**: $1 per 100k executions, 1-year history
+- **Enterprise**: custom pricing, self-hosted option, 99.99% SLA
+
+We're used by teams building SaaS billing systems, email automation, webhook retries, IoT command scheduling, and AI agent workflows.
+
+## The future: AI-native scheduling
+
+One of the most exciting developments we're seeing is **AI agents that need to schedule actions**. An agent might decide: "I should check the stock price in 4 hours and buy if it's below $150." Or: "Remind the user about this task tomorrow morning."
+
+We built an [MCP server](https://fliq.sh/docs) so AI agents can schedule Fliq jobs through natural language. The agent doesn't need to understand cron expressions or HTTP headers — it describes what should happen and when, and the MCP server translates that into a Fliq API call.
+
+This is where we think the market is heading: infrastructure for the AI internet, where agents and automation need the same scheduling primitives that human-built applications do.
+
+## Try it yourself
+
+If you're tired of managing Redis, debugging Celery, or writing CloudFormation for EventBridge rules, give Fliq a try. The free tier gives you 5,000 executions per day — enough to build and test any scheduling workflow.
+
+<CTA text="Start building with Fliq — free tier, no credit card" href="https://fliq.sh/sign-up" />
+
+## Further reading
+
+- [How to schedule background jobs in Cloudflare Workers](/blog/schedule-background-jobs-cloudflare-workers) — practical tutorial
+- [Build a SaaS billing system with Next.js and Fliq](/blog/nextjs-stripe-billing-with-fliq) — another tutorial
+- [Fliq documentation](/docs) — getting started guide
+- [Fliq pricing](/pricing) — plan comparison
