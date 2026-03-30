@@ -6,6 +6,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 const ROUTE_TITLES: Record<string, string> = {
   "/app": "Jobs",
   "/app/schedules": "Schedules",
+  "/app/buffers": "Buffers",
   "/app/executions": "Executions",
   "/app/settings": "Settings",
   "/app/billing": "Billing",

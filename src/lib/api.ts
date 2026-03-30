@@ -241,6 +241,108 @@ export function createSchedulesApi(apiFetch: <T>(path: string, init?: RequestIni
   };
 }
 
+// ─── Buffers API ─────────────────────────────────────────────────────────────
+
+export type BufferItemStatus = "pending" | "running" | "completed" | "failed";
+
+export interface Buffer {
+  id: string;
+  name: string;
+  url: string;
+  method: string;
+  timeout_seconds: number;
+  rate_limit: number;
+  max_retries: number;
+  backoff: "exponential" | "linear";
+  paused: boolean;
+  webhook_url?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BufferItem {
+  id: string;
+  buffer_id: string;
+  status: BufferItemStatus;
+  status_code: number | null;
+  retry_count: number;
+  max_retries: number;
+  last_error: string | null;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export interface ListBuffersParams {
+  cursor?: string;
+  limit?: number;
+}
+
+export interface ListBufferItemsParams {
+  cursor?: string;
+  limit?: number;
+  status?: BufferItemStatus;
+}
+
+export interface CreateBufferInput {
+  name: string;
+  url: string;
+  method?: string;
+  headers?: Record<string, string>;
+  timeout_seconds?: number;
+  rate_limit: number;
+  max_retries?: number;
+  backoff?: "exponential" | "linear";
+  webhook_url?: string;
+  webhook_headers?: Record<string, string>;
+}
+
+export interface PushBufferItemInput {
+  body?: string;
+  headers?: Record<string, string>;
+}
+
+export function createBuffersApi(apiFetch: <T>(path: string, init?: RequestInit) => Promise<T>) {
+  return {
+    list(params: ListBuffersParams = {}) {
+      return apiFetch<{ buffers: Buffer[]; next_cursor: string | null }>(
+        `/buffers${buildQuery(params as Record<string, string | number | undefined>)}`,
+      );
+    },
+    get(id: string) {
+      return apiFetch<Buffer>(`/buffers/${id}`);
+    },
+    create(input: CreateBufferInput) {
+      return apiFetch<Buffer>("/buffers", {
+        method: "POST",
+        body: JSON.stringify(input),
+      });
+    },
+    pause(id: string) {
+      return apiFetch<void>(`/buffers/${id}/pause`, { method: "POST" });
+    },
+    resume(id: string) {
+      return apiFetch<void>(`/buffers/${id}/resume`, { method: "POST" });
+    },
+    delete(id: string) {
+      return apiFetch<void>(`/buffers/${id}`, { method: "DELETE" });
+    },
+    pushItem(bufferId: string, input: PushBufferItemInput) {
+      return apiFetch<BufferItem>(`/buffers/${bufferId}/items`, {
+        method: "POST",
+        body: JSON.stringify(input),
+      });
+    },
+    listItems(bufferId: string, params: ListBufferItemsParams = {}) {
+      return apiFetch<{ items: BufferItem[]; next_cursor: string | null }>(
+        `/buffers/${bufferId}/items${buildQuery(params as Record<string, string | number | undefined>)}`,
+      );
+    },
+    getItem(bufferId: string, itemId: string) {
+      return apiFetch<BufferItem>(`/buffers/${bufferId}/items/${itemId}`);
+    },
+  };
+}
+
 // ─── API Tokens ───────────────────────────────────────────────────────────────
 
 export function createTokensApi(apiFetch: <T>(path: string, init?: RequestInit) => Promise<T>) {

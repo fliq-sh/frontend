@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import FliqIcon from "@/components/ui/FliqIcon";
-import { Zap, CalendarClock, Settings, ChevronUp, LogOut, BookOpen, CreditCard } from "lucide-react";
+import { Zap, CalendarClock, Layers, Settings, ChevronUp, LogOut, BookOpen, CreditCard } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -27,6 +27,7 @@ import {
 const navItems = [
   { label: "Jobs", href: "/app", icon: Zap },
   { label: "Schedules", href: "/app/schedules", icon: CalendarClock },
+  { label: "Buffers", href: "/app/buffers", icon: Layers },
   { label: "Docs", href: "/docs", icon: BookOpen, external: true },
 ];
 
