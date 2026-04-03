@@ -208,7 +208,7 @@ func VerifyFliqSignature(secret, timestamp, method, url, body, signature string)
       </DocUL>
 
       <DocNextPrev
-        prev={{ label: "Retries & Billing", href: "/docs/retries" }}
+        prev={{ label: "Buffers", href: "/docs/buffers" }}
         next={{ label: "API Reference", href: "/docs/api-reference" }}
       />
     </article>

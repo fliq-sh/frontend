@@ -17,6 +17,7 @@ const nav = [
     links: [
       { label: "Jobs & Schedules", href: "/docs/jobs-and-schedules" },
       { label: "Retries & Billing", href: "/docs/retries" },
+      { label: "Buffers", href: "/docs/buffers" },
       { label: "Webhook Signing", href: "/docs/signing" },
     ],
   },
