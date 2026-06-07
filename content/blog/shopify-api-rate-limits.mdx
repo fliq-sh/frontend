@@ -52,7 +52,7 @@ You can sprinkle `setTimeout` delays and `Retry-After` handling through your loo
 Create the buffer once, at Shopify's 2/s limit:
 
 ```bash
-curl -X POST https://api.fliq.sh/v1/buffers \
+curl -X POST https://api.fliq.sh/buffers \
   -H "Authorization: Bearer $FLIQ_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -78,7 +78,7 @@ async function enqueueInventoryUpdate(
   bufferId: string,
   update: { locationId: number; inventoryItemId: number; available: number }
 ) {
-  await fetch(`https://api.fliq.sh/v1/buffers/${bufferId}/items`, {
+  await fetch(`https://api.fliq.sh/buffers/${bufferId}/items`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${process.env.FLIQ_API_TOKEN}`,

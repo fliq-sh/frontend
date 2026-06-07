@@ -42,7 +42,7 @@ A cleaner approach for bulk work: stop calling Stripe directly from your job, an
 Create a buffer once, pointed at the Stripe endpoint you're hammering:
 
 ```bash
-curl -X POST https://api.fliq.sh/v1/buffers \
+curl -X POST https://api.fliq.sh/buffers \
   -H "Authorization: Bearer $FLIQ_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -73,7 +73,7 @@ async function enqueueStripeCustomer(
     name: customer.name,
   }).toString();
 
-  await fetch(`https://api.fliq.sh/v1/buffers/${bufferId}/items`, {
+  await fetch(`https://api.fliq.sh/buffers/${bufferId}/items`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${process.env.FLIQ_API_TOKEN}`,

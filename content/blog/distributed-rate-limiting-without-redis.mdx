@@ -74,7 +74,7 @@ This is the idea behind a Fliq **buffer**. A buffer is a hosted, durable queue p
 You create a buffer once, pointing at the API you need to be gentle with:
 
 ```bash
-curl -X POST https://api.fliq.sh/v1/buffers \
+curl -X POST https://api.fliq.sh/buffers \
   -H "Authorization: Bearer $FLIQ_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -92,7 +92,7 @@ curl -X POST https://api.fliq.sh/v1/buffers \
 
 ```typescript
 async function enqueuePartnerCall(bufferId: string, payload: unknown) {
-  await fetch(`https://api.fliq.sh/v1/buffers/${bufferId}/items`, {
+  await fetch(`https://api.fliq.sh/buffers/${bufferId}/items`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${process.env.FLIQ_API_TOKEN}`,
