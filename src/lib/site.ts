@@ -40,8 +40,10 @@ export const BETA = {
 // invent a number. These describe how core-api actually works.
 export const FACTS = {
   postgresNative: "Postgres-native — no Redis, no Kafka, no queue to operate.",
-  exactlyOnce:
-    "Each job is claimed by exactly one worker via FOR UPDATE SKIP LOCKED — no duplicate fires.",
+  // NOTE: delivery is at-least-once (a crashed/retried job can fire more than
+  // once) — do NOT claim "exactly-once". core-api supports an idempotency key.
+  delivery:
+    "Each job is claimed by one worker at a time via FOR UPDATE SKIP LOCKED. If a worker crashes mid-run the job is retried, so delivery is at-least-once — use an idempotency key on your endpoint.",
   crashRecovery:
     "Workers heartbeat while running; a reaper detects crashed workers and reschedules their jobs automatically.",
   retries:

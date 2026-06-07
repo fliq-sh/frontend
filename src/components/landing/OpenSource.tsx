@@ -6,7 +6,7 @@ import { SITE, FACTS } from "@/lib/site";
 
 const proof = [
   { label: "Postgres-native", detail: FACTS.postgresNative },
-  { label: "Exactly-once", detail: FACTS.exactlyOnce },
+  { label: "At-least-once", detail: FACTS.delivery },
   { label: "Crash recovery", detail: FACTS.crashRecovery },
   { label: "Full history", detail: FACTS.history },
 ];

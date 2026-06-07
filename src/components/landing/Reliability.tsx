@@ -2,9 +2,9 @@ import LiveStatus from "./LiveStatus";
 
 const cards = [
   {
-    title: "Exactly-once execution",
+    title: "At-least-once delivery",
     description:
-      "Workers claim jobs with FOR UPDATE SKIP LOCKED — Postgres hands each job to exactly one worker. No duplicate fires, no external queue to coordinate.",
+      "Workers claim each job with FOR UPDATE SKIP LOCKED, so two workers never run it at once. A crashed or failed run is retried — delivery is at-least-once, so send an idempotency key and your endpoint stays safe.",
   },
   {
     title: "Automatic crash recovery",
