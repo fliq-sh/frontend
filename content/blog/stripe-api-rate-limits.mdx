@@ -1,0 +1,134 @@
+---
+title: "How to Handle Stripe API Rate Limits (429 Errors)"
+description: "Stripe returns 429 when you call it too fast — and bulk jobs across multiple workers hit it easily. Here's how to pace your writes to Stripe without a 429."
+date: "2026-06-07"
+author: "Erlan"
+tags: ["stripe", "rate-limiting", "tutorial", "serverless"]
+---
+
+You're running a billing backfill, migrating customers, or charging a few thousand subscriptions at the start of the month. Halfway through, Stripe starts returning `429 Too Many Requests`, your job dies partway, and now you're not sure which charges went through and which didn't.
+
+This is one of the most common ways to get bitten by the [Stripe API](https://stripe.com/docs/api): the per-request code is fine, but the moment you do something in bulk — especially from more than one worker — you blow past the rate limit.
+
+Here's why it happens and how to pace your writes so it doesn't.
+
+## What Stripe's rate limits actually are
+
+Stripe limits requests per second, per account:
+
+- **Live mode:** ~100 read and 100 write operations per second.
+- **Test mode:** ~25 read and 25 write operations per second.
+
+When you exceed it, Stripe returns HTTP `429` with a `rate_limit` error. Stripe's own [rate-limit guidance](https://docs.stripe.com/rate-limits) is explicit about whose job it is to fix this:
+
+> Watch for `429` status codes and build retry logic... A common technique for controlling rate is to implement something like a token bucket rate limiting algorithm on the client side.
+
+In other words: **pacing your outgoing calls is the client's responsibility.** Stripe won't queue your excess requests — it rejects them, and a rejected request still cost you a round trip.
+
+## Why bulk jobs hit the limit (even "slow" ones)
+
+Two things make 429s sneak up on you:
+
+**1. Bursts, not averages.** "100/second" is enforced in short windows. A loop that fires 500 `customer.create` calls as fast as `Promise.all` allows will spike to thousands per second for an instant — well over the limit — even if your *average* over a minute looks tame.
+
+**2. Multiple workers.** This is the big one. If you parallelize the backfill across 4 containers (or your serverless function scales to 10 concurrent invocations), each one runs its own limiter. A "stay under 100/s" guard in your code becomes 100 × N in reality, because none of the workers can see the others. We covered this failure mode in depth in [Distributed Rate Limiting Without Redis](/blog/distributed-rate-limiting-without-redis).
+
+The naive fix — catch the 429, sleep, retry — technically works but is slow, wastes the rejected calls, and gets fragile fast once retries pile up on top of concurrency.
+
+## Pacing Stripe writes with a Fliq buffer
+
+A cleaner approach for bulk work: stop calling Stripe directly from your job, and push the calls into a **Fliq buffer** instead. A buffer is a durable queue pinned to one endpoint with a rate limit attached. You enqueue from anywhere — any number of workers — and Fliq releases the requests to Stripe at the rate you set, in one place.
+
+Create a buffer once, pointed at the Stripe endpoint you're hammering:
+
+```bash
+curl -X POST https://api.fliq.sh/buffers \
+  -H "Authorization: Bearer $FLIQ_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "stripe-customer-backfill",
+    "url": "https://api.stripe.com/v1/customers",
+    "method": "POST",
+    "headers": {
+      "Authorization": "Bearer sk_live_...",
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    "rate_limit": 80,
+    "max_retries": 5,
+    "backoff": "exponential"
+  }'
+```
+
+`rate_limit` is in **requests per second** — set it comfortably under Stripe's ceiling (80, not 100, leaves headroom for anything else hitting your account).
+
+Then enqueue each write. Stripe takes form-encoded bodies, and — importantly — supports an `Idempotency-Key` header you can set per item:
+
+```typescript
+async function enqueueStripeCustomer(
+  bufferId: string,
+  customer: { email: string; name: string; ref: string }
+) {
+  const body = new URLSearchParams({
+    email: customer.email,
+    name: customer.name,
+  }).toString();
+
+  await fetch(`https://api.fliq.sh/buffers/${bufferId}/items`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.FLIQ_API_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      body,
+      headers: { "Idempotency-Key": `cust-${customer.ref}` },
+    }),
+  });
+}
+```
+
+Loop over your 5,000 customers, push them all, and you're done — your job finishes in seconds and Fliq drains the queue to Stripe at 80/s, in order, retrying any transient failures.
+
+<Callout type="tip" title="Idempotency keys matter here">
+Fliq delivers each item at least once — a retried item can fire more than once. A per-item `Idempotency-Key` makes Stripe deduplicate, so a retry can never create a customer (or a charge) twice. Always set one for non-idempotent writes.
+</Callout>
+
+### What the buffer gives you
+
+- **One real rate limit** across every worker — no `limit × N` problem, because the pacing lives in Fliq, not in your processes.
+- **429-aware.** When Stripe returns `429`, Fliq honors the `Retry-After` header if present and otherwise backs off — instead of retrying straight into another rejection.
+- **Durable.** Pushed items are persisted before they're acknowledged. A crashed or redeployed worker mid-backfill loses nothing.
+- **Per-item history + retries.** Every item records its status code, error, and attempts, queryable via the API.
+
+## The honest limitation
+
+A buffer is **fire-and-forget**. It records each call's *outcome* — status code, success/failure, timing — but **not the response body**. You won't get the created `Customer` object or the new `cus_...` id back from the buffer.
+
+So buffers fit Stripe **writes where you act on success/failure**, not reads where you need the data inline:
+
+- ✅ Bulk-charging subscriptions, creating customers/invoices, issuing refunds, syncing metadata
+- ✅ Anything you can reconcile afterward via idempotency keys
+- ❌ A synchronous checkout where the user is waiting for the charge result — call Stripe directly there
+- ❌ Reads where you need the returned object immediately
+
+If you need the created ids, key each item with a reference you control (`Idempotency-Key: cust-<your-ref>`), then reconcile with a single `GET /v1/customers` list call afterward rather than 5,000 individual responses.
+
+| | Catch-429-and-retry loop | Fliq buffer |
+| --- | --- | --- |
+| Correct across workers | No | Yes |
+| Wastes rejected calls | Yes | No (paced under the limit) |
+| Survives a crash mid-job | No | Yes |
+| Honors Retry-After | Manual | Built in |
+| Returns the response body | Yes | No (fire-and-forget) |
+
+## Wrapping up
+
+Stripe 429s in bulk jobs are almost always a pacing problem made worse by concurrency. You can hand-roll a token bucket and a Redis lock to coordinate your workers, as Stripe suggests — or push the writes into a buffer that paces them under the limit for you, durably, with idempotent retries built in.
+
+<CTA text="Try Fliq buffers free — 100,000 executions/day during public beta" href="https://fliq.sh/sign-up" />
+
+## Further reading
+
+- [Distributed Rate Limiting Without Redis](/blog/distributed-rate-limiting-without-redis) — why in-memory limiters break across workers
+- [Stripe rate limits](https://docs.stripe.com/rate-limits) — Stripe's official guidance
+- [Fliq API reference](/docs/api-reference) — full buffer API

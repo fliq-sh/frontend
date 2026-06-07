@@ -1,0 +1,140 @@
+---
+title: "Fixing Shopify API Rate Limits (2 Calls Per Second)"
+description: "\"Exceeded 2 calls per second for api client\" is the Shopify error every bulk sync hits. Here's how to pace your writes to Shopify and stop the 429s."
+date: "2026-06-07"
+author: "Erlan"
+tags: ["shopify", "rate-limiting", "tutorial", "serverless"]
+---
+
+If you've built anything on the [Shopify Admin API](https://shopify.dev/docs/api/admin), you've seen this:
+
+```
+429 Too Many Requests
+Exceeded 2 calls per second for api client
+```
+
+Shopify's REST Admin API has one of the strictest rate limits in the business — **2 requests per second** on standard plans (with a small burst bucket of 40). For a single product edit, that's plenty. For a bulk inventory sync across 8,000 SKUs, it's a wall you hit in the first second.
+
+Here's why bulk Shopify jobs fail and how to pace them so they don't.
+
+## How Shopify's rate limit works
+
+The REST Admin API uses a **leaky bucket**: a bucket of 40 requests that drains (leaks) at 2 per second on standard plans (Shopify Plus gets more). You can burst up to 40, but sustained throughput is 2/s. Go over and you get a `429` with a `Retry-After` header telling you how long to wait.
+
+The key detail: **Shopify tells you to slow down via `Retry-After`**, and well-behaved clients are expected to honor it. A loop that ignores `Retry-After` and just retries immediately keeps getting rejected — and Shopify will throttle a client that keeps misbehaving.
+
+## Why bulk syncs hit it instantly
+
+The classic case is an inventory or price sync. You pull 8,000 products from your PIM or ERP, then loop and `POST` each update to Shopify:
+
+```typescript
+for (const item of inventory) {
+  await fetch(`https://${shop}.myshopify.com/admin/api/2025-01/inventory_levels/set.json`, {
+    method: "POST",
+    headers: { "X-Shopify-Access-Token": token, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      location_id: item.locationId,
+      inventory_item_id: item.inventoryItemId,
+      available: item.available,
+    }),
+  });
+}
+```
+
+Even sequentially, this fires far faster than 2/s. Add any concurrency — `Promise.all`, a worker pool, a serverless function that scales out — and every instance runs its own counter, so "2 per second" silently becomes 2 × the number of instances. (We dug into that multi-instance failure mode in [Distributed Rate Limiting Without Redis](/blog/distributed-rate-limiting-without-redis).)
+
+You can sprinkle `setTimeout` delays and `Retry-After` handling through your loop, but it gets brittle the moment the job runs in more than one place.
+
+## Pacing Shopify writes with a Fliq buffer
+
+`inventory_levels/set.json` is a single endpoint where each call carries a different body — which is exactly the shape a **Fliq buffer** wants. A buffer is a durable queue pinned to one endpoint with a rate limit; you push updates into it from anywhere, and Fliq drains them to Shopify at the rate you set, honoring `Retry-After` along the way.
+
+Create the buffer once, at Shopify's 2/s limit:
+
+```bash
+curl -X POST https://api.fliq.sh/buffers \
+  -H "Authorization: Bearer $FLIQ_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "shopify-inventory-sync",
+    "url": "https://your-store.myshopify.com/admin/api/2025-01/inventory_levels/set.json",
+    "method": "POST",
+    "headers": {
+      "X-Shopify-Access-Token": "shpat_...",
+      "Content-Type": "application/json"
+    },
+    "rate_limit": 2,
+    "max_retries": 5,
+    "backoff": "exponential"
+  }'
+```
+
+`rate_limit: 2` means 2 requests per second — matching Shopify's leak rate exactly, so you ride right under the limit without tripping it.
+
+Then push every update as an item:
+
+```typescript
+async function enqueueInventoryUpdate(
+  bufferId: string,
+  update: { locationId: number; inventoryItemId: number; available: number }
+) {
+  await fetch(`https://api.fliq.sh/buffers/${bufferId}/items`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.FLIQ_API_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      body: JSON.stringify({
+        location_id: update.locationId,
+        inventory_item_id: update.inventoryItemId,
+        available: update.available,
+      }),
+    }),
+  });
+}
+```
+
+Push all 8,000 updates in a tight loop — your job finishes immediately — and Fliq feeds them to Shopify at 2/s, in order, retrying transient failures and backing off on any `429`.
+
+### What the buffer handles for you
+
+- **One shared 2/s limit** no matter how many workers enqueue — the pacing lives in Fliq, not in each instance.
+- **Honors `Retry-After`.** When Shopify says "wait 2 seconds," Fliq waits, instead of retrying into another 429 and getting your client throttled.
+- **Strict order, one in flight.** Updates apply oldest-first, one at a time — no racing two writes to the same SKU.
+- **Durable + retried.** A crash mid-sync loses nothing; every item records its status and attempts.
+
+<Callout type="info" title="On GraphQL">
+Shopify is steering bulk work toward the GraphQL Admin API and its cost-based limits. That's also a single endpoint (`/admin/api/2025-01/graphql.json`), so the same buffer pattern works — point the buffer there and pace requests conservatively to stay under your cost budget.
+</Callout>
+
+## The honest limitation
+
+A buffer is **fire-and-forget**: it records each call's status code, success/failure, and timing — but **not the response body**. You won't get the updated inventory object back from the buffer.
+
+That makes it a great fit for **writes and syncs where you act on success/failure**:
+
+- ✅ Bulk inventory / price / metafield updates, tag changes, bulk creates
+- ✅ Pushing many resource updates where you reconcile state later
+- ❌ Reads where you need the returned data inline
+- ❌ Workflows that depend on the new resource id immediately (use a `POST`-then-reconcile pattern, or Shopify's bulk operations, instead)
+
+| | Hand-rolled loop + Retry-After | Fliq buffer |
+| --- | --- | --- |
+| Correct across workers | No | Yes |
+| Honors Retry-After | Manual | Built in |
+| Strict ordering | No | Yes (one in flight) |
+| Survives a crash mid-sync | No | Yes |
+| Returns the response body | Yes | No (fire-and-forget) |
+
+## Wrapping up
+
+Shopify's 2-calls-per-second limit punishes bulk jobs hard, and the usual fixes — manual delays, `Retry-After` handling, a Redis lock to coordinate workers — are a lot of plumbing for "send these updates, slowly." A buffer collapses that to: set `rate_limit: 2`, push everything, and let Fliq pace it.
+
+<CTA text="Try Fliq buffers free — 100,000 executions/day during public beta" href="https://fliq.sh/sign-up" />
+
+## Further reading
+
+- [Distributed Rate Limiting Without Redis](/blog/distributed-rate-limiting-without-redis) — why in-memory limiters break across workers
+- [How to Handle Stripe API Rate Limits](/blog/stripe-api-rate-limits) — the same pattern for Stripe
+- [Shopify API rate limits](https://shopify.dev/docs/api/usage/rate-limits) — Shopify's official docs
