@@ -1,14 +1,7 @@
-// Bento grid layout:
-//  ┌──────────────────┬──────────┐
-//  │  One API Call    │  Retries │
-//  │  (col-2, row-2)  ├──────────┤
-//  │                  │  Observe │
-//  ├────────┬─────────┴──────────┤  ← actually col-1 + col-1 + col-1
-//  │Sub-sec │ Durable │ Cron     │
-//  └────────┴─────────┴──────────┘
+// Bento grid: one large "one API call" card + five capability cards.
 
 const codeLines = [
-  { indent: 0, tokens: [{ t: "kw", v: "POST" }, { t: "plain", v: " " }, { t: "str", v: "https://api.fliq.sh/v1/jobs" }] },
+  { indent: 0, tokens: [{ t: "kw", v: "POST" }, { t: "plain", v: " " }, { t: "str", v: "https://api.fliq.sh/jobs" }] },
   { indent: 0, tokens: [{ t: "key", v: "Content-Type" }, { t: "plain", v: ": " }, { t: "str", v: "application/json" }] },
   { indent: 0, tokens: [] },
   { indent: 0, tokens: [{ t: "brace", v: "{" }] },
@@ -40,7 +33,7 @@ const smallCards = [
       </svg>
     ),
     title: "Smart Retries",
-    description: "Exponential backoff, configurable max attempts. Failed jobs retry automatically — zero config required.",
+    description: "Exponential backoff, configurable max attempts. Failed jobs retry automatically — every attempt is recorded.",
   },
   {
     icon: (
@@ -49,7 +42,7 @@ const smallCards = [
       </svg>
     ),
     title: "Full Observability",
-    description: "Every attempt logged: HTTP status, duration, error, worker ID. Search and filter up to 1 year back.",
+    description: "Every attempt logged: HTTP status, duration, error, worker. Search and filter your execution history.",
   },
   {
     icon: (
@@ -57,8 +50,8 @@ const smallCards = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
       </svg>
     ),
-    title: "Sub-second Execution",
-    description: "Median dispatch latency under 10ms globally. Your jobs fire when you say they fire.",
+    title: "Fires on schedule",
+    description: "Jobs fire at the time you set — the scheduler polls continuously, so a missed tick never means a missed job.",
   },
   {
     icon: (
@@ -67,7 +60,7 @@ const smallCards = [
       </svg>
     ),
     title: "Durable by Design",
-    description: "Jobs and their full execution history retained for 1 year. Encrypted at rest, TLS 1.2+ in transit.",
+    description: "Jobs and their execution history live in Postgres — the single source of truth. TLS 1.2+ in transit.",
   },
   {
     icon: (
@@ -86,11 +79,10 @@ export default function Features() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight">
-            Everything you need to schedule at scale
+            Everything a scheduler should do — and nothing to run
           </h2>
           <p className="mt-4 text-white/60 max-w-xl mx-auto">
-            Built for reliability from day one. No queues to manage, no
-            infrastructure to maintain.
+            No queue to manage, no worker to deploy, no retry code to maintain.
           </p>
         </div>
 
@@ -138,12 +130,11 @@ export default function Features() {
             </div>
           </div>
 
-          {/* ── Small cards: right column + bottom row ───────────────────── */}
+          {/* ── Capability cards ───────────────────── */}
           {smallCards.map((card, i) => (
             <div
               key={card.title}
               className={`rounded-2xl border border-white/10 bg-white/[0.03] p-5 flex flex-col gap-3 group hover:border-indigo-500/30 hover:bg-white/[0.05] transition-colors ${
-                // Last three go across the bottom row on md+
                 i >= 2 ? "md:col-span-1" : ""
               }`}
             >

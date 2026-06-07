@@ -162,3 +162,31 @@
     transparent 100%
   );
 }
+
+/* ─── Scheduler hero visual ───────────────────────────────────────────────── */
+/* Rows enter the live execution feed from the top. */
+@keyframes row-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-row-in {
+  animation: row-in 0.35s ease-out;
+}
+
+/* A scanning highlight that sweeps the timeline track. */
+@keyframes timeline-scan {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-timeline-scan {
+  animation: timeline-scan 4s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-row-in,
+  .animate-timeline-scan,
+  .animate-glow-breathe {
+    animation: none;
+  }
+}

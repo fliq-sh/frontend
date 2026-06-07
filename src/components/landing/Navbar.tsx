@@ -5,16 +5,19 @@ import { useState } from "react";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import FliqIcon from "@/components/ui/FliqIcon";
+import LiveStatus from "./LiveStatus";
+import { SITE } from "@/lib/site";
 import { Menu, X } from "lucide-react";
 
-const companyLinks = [
-  { label: "About", href: "/about", description: "Who we are and why we built Fliq" },
-  { label: "Blog", href: "/blog", description: "Writing on reliability, scheduling, and engineering" },
-  { label: "Changelog", href: "/changelog", description: "What shipped recently" },
+const resourceLinks = [
+  { label: "Blog", href: "/blog", description: "Writing on reliability and scheduling", external: false },
+  { label: "Cron tool", href: "/tools/cron", description: "Build & decode cron expressions", external: false },
+  { label: "Status", href: "/status", description: "Live uptime of the production API", external: false },
+  { label: "GitHub", href: SITE.github.org, description: "Fliq is open source", external: true },
 ];
 
 export default function Navbar() {
-  const [companyOpen, setCompanyOpen] = useState(false);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -35,33 +38,41 @@ export default function Navbar() {
           <Link href="/pricing" className="hover:text-white transition-colors">
             Pricing
           </Link>
+          <Link href="/vs" className="hover:text-white transition-colors">
+            Compare
+          </Link>
 
-          {/* Company dropdown */}
+          {/* Resources dropdown */}
           <div
             className="relative"
-            onMouseEnter={() => setCompanyOpen(true)}
-            onMouseLeave={() => setCompanyOpen(false)}
+            onMouseEnter={() => setResourcesOpen(true)}
+            onMouseLeave={() => setResourcesOpen(false)}
           >
             <button className="flex items-center gap-1 hover:text-white transition-colors">
-              Company
+              Resources
               <svg
-                className={`w-3 h-3 transition-transform duration-150 ${companyOpen ? "rotate-180" : ""}`}
+                className={`w-3 h-3 transition-transform duration-150 ${resourcesOpen ? "rotate-180" : ""}`}
                 fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-7 7-7-7" />
               </svg>
             </button>
 
-            {companyOpen && (
+            {resourcesOpen && (
               <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3">
-                <div className="w-56 rounded-xl border border-white/10 bg-[#09090b]/95 backdrop-blur-md shadow-xl overflow-hidden">
-                  {companyLinks.map((item) => (
+                <div className="w-60 rounded-xl border border-white/10 bg-[#09090b]/95 backdrop-blur-md shadow-xl overflow-hidden">
+                  {resourceLinks.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
+                      target={item.external ? "_blank" : undefined}
+                      rel={item.external ? "noopener noreferrer" : undefined}
                       className="flex flex-col gap-0.5 px-4 py-3 hover:bg-white/5 transition-colors"
                     >
-                      <span className="text-sm text-white/80 font-medium">{item.label}</span>
+                      <span className="text-sm text-white/80 font-medium">
+                        {item.label}
+                        {item.external && <span className="text-white/30"> ↗</span>}
+                      </span>
                       <span className="text-xs text-white/40">{item.description}</span>
                     </Link>
                   ))}
@@ -71,8 +82,12 @@ export default function Navbar() {
           </div>
         </nav>
 
-        {/* Right — auth + mobile toggle */}
+        {/* Right — status + auth + mobile toggle */}
         <div className="flex items-center gap-3">
+          <div className="hidden lg:block">
+            <LiveStatus variant="pill" />
+          </div>
+
           {/* Desktop auth buttons */}
           <div className="hidden md:flex items-center gap-3">
             <SignedOut>
@@ -80,7 +95,7 @@ export default function Navbar() {
                 <Link href="/sign-in">Sign in</Link>
               </Button>
               <Button size="sm" asChild>
-                <Link href="/sign-up">Start building</Link>
+                <Link href="/sign-up">Start free</Link>
               </Button>
             </SignedOut>
             <SignedIn>
@@ -114,33 +129,29 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-white/10 bg-[#09090b]/95 backdrop-blur-md">
           <nav className="flex flex-col px-4 py-3 gap-1">
-            <Link
-              href="/docs"
-              className="px-3 py-2.5 rounded-md text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
-              onClick={() => setMobileOpen(false)}
-            >
+            <Link href="/docs" className="px-3 py-2.5 rounded-md text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors" onClick={() => setMobileOpen(false)}>
               Docs
             </Link>
-            <Link
-              href="/pricing"
-              className="px-3 py-2.5 rounded-md text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
-              onClick={() => setMobileOpen(false)}
-            >
+            <Link href="/pricing" className="px-3 py-2.5 rounded-md text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors" onClick={() => setMobileOpen(false)}>
               Pricing
             </Link>
+            <Link href="/vs" className="px-3 py-2.5 rounded-md text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors" onClick={() => setMobileOpen(false)}>
+              Compare
+            </Link>
 
-            {/* Company section */}
             <div className="px-3 pt-3 pb-1">
-              <p className="text-xs text-white/30 uppercase tracking-wider">Company</p>
+              <p className="text-xs text-white/30 uppercase tracking-wider">Resources</p>
             </div>
-            {companyLinks.map((item) => (
+            {resourceLinks.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
+                target={item.external ? "_blank" : undefined}
+                rel={item.external ? "noopener noreferrer" : undefined}
                 className="px-3 py-2.5 rounded-md text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
                 onClick={() => setMobileOpen(false)}
               >
-                {item.label}
+                {item.label}{item.external && " ↗"}
               </Link>
             ))}
           </nav>
@@ -152,7 +163,7 @@ export default function Navbar() {
                 <Link href="/sign-in" onClick={() => setMobileOpen(false)}>Sign in</Link>
               </Button>
               <Button size="sm" className="flex-1" asChild>
-                <Link href="/sign-up" onClick={() => setMobileOpen(false)}>Start building</Link>
+                <Link href="/sign-up" onClick={() => setMobileOpen(false)}>Start free</Link>
               </Button>
             </div>
           </SignedOut>

@@ -3,19 +3,19 @@ const steps = [
     number: "01",
     title: "Schedule",
     description:
-      "Send one API call (or use the dashboard). Set the URL, method, and fire time. One-time or recurring — your choice.",
+      "POST a target URL, method, body, and a fire time — a one-off ISO timestamp or a cron expression. One call, or use the dashboard.",
   },
   {
     number: "02",
-    title: "We Execute",
+    title: "Fire & retry",
     description:
-      "Fliq fires your endpoint on time, globally, with automatic retries on failure. No workers to manage, no queues to babysit.",
+      "Fliq calls your endpoint on time. If it fails, it retries with backoff up to your limit. A reaper reschedules anything a crashed worker dropped.",
   },
   {
     number: "03",
-    title: "Full Visibility",
+    title: "Inspect",
     description:
-      "Every attempt logged: status code, duration, error. Search and filter up to 1 year back. Know exactly what happened and when.",
+      "Every attempt is recorded — status code, duration, response. Query the full history by API or browse it in the dashboard.",
   },
 ];
 
@@ -35,7 +35,8 @@ export default function HowItWorks() {
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight">How it works</h2>
           <p className="mt-4 text-white/60 max-w-xl mx-auto">
-            From zero to scheduled in under 5 minutes.
+            From one request to a recorded execution — no infrastructure in
+            between.
           </p>
         </div>
 

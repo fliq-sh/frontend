@@ -1,34 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-const faqs = [
-  {
-    question: "How does billing work with retries?",
-    answer:
-      "Each execution attempt — including retries — uses one credit. If a job fails and retries 3 times before succeeding, that's 4 credits. During the beta you get 100,000 free credits per day, so even aggressive retry policies won't be a problem.",
-  },
-  {
-    question: "How fast do jobs fire?",
-    answer:
-      "Sub-second. Median global dispatch latency is under 10ms from our nearest edge region to your endpoint. We continuously monitor and alert on latency regressions.",
-  },
-  {
-    question: "What happens if my endpoint is down?",
-    answer:
-      "Fliq retries with exponential backoff up to your configured limit. You see every attempt and its outcome — HTTP status code, response body snippet, duration — in the dashboard.",
-  },
-  {
-    question: "Is my data safe?",
-    answer:
-      "All API traffic is TLS 1.2+. Execution history is stored encrypted at rest. Enterprise plans support running on your own infrastructure so data never leaves your environment.",
-  },
-  {
-    question: "Do I need to change my existing codebase?",
-    answer:
-      "No. Fliq calls your existing HTTP endpoints. If it accepts a webhook today, it works with Fliq today. No SDK required, no agent to install.",
-  },
-];
+import { faqs } from "./faq-data";
 
 export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);

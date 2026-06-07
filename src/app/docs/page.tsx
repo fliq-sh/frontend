@@ -51,8 +51,8 @@ export default function DocsIndex() {
       <DocH2>How Fliq executes your jobs</DocH2>
       <DocUL>
         <DocLI>
-          At the scheduled time, Fliq dispatches the HTTP request from the edge region
-          geographically closest to your endpoint.
+          At the scheduled time, a Fliq worker claims the job and dispatches the HTTP
+          request to your endpoint.
         </DocLI>
         <DocLI>
           If your endpoint returns a non-2xx status or times out, Fliq retries automatically
