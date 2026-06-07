@@ -1,77 +1,77 @@
-"use client";
-
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import dynamic from "next/dynamic";
-
-// Load HeroGlobe client-only — COBE needs WebGL which doesn't exist on the server.
-// This also defers heavy WebGL init until after the page is interactive.
-const HeroGlobe = dynamic(() => import("./HeroGlobe"), {
-  ssr: false,
-  loading: () => <div className="w-full h-full rounded-full bg-indigo-950/20" />,
-});
+import LiveStatus from "./LiveStatus";
+import SchedulerVisual from "./SchedulerVisual";
+import { BETA } from "@/lib/site";
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden">
-      {/* Grid lines — fade out at bottom via gradient overlay below */}
+    <section className="relative overflow-hidden px-4 pt-16 pb-20 sm:pt-24">
+      {/* Grid lines */}
       <div className="absolute inset-0 bg-grid-lines pointer-events-none z-0" />
-
-      {/* Animated indigo/violet glow behind globe */}
+      {/* Indigo glow */}
       <div
         className="absolute pointer-events-none z-0 animate-glow-breathe"
         style={{
-          bottom: "-5%",
+          top: "-10%",
           left: "50%",
-          transform: "translateX(-53%)",
-          width: "860px",
-          height: "480px",
+          transform: "translateX(-50%)",
+          width: "900px",
+          height: "520px",
           borderRadius: "50%",
           background:
-            "radial-gradient(ellipse at 48% 60%, rgba(99,102,241,0.22) 0%, rgba(139,92,246,0.10) 40%, transparent 70%)",
-          filter: "blur(8px)",
-          willChange: "opacity",
+            "radial-gradient(ellipse at 50% 40%, rgba(99,102,241,0.18) 0%, rgba(139,92,246,0.08) 45%, transparent 72%)",
+          filter: "blur(10px)",
         }}
       />
-
-      {/* Background gradient — fades grid + glow into page bg at bottom */}
+      {/* Fade grid into bg */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#09090b] pointer-events-none z-10" />
 
-      <div className="relative z-20 flex flex-col items-center gap-6 max-w-3xl mx-auto pt-20 sm:pt-24">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/60">
-          <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
-          30+ global edge regions
+      <div className="relative z-20 max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+        {/* ── Copy ── */}
+        <div className="flex flex-col items-start gap-6 text-left max-w-xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+            {BETA.headline} — {BETA.executionsPerDayLabel}
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.05]">
+            Schedule any HTTP request.
+            <br />
+            Fliq runs it{" "}
+            <span className="bg-gradient-to-r from-indigo-300 to-violet-400 bg-clip-text text-transparent">
+              on time
+            </span>
+            .
+          </h1>
+
+          <p className="text-lg text-white/60 leading-relaxed">
+            Cron jobs and scheduled webhooks without running infrastructure.
+            Automatic retries, crash recovery, and a full per-execution history —
+            in one API call. Built for backend teams and the AI agents they ship.
+          </p>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Button size="lg" asChild>
+              <Link href="/sign-up">Start free →</Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link href="#how-it-works">See how it works</Link>
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1">
+            <LiveStatus variant="inline" />
+            <span className="text-xs text-white/30">
+              {BETA.pill}
+            </span>
+          </div>
         </div>
 
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight">
-          The backbone your{" "}
-          <span className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
-            AI agents
-          </span>{" "}
-          are missing.
-        </h1>
-
-        <p className="text-lg text-white/60 max-w-xl">
-          Schedule, retry, and orchestrate any HTTP request with one API call.
-        </p>
-
-        <div className="flex items-center gap-4">
-          <Button size="lg" asChild>
-            <Link href="/app">Start Building →</Link>
-          </Button>
-          <Button size="lg" variant="outline" asChild>
-            <Link href="#how-it-works">See how it works</Link>
-          </Button>
+        {/* ── Live scheduler visual ── */}
+        <div className="w-full">
+          <SchedulerVisual />
         </div>
-
-        <p className="text-xs text-white/30 tracking-widest uppercase">
-          30+ regions &nbsp;·&nbsp; &lt;10ms median latency &nbsp;·&nbsp; 99.9% SLA
-        </p>
-      </div>
-
-      {/* Globe + arc overlay */}
-      <div className="relative z-10 mt-6 w-full max-w-[920px] mx-auto aspect-[1/1]">
-        <HeroGlobe />
       </div>
     </section>
   );

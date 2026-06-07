@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { SITE } from "@/lib/site";
 
 const features = [
   "Deploy on your own metal or any cloud",
   "No data leaves your infrastructure",
-  "Dedicated support & SLA (99.99%)",
+  "A dedicated support channel and SLA",
   "SSO / SAML integration",
   "Custom data retention policies",
 ];
@@ -32,18 +33,19 @@ export default function Enterprise() {
             {/* Left */}
             <div>
               <p className="text-xs text-white/40 uppercase tracking-widest mb-4">
-                Enterprise
+                Self-hosted &amp; enterprise
               </p>
               <h2 className="text-3xl font-bold tracking-tight mb-4">
-                Enterprise-grade reliability, on your terms.
+                Run Fliq on your own infrastructure.
               </h2>
               <p className="text-white/60 leading-relaxed mb-8">
-                Run Fliq on your own Kubernetes cluster, your cloud account, or
-                air-gapped on-prem. Same API, full control. Dedicated SLA, SSO,
-                and audit logs included.
+                Fliq is Postgres-native and open source — so the whole stack can
+                run on your Kubernetes cluster, your cloud account, or
+                air-gapped on-prem. Same API, full control. Self-hosted and
+                enterprise plans land after the beta.
               </p>
               <Button size="lg" asChild>
-                <Link href="mailto:enterprise@fliq.dev">Talk to us →</Link>
+                <Link href={`mailto:${SITE.enterpriseEmail}`}>Talk to us →</Link>
               </Button>
             </div>
 

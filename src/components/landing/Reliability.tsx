@@ -1,25 +1,20 @@
-const stats = [
-  { value: "99.9%", label: "Uptime SLA" },
-  { value: "<10ms", label: "Median global latency" },
-  { value: "1 year", label: "Execution history retained" },
-  { value: "30+", label: "Global edge regions" },
-];
+import LiveStatus from "./LiveStatus";
 
 const cards = [
   {
-    title: "Reliability",
+    title: "At-least-once delivery",
     description:
-      "We guarantee each job executes exactly once. Crashed workers are detected automatically and jobs are rescheduled without any action from you. Built to handle 1M+ jobs per second.",
+      "Workers claim each job with FOR UPDATE SKIP LOCKED, so two workers never run it at once. A crashed or failed run is retried — delivery is at-least-once, so send an idempotency key and your endpoint stays safe.",
   },
   {
-    title: "Observability",
+    title: "Automatic crash recovery",
     description:
-      "Per-job attempt logs, HTTP response codes, durations, and errors exposed in the dashboard and API. Prometheus metrics for your own monitoring stack.",
+      "Running workers heartbeat every few seconds. A reaper detects a worker that died mid-job and reschedules the work — no stuck jobs, no manual intervention.",
   },
   {
-    title: "Durability",
+    title: "Every attempt recorded",
     description:
-      "Every job and every execution attempt is stored for up to 1 year. Search, filter, replay. Full audit trail, always available.",
+      "Each fire and each retry is written to the database before and after it runs: status code, duration, response. Query the full history by API or in the dashboard.",
   },
 ];
 
@@ -27,31 +22,31 @@ export default function Reliability() {
   return (
     <section className="py-24 px-4 border-t border-white/10">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tight">
-            Built for production from day one
+            Reliability you can watch, not just read about
           </h2>
           <p className="mt-4 text-white/60 max-w-xl mx-auto">
-            The numbers your SRE team will ask for — already exceeded.
+            We won&apos;t quote you an SLA we can&apos;t prove yet. Here&apos;s
+            the live status of the production API instead.
           </p>
         </div>
 
-        {/* Big stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="text-center p-6 rounded-2xl border border-white/10 bg-white/[0.03]"
+        {/* Live status panel */}
+        <div className="mb-16 flex justify-center">
+          <div className="inline-flex flex-wrap items-center justify-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-4">
+            <LiveStatus variant="inline" />
+            <span className="text-white/20">·</span>
+            <a
+              href="/status"
+              className="text-sm text-indigo-300 hover:text-indigo-200 transition-colors"
             >
-              <div className="text-4xl font-bold text-white mb-2">
-                {stat.value}
-              </div>
-              <div className="text-sm text-white/50">{stat.label}</div>
-            </div>
-          ))}
+              Full status &amp; uptime →
+            </a>
+          </div>
         </div>
 
-        {/* Explanation cards */}
+        {/* How reliability actually works */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {cards.map((card) => (
             <div

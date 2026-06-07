@@ -1,7 +1,38 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
+import { SITE, BETA } from "@/lib/site";
+
+export const metadata: Metadata = {
+  title: "Pricing — free during public beta",
+  description:
+    "Fliq is free during the public beta: 100,000 executions per day, no credit card. Pay-as-you-go ($1 / 100k) and enterprise plans come later.",
+  alternates: { canonical: "/pricing" },
+  openGraph: {
+    title: "Fliq pricing — free during public beta",
+    description:
+      "100,000 executions/day free during beta. No card. Pay-as-you-go and enterprise later.",
+    url: "/pricing",
+  },
+};
+
+const pricingJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: "Fliq",
+  description: SITE.description,
+  brand: { "@type": "Brand", name: "Fliq" },
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+    availability: "https://schema.org/InStock",
+    description: `Free during public beta — ${BETA.executionsPerDayLabel}, no credit card.`,
+    url: `${SITE.url}/pricing`,
+  },
+};
 
 const tiers = [
   {
@@ -34,7 +65,7 @@ const tiers = [
       "1-year execution history",
       "10 max retries per job",
       "Email support",
-      "99.9% SLA",
+      "Published SLA at general availability",
     ],
   },
   {
@@ -50,7 +81,7 @@ const tiers = [
       "Deploy on your own infra",
       "Custom data retention",
       "Custom max retries",
-      "Dedicated SLA (99.99%)",
+      "Dedicated support & SLA",
       "SSO / SAML + audit logs",
     ],
   },
@@ -87,6 +118,10 @@ const pricingFaqs = [
 export default function PricingPage() {
   return (
     <div className="flex flex-col min-h-screen bg-[#09090b] text-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingJsonLd) }}
+      />
       <Navbar />
 
       <main className="pt-14">
@@ -226,7 +261,7 @@ export default function PricingPage() {
                 },
                 {
                   label: "SLA",
-                  values: ["—", "99.9%", "99.99%"],
+                  values: ["Live status page", "Published at GA", "Custom"],
                 },
                 {
                   label: "Support",
@@ -295,7 +330,7 @@ export default function PricingPage() {
                 <Link href="/sign-up">Start for free →</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="mailto:enterprise@fliq.dev">Talk to sales</Link>
+                <Link href="mailto:enterprise@fliq.sh">Talk to sales</Link>
               </Button>
             </div>
           </div>

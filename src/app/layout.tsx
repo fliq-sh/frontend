@@ -4,6 +4,7 @@ import Script from "next/script";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SITE } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,9 +18,88 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fliq — Serverless HTTP Workflows",
-  description:
-    "Schedule any HTTP action. Execute it globally. Full visibility, automatic retries.",
+  metadataBase: new URL(SITE.url),
+  title: {
+    default: "Fliq — Cron jobs & scheduled webhooks for developers",
+    template: "%s — Fliq",
+  },
+  description: SITE.description,
+  applicationName: SITE.name,
+  keywords: [
+    "cron job service",
+    "scheduled webhooks",
+    "HTTP job scheduler",
+    "cron as a service",
+    "EasyCron alternative",
+    "cron-job.org alternative",
+    "QStash alternative",
+    "schedule AI agents",
+    "task scheduler API",
+  ],
+  authors: [{ name: "Fliq" }],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: SITE.name,
+    title: "Fliq — Reliable HTTP job scheduling for developers",
+    description: SITE.ogDescription,
+    url: SITE.url,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Fliq — Reliable HTTP job scheduling for developers",
+    description: SITE.ogDescription,
+    creator: SITE.twitter,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
+};
+
+// Site-wide structured data: who we are, the site (with sitelinks search),
+// and the product itself.
+const orgJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE.url}/#organization`,
+      name: SITE.name,
+      url: SITE.url,
+      sameAs: [SITE.github.org],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE.url}/#website`,
+      url: SITE.url,
+      name: SITE.name,
+      publisher: { "@id": `${SITE.url}/#organization` },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${SITE.url}/blog?q={search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "SoftwareApplication",
+      name: SITE.name,
+      applicationCategory: "DeveloperApplication",
+      operatingSystem: "Any",
+      description: SITE.description,
+      url: SITE.url,
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+        description: "Free during public beta — 100,000 executions/day",
+      },
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -33,6 +113,10 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#09090b] text-white`}
         >
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+          />
           <TooltipProvider>{children}</TooltipProvider>
           <Script
             defer

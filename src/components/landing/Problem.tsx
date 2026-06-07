@@ -1,13 +1,13 @@
 const problems = [
-  "You built a great product. Now every action needs to happen at exactly the right moment.",
-  "Managing Kafka, Redis queues, cron jobs, and retry logic takes a team. And it still breaks.",
-  "When a job silently fails at 3 AM, your users feel it first.",
+  "Your app needs things to happen later — a reminder, a charge, a webhook, a sync. So you reach for cron on a server.",
+  "But that crontab has no retries, no history, and no idea a run failed. When the box restarts, the jobs just stop.",
+  "So you bolt on a queue, a worker, a heartbeat, a dead-letter table… and now you maintain a scheduler instead of your product.",
 ];
 
 const solutions = [
-  "One API call to schedule any HTTP action",
-  "Automatic retries with backoff — zero config",
-  "Full execution history, every attempt, forever",
+  "One API call schedules any HTTP request — once or on a cron",
+  "Automatic retries with backoff — every attempt recorded",
+  "Crash recovery built in — no run silently disappears",
 ];
 
 export default function Problem() {
@@ -23,14 +23,16 @@ export default function Problem() {
       />
       <div className="max-w-7xl mx-auto relative">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold tracking-tight">Why Fliq?</h2>
+          <h2 className="text-3xl font-bold tracking-tight">
+            Scheduling is a solved problem. You shouldn&apos;t re-solve it.
+          </h2>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Problem side */}
           <div>
             <p className="text-xs text-white/40 uppercase tracking-widest mb-6">
-              The problem
+              The trap
             </p>
             <div className="space-y-6">
               {problems.map((text, i) => (
@@ -47,7 +49,7 @@ export default function Problem() {
           {/* Solution side */}
           <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-8">
             <p className="text-xs text-indigo-400/60 uppercase tracking-widest mb-6">
-              The solution
+              With Fliq
             </p>
             <p className="text-2xl font-bold tracking-tight mb-8">
               One API. Any schedule. Zero ops.

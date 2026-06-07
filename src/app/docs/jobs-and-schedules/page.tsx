@@ -16,7 +16,7 @@ export default async function JobsAndSchedules() {
 
       <DocH2>Jobs — one-time executions</DocH2>
       <DocP>
-        A job fires exactly once at the time you specify. Use jobs when a specific event in
+        A job is scheduled to run once, at the time you specify (retries aside). Use jobs when a specific event in
         your system triggers a future action: charge a card on a start date, send a follow-up
         email 48 hours after signup, expire a trial.
       </DocP>
