@@ -22,16 +22,19 @@ export default function Navbar() {
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-[#09090b]/80 backdrop-blur-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
+      {/* 3-column grid: equal 1fr side columns keep the center nav truly
+          centered regardless of how wide the logo or the right cluster get —
+          so a status-pill width change can never shift the menu. */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 grid grid-cols-[1fr_auto_1fr] items-center">
 
         {/* Left — logo */}
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 justify-self-start">
           <FliqIcon size={28} />
           <span className="text-base font-semibold tracking-tight">Fliq</span>
         </Link>
 
         {/* Center — nav (desktop only) */}
-        <nav className="hidden md:flex items-center justify-center gap-6 text-sm text-white/60">
+        <nav className="hidden md:flex items-center justify-self-center gap-6 text-sm text-white/60">
           <Link href="/docs" className="hover:text-white transition-colors">
             Docs
           </Link>
@@ -83,7 +86,7 @@ export default function Navbar() {
         </nav>
 
         {/* Right — status + auth + mobile toggle */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 justify-self-end">
           <div className="hidden lg:block">
             <LiveStatus variant="pill" />
           </div>

@@ -87,17 +87,11 @@ export default function LiveStatus({
       }
       className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs transition-colors hover:brightness-125 ${m.ring}`}
     >
+      {/* Constant label + colored dot — the pill never changes width as the
+          state changes, so it can't reflow the navbar. State is read from the
+          dot/text color (full label is in the title and on /status). */}
       <Dot state={state} />
-      <span className="hidden sm:inline text-white/70">Status</span>
-      <span className={`font-medium ${m.text}`}>
-        {state === "loading"
-          ? "—"
-          : state === "operational"
-            ? "Operational"
-            : state === "degraded"
-              ? "Degraded"
-              : "Down"}
-      </span>
+      <span className={`font-medium ${m.text}`}>Status</span>
     </Link>
   );
 }
