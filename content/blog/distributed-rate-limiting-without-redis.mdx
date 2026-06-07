@@ -1,0 +1,148 @@
+---
+title: "Distributed Rate Limiting Without Redis"
+description: "In-memory rate limiters silently break the moment you run more than one instance. Here's why — and how to throttle outbound API calls without standing up Redis."
+date: "2026-06-07"
+author: "Erlan"
+tags: ["rate-limiting", "serverless", "architecture", "engineering"]
+---
+
+You added a rate limiter. You tested it locally. It worked. Then you deployed to Vercel, or scaled your service to three pods, and your "100 requests per minute" limit started sending 300. The third-party API you were trying to be polite to began returning `429 Too Many Requests`, and some of them started blocking you outright.
+
+Nothing in your code changed. What changed is that there is now more than one copy of it running, and your rate limiter has no idea the others exist.
+
+This post is about why that happens, why the usual fix (Redis) is heavier than the problem deserves, and a different way to think about throttling **outbound** calls — the requests *your* app makes to someone else's API.
+
+<Callout type="info" title="Outbound, not inbound">
+This is about limiting the requests you send to a third-party API (OpenAI, Stripe, Shopify, a partner webhook). That's a different problem from protecting your own API from abusive callers — which is what API gateways like Kong or Cloudflare do.
+</Callout>
+
+## Why in-memory rate limiters break when you scale
+
+Almost every rate-limiting library keeps its state in memory. A counter, a token bucket, a queue of pending jobs — all living inside the process. Here's the shape of it, using the popular Node library [Bottleneck](https://github.com/SGrondin/bottleneck):
+
+```typescript
+import Bottleneck from "bottleneck";
+
+// "Send at most 5 requests per second to the partner API."
+const limiter = new Bottleneck({
+  reservoir: 5,
+  reservoirRefreshAmount: 5,
+  reservoirRefreshInterval: 1000,
+  maxConcurrent: 5,
+});
+
+async function callPartner(payload: unknown) {
+  return limiter.schedule(() =>
+    fetch("https://api.partner.com/v1/ingest", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    })
+  );
+}
+```
+
+On one machine, this is correct. The `reservoir` is a token bucket, and every call draws it down.
+
+Now run two copies. Each process gets its *own* `limiter`, its *own* reservoir of 5. Neither can see the other. Two instances send 10 req/s. Ten instances send 50. The per-instance limit silently becomes `limit × number_of_instances`, and serverless makes it worse — platforms like Lambda and Vercel spin up a fresh container per concurrent invocation, so the multiplier isn't a number you control or even know.
+
+The limiter isn't buggy. It's solving a single-process problem in a multi-process world.
+
+## The usual fix, and why it's more than you wanted
+
+The textbook answer is to move the counter out of the process and into a store every instance shares. In practice that means Redis: each instance asks Redis for a token before it makes the call, Redis decrements an atomic counter, and the global limit holds.
+
+That works. Bottleneck even supports it via Redis clustering. But look at what you've signed up for:
+
+- **A Redis instance to run, pay for, and monitor.** ElastiCache, Upstash, or self-hosted — either way it's a new stateful dependency on the hot path of every outbound call.
+- **Atomic correctness is on you.** Naive `GET` then `SET` races under load; you end up writing or copying Lua scripts to make the check-and-decrement atomic.
+- **It still isn't durable.** This is the part people miss. Even with Redis clustering, Bottleneck's own docs are explicit: *"Queued jobs are NOT stored on Redis. They are local to each limiter... Exiting the Node.js process will lose those jobs."* Redis coordinates the *limit*, but the *queue of work waiting its turn* still lives in process memory. In an environment where processes are killed and recycled constantly — which is to say, serverless — that queue evaporates on every redeploy and scale-down.
+
+So you've added infrastructure and you *still* drop work when an instance dies. There's even a recurring [Hacker News argument](https://news.ycombinator.com/item?id=44799823) that Redis is the wrong tool for rate limiting in the first place. The deeper issue is that you're trying to hold a *shared, durable queue* inside an *ephemeral, unshared* runtime. No amount of Redis fixes that mismatch — it just relocates the counter.
+
+## A different model: take the limit out of your process entirely
+
+Step back. What you actually want is:
+
+> "Here are N requests for the partner API. Send them, no faster than 5 per second, retry the ones that fail, back off if the API says it's overloaded, and don't lose any if my server restarts."
+
+Notice that none of that needs to happen *inside* your application. The pacing, the queue, the retries, the backoff — that's a job you can hand off. Once you do, the multi-instance problem disappears by construction: it doesn't matter how many copies of your app are running, because none of them hold the limit anymore.
+
+This is the idea behind a Fliq **buffer**. A buffer is a hosted, durable queue pinned to one target endpoint, with a rate limit attached. You push requests into it from anywhere — one instance or fifty — and Fliq drains them to the target at the rate you set.
+
+### How it works
+
+You create a buffer once, pointing at the API you need to be gentle with:
+
+```bash
+curl -X POST https://api.fliq.sh/v1/buffers \
+  -H "Authorization: Bearer $FLIQ_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "partner-ingest",
+    "url": "https://api.partner.com/v1/ingest",
+    "method": "POST",
+    "headers": { "Authorization": "Bearer PARTNER_KEY" },
+    "rate_limit": 5,
+    "max_retries": 3,
+    "backoff": "exponential"
+  }'
+```
+
+`rate_limit` is in **requests per second**. Then, from any number of instances, you push payloads into the buffer instead of calling the partner directly:
+
+```typescript
+async function enqueuePartnerCall(bufferId: string, payload: unknown) {
+  await fetch(`https://api.fliq.sh/v1/buffers/${bufferId}/items`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.FLIQ_API_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ body: JSON.stringify(payload) }),
+  });
+}
+```
+
+Every instance pushes freely. Fliq releases the requests to the partner in order, never faster than 5 per second **in total**, because the limit lives in one place — not in N copies of your process.
+
+### What the buffer handles that a library can't
+
+- **One shared limit, by construction.** The rate is enforced by a token bucket in Fliq's database, drawn down atomically across all of Fliq's own workers. Your instance count is irrelevant. (No Redis on your side — and none on ours either; it's plain Postgres.)
+- **Durable.** Pushed items are persisted before they're acknowledged. A redeploy, a crash, a scale-to-zero on your side loses nothing — the queue isn't in your memory.
+- **It listens to the API.** When the target returns `429`, Fliq reads the `Retry-After` header and reschedules that item for later instead of hammering. Static client-side pacing can't adapt to the server telling you to slow down; this does.
+- **Strict order, one in flight.** Items drain oldest-first, one at a time per buffer, so a downstream that hates concurrency gets a clean, serial stream.
+- **Full history + retries.** Every attempt — status code, error, timing — is recorded and queryable, and failures retry with backoff automatically.
+
+## When this fits — and when it doesn't
+
+A buffer is **asynchronous**. You hand off a request and Fliq delivers it on its own schedule; you don't sit and wait for the partner's response inline. That makes it a great fit for a specific (large) class of work:
+
+- Bulk syncs and backfills against a rate-limited API
+- Fanning out webhooks or notifications to many recipients
+- Enrichment / batch jobs (e.g. scoring thousands of records through an LLM API)
+- Anything you'd otherwise stuff into a queue + worker just to pace it
+
+It is **not** the tool for a synchronous hot path — if a user is staring at a spinner waiting for that exact API response, you need an in-process call, and there a Redis-backed limiter (or just a higher API tier) is the right answer. Use the right tool: buffers are for work that can happen *soon*, not *right now*.
+
+| | In-memory library | Redis + library | Fliq buffer |
+| --- | --- | --- | --- |
+| Correct across instances | No | Yes | Yes |
+| Infra to run | None | Redis | None |
+| Survives process restart | No | No (queue is local) | Yes |
+| Adapts to 429 / Retry-After | Manual | Manual | Built in |
+| Execution history | No | No | Yes |
+| Synchronous responses | Yes | Yes | No (async) |
+
+## Wrapping up
+
+In-memory rate limiters don't scale because the limit lives in a place that gets copied. Redis fixes the counter but not the durability, and adds a dependency to every call. For outbound, asynchronous work, the cleanest move is to stop holding the limit in your application at all — push the requests somewhere durable that paces them for you.
+
+That's what buffers are for: one shared rate limit, nothing to run, and not a single dropped request when your instances come and go.
+
+<CTA text="Try Fliq buffers free — 100,000 executions/day during public beta" href="https://fliq.sh/sign-up" />
+
+## Further reading
+
+- [Fliq API reference](/docs/api-reference) — full buffer and job API
+- [How to Schedule Background Jobs in Cloudflare Workers](/blog/schedule-background-jobs-cloudflare-workers) — another async-HTTP pattern with Fliq
+- [Bottleneck](https://github.com/SGrondin/bottleneck) — the Node rate-limiting library referenced above
