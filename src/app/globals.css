@@ -146,6 +146,15 @@
   background-size: 32px 32px;
 }
 
+/* ─── Hide scrollbars (horizontal filter rails, mobile tab strips) ────────── */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* ─── Glow animation ──────────────────────────────────────────────────────── */
 @keyframes glow-breathe {
   0%, 100% { opacity: 1; }

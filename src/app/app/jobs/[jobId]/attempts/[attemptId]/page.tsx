@@ -117,7 +117,7 @@ export default function AttemptDetailPage() {
   if (error || !job || !attempt) {
     return (
       <div className="max-w-2xl mx-auto flex flex-col gap-4">
-        <Link href="/app" className="text-sm text-white/40 hover:text-white/60 flex items-center gap-1">
+        <Link href="/app/jobs" className="text-sm text-white/40 hover:text-white/60 flex items-center gap-1">
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to Jobs
         </Link>
@@ -145,7 +145,7 @@ export default function AttemptDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/app" className="text-white/40 hover:text-white/60 transition-colors">
+          <Link href="/app/jobs" className="text-white/40 hover:text-white/60 transition-colors">
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <h1 className="text-lg font-semibold">

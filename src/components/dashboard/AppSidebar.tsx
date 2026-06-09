@@ -5,7 +5,18 @@ import { usePathname } from "next/navigation";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import FliqIcon from "@/components/ui/FliqIcon";
-import { Zap, CalendarClock, Layers, Settings, ChevronUp, LogOut, BookOpen, CreditCard } from "lucide-react";
+import {
+  LayoutDashboard,
+  Zap,
+  CalendarClock,
+  Layers,
+  CreditCard,
+  Settings,
+  ChevronsUpDown,
+  LogOut,
+  BookOpen,
+  ExternalLink,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -24,15 +35,58 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const navItems = [
-  { label: "Jobs", href: "/app", icon: Zap },
+interface NavItem {
+  label: string;
+  href: string;
+  icon: typeof Zap;
+  external?: boolean;
+  exact?: boolean;
+}
+
+const PRIMARY_NAV: NavItem[] = [
+  { label: "Overview", href: "/app", icon: LayoutDashboard, exact: true },
+  { label: "Jobs", href: "/app/jobs", icon: Zap },
   { label: "Schedules", href: "/app/schedules", icon: CalendarClock },
   { label: "Buffers", href: "/app/buffers", icon: Layers },
+  { label: "Billing", href: "/app/billing", icon: CreditCard },
+];
+
+const SECONDARY_NAV: NavItem[] = [
+  { label: "Settings", href: "/app/settings", icon: Settings },
   { label: "Docs", href: "/docs", icon: BookOpen, external: true },
 ];
 
-export default function AppSidebar() {
+function isActive(item: NavItem, pathname: string) {
+  if (item.external) return false;
+  return item.exact ? pathname === item.href : pathname.startsWith(item.href);
+}
+
+function NavLink({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
   const pathname = usePathname();
+  const active = isActive(item, pathname);
+  const Icon = item.icon;
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={active}>
+        <Link
+          href={item.href}
+          onClick={onNavigate}
+          {...(item.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          className={cn(
+            "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
+            active ? "border-l-2 border-white bg-white/10 text-white" : "text-white/55 hover:text-white",
+          )}
+        >
+          <Icon className={cn("h-4 w-4", active ? "text-white" : "text-white/40")} />
+          <span>{item.label}</span>
+          {item.external && <ExternalLink className="ml-auto h-3 w-3 text-white/25" />}
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
+
+export default function AppSidebar() {
   const { user } = useUser();
   const { signOut } = useClerk();
   const { setOpenMobile } = useSidebar();
@@ -41,14 +95,12 @@ export default function AppSidebar() {
   const email = user?.primaryEmailAddress?.emailAddress || "";
   const avatarUrl = user?.imageUrl;
 
-  function closeMobile() {
-    setOpenMobile(false);
-  }
+  const closeMobile = () => setOpenMobile(false);
 
   return (
     <Sidebar>
       <SidebarHeader className="h-14 flex justify-center px-4 border-b border-white/10">
-        <Link href="/" className="flex items-center gap-2 font-semibold text-lg tracking-tight">
+        <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
           <FliqIcon size={24} />
           Fliq
         </Link>
@@ -56,82 +108,42 @@ export default function AppSidebar() {
 
       <SidebarContent className="px-2 py-4">
         <SidebarMenu>
-          {navItems.map((item) => {
-            const isActive = "external" in item
-              ? false
-              : item.href === "/app"
-                ? pathname === "/app"
-                : pathname.startsWith(item.href);
-            const Icon = item.icon;
+          {PRIMARY_NAV.map((item) => (
+            <NavLink key={item.href} item={item} onNavigate={closeMobile} />
+          ))}
+        </SidebarMenu>
 
-            return (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton asChild isActive={isActive}>
-                  <Link
-                    href={item.href}
-                    onClick={closeMobile}
-                    {...("external" in item ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                    className={cn(
-                      "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
-                      isActive && "border-l-2 border-white bg-white/10 text-white"
-                    )}
-                  >
-                    <Icon className={cn("h-4 w-4", isActive ? "text-white" : "text-white/50")} />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
-          })}
+        <div className="my-3 mx-3 h-px bg-white/10" />
+
+        <SidebarMenu>
+          {SECONDARY_NAV.map((item) => (
+            <NavLink key={item.href} item={item} onNavigate={closeMobile} />
+          ))}
         </SidebarMenu>
       </SidebarContent>
 
       <SidebarFooter className="px-2 py-3 border-t border-white/10">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-white/5 transition-colors outline-none">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={displayName}
-                  width={32}
-                  height={32}
-                  className="rounded-full"
-                />
-              ) : (
-                <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-medium text-white/80">
-                  {displayName[0]}
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{displayName}</p>
-                <p className="text-xs text-white/40 truncate">{email}</p>
+            <button className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left outline-none transition-colors hover:bg-white/5">
+              <Avatar url={avatarUrl} name={displayName} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{displayName}</p>
+                <p className="truncate text-xs text-white/40">{email}</p>
               </div>
-              <ChevronUp className="h-4 w-4 text-white/30 shrink-0" />
+              <ChevronsUpDown className="h-4 w-4 shrink-0 text-white/30" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             side="top"
             align="start"
-            className="w-[--radix-dropdown-menu-trigger-width] bg-[#09090b] border-white/10"
+            className="w-[--radix-dropdown-menu-trigger-width] border-white/10 bg-[#09090b]"
           >
             <div className="flex items-center gap-3 px-2 py-2">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={displayName}
-                  width={32}
-                  height={32}
-                  className="rounded-full"
-                />
-              ) : (
-                <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-medium text-white/80">
-                  {displayName[0]}
-                </div>
-              )}
+              <Avatar url={avatarUrl} name={displayName} />
               <div className="min-w-0">
-                <p className="text-sm font-medium truncate">{displayName}</p>
-                <p className="text-xs text-white/40 truncate">{email}</p>
+                <p className="truncate text-sm font-medium">{displayName}</p>
+                <p className="truncate text-xs text-white/40">{email}</p>
               </div>
             </div>
             <DropdownMenuSeparator className="bg-white/10" />
@@ -159,5 +171,17 @@ export default function AppSidebar() {
         </DropdownMenu>
       </SidebarFooter>
     </Sidebar>
+  );
+}
+
+function Avatar({ url, name }: { url?: string; name: string }) {
+  if (url) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={url} alt={name} width={32} height={32} className="h-8 w-8 rounded-full" />;
+  }
+  return (
+    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-xs font-medium text-white/80">
+      {name[0]?.toUpperCase()}
+    </div>
   );
 }
