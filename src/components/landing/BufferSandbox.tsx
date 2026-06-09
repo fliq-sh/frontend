@@ -94,30 +94,32 @@ export default function BufferSandbox() {
           </span>
         </div>
 
-        {/* buffer (left) → metered release → target (right) */}
+        {/* your requests (left) → Fliq paces them → your API (right) */}
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] items-stretch sm:items-center gap-3 px-4 py-6">
-          {/* The tank */}
-          <div className="rounded-lg border border-white/10 bg-white/[0.02] p-2 min-h-[180px] flex flex-col gap-1">
-            <div className="flex items-center justify-between px-1 pb-1">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-white/30">
-                buffer
-              </span>
-              <span className="font-mono text-[10px] text-white/30">
-                in order ↓
-              </span>
+          {/* The waiting requests */}
+          <div className="rounded-lg border border-white/10 bg-white/[0.02] p-2 min-h-[184px] flex flex-col gap-1.5">
+            <div className="px-1 pb-1 font-mono text-[10px] uppercase tracking-widest text-white/30">
+              your requests
             </div>
             {visible.map((id, i) => (
               <div
                 key={id}
-                className="flex items-center justify-between rounded border border-white/10 bg-white/[0.06] px-2 py-1 font-mono text-[11px] text-white/70 tabular-nums"
+                className={`flex items-center gap-2 rounded border px-2 py-1 font-mono text-[11px] tabular-nums transition-colors ${
+                  i === 0
+                    ? "border-white/20 bg-white/[0.09] text-white/80"
+                    : "border-white/10 bg-white/[0.04] text-white/55"
+                }`}
               >
-                <span className="text-white/40">#{i + 1}</span>
-                <span className="text-white/45">{i === 0 ? "next out" : "item"}</span>
+                <span className="rounded bg-white/10 px-1 text-[9px] font-semibold tracking-wide text-white/60">
+                  POST
+                </span>
+                <span className="text-white/35">#{i + 1}</span>
+                {i === 0 && <span className="ml-auto text-white/45">next →</span>}
               </div>
             ))}
             {buffered > VISIBLE && (
-              <div className="px-1 pt-0.5 font-mono text-[10px] text-white/30 tabular-nums">
-                +{buffered - VISIBLE} more
+              <div className="px-1 font-mono text-[10px] text-white/30 tabular-nums">
+                +{buffered - VISIBLE} more waiting
               </div>
             )}
             {buffered === 0 && (
@@ -127,12 +129,21 @@ export default function BufferSandbox() {
             )}
           </div>
 
-          {/* Metered connector */}
-          <div className="flex flex-col items-center gap-1 px-1 text-white/30">
-            <span className="font-mono text-[10px] tabular-nums text-white/50">
+          {/* Metered release pipe — a pulse travels it on every delivery */}
+          <div className="relative flex flex-col items-center gap-1 px-2 text-white/30">
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] tabular-nums text-white/60">
               {rate}/s
             </span>
-            <span className="text-lg leading-none rotate-90 sm:rotate-0">→</span>
+            <div className="relative flex h-5 w-full min-w-[2.5rem] items-center justify-center">
+              <span className="text-lg leading-none rotate-90 sm:rotate-0">→</span>
+              {!reduced && (
+                <span
+                  key={delivered}
+                  aria-hidden
+                  className="animate-pipe-travel absolute left-1 h-1.5 w-1.5 rounded-full bg-green-300 shadow-[0_0_6px_rgba(134,239,172,0.8)]"
+                />
+              )}
+            </div>
           </div>
 
           {/* Target */}
@@ -141,7 +152,7 @@ export default function BufferSandbox() {
               flash ? "border-green-400/40 bg-green-400/[0.06]" : "border-white/10 bg-white/[0.03]"
             }`}
           >
-            <div className="font-mono text-[10px] text-white/40">your target API</div>
+            <div className="font-mono text-[10px] text-white/40">your API</div>
             <div className="mt-1 font-mono text-[11px] text-white/70 break-all">
               {TARGET}
             </div>
@@ -154,7 +165,7 @@ export default function BufferSandbox() {
         {/* Controls */}
         <div className="flex flex-col gap-3 px-4 py-3 border-t border-white/[0.07] sm:flex-row sm:items-center">
           <Button size="sm" onClick={sendBurst} className="shrink-0">
-            Send burst ({BURST})
+            Send {BURST} at once
           </Button>
           <label className="flex flex-1 items-center gap-3">
             <span className="font-mono text-[10px] uppercase tracking-widest text-white/35 shrink-0">
@@ -176,12 +187,12 @@ export default function BufferSandbox() {
           </label>
         </div>
 
-        {/* Counters */}
+        {/* Counters — the payoff: delivered steadily, zero rate-limit errors */}
         <div className="grid grid-cols-3 divide-x divide-white/[0.07] border-t border-white/[0.07] text-center">
           <div className="px-3 py-2.5">
             <div className="font-mono text-base text-white/80 tabular-nums">{buffered}</div>
             <div className="font-mono text-[10px] uppercase tracking-widest text-white/35">
-              in buffer
+              waiting
             </div>
           </div>
           <div className="px-3 py-2.5">
@@ -191,9 +202,9 @@ export default function BufferSandbox() {
             </div>
           </div>
           <div className="px-3 py-2.5">
-            <div className="font-mono text-base text-white/80 tabular-nums">0</div>
+            <div className="font-mono text-base text-green-300 tabular-nums">0</div>
             <div className="font-mono text-[10px] uppercase tracking-widest text-white/35">
-              429s
+              429 errors
             </div>
           </div>
         </div>

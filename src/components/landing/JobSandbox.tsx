@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { StatusBadge, StatusDot, type Tone } from "@/components/patterns";
@@ -63,6 +63,47 @@ function phaseTone(phase: Phase): Tone {
   }
 }
 
+// The job lifecycle as four legible stages, replacing the cryptic phase churn
+// (firing/backoff/retrying…) with a rail that lights up traffic-light colours.
+type StageStatus = "pending" | "active" | "done" | "skipped";
+interface RailStage {
+  label: string;
+  status: StageStatus;
+  tone: Tone;
+  pulse: boolean;
+}
+
+// How far the rail has progressed for a given phase (Scheduled→Called→Retried→Done).
+const PHASE_REACH: Record<Phase, number> = {
+  idle: -1,
+  counting: 0,
+  firing: 1,
+  failed: 1,
+  backoff: 2,
+  retrying: 2,
+  done: 3,
+};
+
+function railStages(phase: Phase, failed: boolean): RailStage[] {
+  const reach = PHASE_REACH[phase];
+  const labels = ["Scheduled", "Called", "Retried", "Done"];
+  // Per-stage tone: Called turns red on failure, Retried is always amber, Done green.
+  const tones: Tone[] = ["neutral", failed ? "danger" : "success", "warning", "success"];
+
+  return labels.map((label, i) => {
+    // The retry stage only exists when a failure happened; otherwise show it skipped.
+    if (i === 2 && !failed) {
+      return { label, status: "skipped", tone: "neutral", pulse: false };
+    }
+    let status: StageStatus;
+    if (reach < 0) status = "pending";
+    else if (i < reach) status = "done";
+    else if (i === reach) status = phase === "done" ? "done" : "active";
+    else status = "pending";
+    return { label, status, tone: tones[i], pulse: status === "active" };
+  });
+}
+
 function nowStamp(): string {
   return new Date().toISOString().slice(11, 23); // HH:MM:SS.mmm UTC
 }
@@ -97,6 +138,9 @@ export default function JobSandbox() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [countdown, setCountdown] = useState(ONCE_DELAY);
   const [history, setHistory] = useState<Attempt[]>([]);
+  // Whether the current fire cycle hit a failure + retry (drives the rail's
+  // "Retried" stage: lit amber when it happened, skipped when it didn't).
+  const [cycleFailed, setCycleFailed] = useState(false);
 
   // Every timer/interval/raf we create, so re-run + unmount can clear them all.
   const timers = useRef<Array<ReturnType<typeof setTimeout>>>([]);
@@ -148,11 +192,13 @@ export default function JobSandbox() {
       const willFail = failRef.current;
 
       setPhase("firing");
+      setCycleFailed(false);
       const fireDur = fast ? 120 : 700;
 
       after(fireDur, () => {
         if (willFail) {
           setPhase("failed");
+          setCycleFailed(true);
           record(1, 503, "danger");
           after(fast ? 200 : 900, () => {
             setPhase("backoff");
@@ -179,6 +225,7 @@ export default function JobSandbox() {
     clearTimers();
     setRunning(false);
     setPhase("idle");
+    setCycleFailed(false);
     setCountdown(schedule === "once" ? ONCE_DELAY : CRON_INTERVAL);
   }, [clearTimers, schedule]);
 
@@ -228,6 +275,7 @@ export default function JobSandbox() {
   const start = useCallback(() => {
     clearTimers();
     setHistory([]);
+    setCycleFailed(false);
     setRunning(true);
     const isCron = schedule === "cron";
     runCycle(isCron ? CRON_INTERVAL : ONCE_DELAY, isCron);
@@ -237,6 +285,7 @@ export default function JobSandbox() {
 
   const tone = phaseTone(phase);
   const active = phase === "firing" || phase === "retrying" || phase === "backoff";
+  const stages = railStages(phase, cycleFailed);
 
   return (
     <div className="w-full max-w-xl mx-auto">
@@ -374,6 +423,52 @@ export default function JobSandbox() {
                 pulse={active}
               />
             )}
+          </div>
+        </div>
+
+        {/* Lifecycle rail — the whole job in one glance, lighting up as it runs */}
+        <div className="px-4 py-4 border-b border-white/[0.07]">
+          <div className="flex items-start">
+            {stages.map((s, i) => (
+              <Fragment key={s.label}>
+                <div className="flex flex-col items-center gap-1.5">
+                  {s.status === "active" || s.status === "done" ? (
+                    <StatusDot tone={s.tone} pulse={s.pulse} className="mt-px" />
+                  ) : (
+                    <span
+                      className={cn(
+                        "mt-px h-1.5 w-1.5 rounded-full",
+                        s.status === "skipped"
+                          ? "border border-dashed border-white/15"
+                          : "bg-white/15",
+                      )}
+                    />
+                  )}
+                  <span
+                    className={cn(
+                      "font-mono text-[10px] tracking-wide whitespace-nowrap",
+                      s.status === "active"
+                        ? "text-white/80"
+                        : s.status === "done"
+                          ? "text-white/55"
+                          : s.status === "skipped"
+                            ? "text-white/25"
+                            : "text-white/35",
+                    )}
+                  >
+                    {s.label}
+                  </span>
+                </div>
+                {i < stages.length - 1 && (
+                  <div
+                    className={cn(
+                      "mt-[3px] h-px flex-1 mx-2 transition-colors",
+                      s.status === "done" ? "bg-white/25" : "bg-white/[0.08]",
+                    )}
+                  />
+                )}
+              </Fragment>
+            ))}
           </div>
         </div>
 
