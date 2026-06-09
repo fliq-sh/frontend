@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export interface CursorPage<T> {
   items: T[];
@@ -12,6 +12,10 @@ export interface CursorPage<T> {
  * Buffers). Holds the loaded page, a back-stack of cursors for "Prev", and a
  * `reset`-on-deps so changing a filter starts over from page 1. Returns a
  * `reload` for manual + auto refresh that keeps the current page.
+ *
+ * `fetcher` should be memoised (useCallback) and listed in `deps` alongside any
+ * filter state, so a filter change both re-binds the fetcher and resets to
+ * page 1. The reset effect captures the latest `load`, so no ref juggling.
  */
 export function useCursorList<T>(
   fetcher: (cursor: string | undefined) => Promise<CursorPage<T>>,
@@ -23,13 +27,10 @@ export function useCursorList<T>(
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [prevCursors, setPrevCursors] = useState<(string | undefined)[]>([]);
 
-  const fetcherRef = useRef(fetcher);
-  fetcherRef.current = fetcher;
-
   const load = useCallback(async (c: string | undefined) => {
     setLoading(true);
     try {
-      const page = await fetcherRef.current(c);
+      const page = await fetcher(c);
       setItems(page.items);
       setNextCursor(page.nextCursor);
     } catch (err) {
@@ -37,9 +38,10 @@ export function useCursorList<T>(
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetcher]);
 
-  // Reset to page 1 whenever a dependency (e.g. a status filter) changes.
+  // Reset to page 1 whenever a dependency (e.g. a status filter) changes. The
+  // captured `load` is the latest render's, so it uses the new fetcher.
   useEffect(() => {
     setCursor(undefined);
     setPrevCursors([]);
