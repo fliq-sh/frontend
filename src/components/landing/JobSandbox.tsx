@@ -15,8 +15,8 @@ type Schedule = "once" | "cron";
 
 const ONCE_DELAY = 3; // seconds
 const CRON_INTERVAL = 2; // seconds
-const DEFAULT_URL = "https://api.myapp.com/welcome";
-const HISTORY_CAP = 6;
+const TARGET_URL = "https://api.myapp.com/welcome";
+const HISTORY_CAP = 4;
 
 type Phase =
   | "idle"
@@ -90,7 +90,6 @@ function useReducedMotion(): boolean {
 export default function JobSandbox() {
   const reduced = useReducedMotion();
 
-  const [url, setUrl] = useState(DEFAULT_URL);
   const [schedule, setSchedule] = useState<Schedule>("once");
   const [shouldFail, setShouldFail] = useState(false);
   const [running, setRunning] = useState(false);
@@ -257,25 +256,6 @@ export default function JobSandbox() {
 
         {/* Controls */}
         <div className="px-4 py-4 space-y-4 border-b border-white/[0.07]">
-          <div className="space-y-1.5">
-            <label
-              htmlFor="sandbox-url"
-              className="block text-[10px] uppercase tracking-widest text-white/30 font-mono"
-            >
-              target url
-            </label>
-            <input
-              id="sandbox-url"
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              spellCheck={false}
-              autoComplete="off"
-              className="w-full rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 font-mono text-xs text-white/80 outline-none transition-colors placeholder:text-white/25 focus:border-white/25 focus:bg-white/[0.05]"
-              placeholder={DEFAULT_URL}
-            />
-          </div>
-
           <div className="flex flex-wrap items-end gap-4">
             <div className="space-y-1.5">
               <span className="block text-[10px] uppercase tracking-widest text-white/30 font-mono">
@@ -352,18 +332,8 @@ export default function JobSandbox() {
               onClick={running ? stop : start}
               aria-label={running ? "Stop the scheduled job" : "Schedule the job"}
             >
-              {running ? "Stop" : "Schedule"}
+              {running ? "Stop" : history.length > 0 ? "Run again" : "Schedule"}
             </Button>
-            {history.length > 0 && !running && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={start}
-                className="text-white/60 hover:text-white"
-              >
-                Re-run
-              </Button>
-            )}
           </div>
         </div>
 
@@ -380,7 +350,7 @@ export default function JobSandbox() {
             POST
           </span>
           <div className="min-w-0 flex-1">
-            <div className="font-mono text-xs text-white/70 truncate">{url}</div>
+            <div className="font-mono text-xs text-white/70 truncate">{TARGET_URL}</div>
             <div className="font-mono text-[10px] text-white/30 truncate">
               {schedule === "once"
                 ? "one-off · fires once"
