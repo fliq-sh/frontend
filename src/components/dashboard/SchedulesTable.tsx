@@ -25,6 +25,7 @@ import {
 import { Code2, CalendarClock, Settings, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { ApiCodeBlock, SCHEDULE_SNIPPETS } from "./ApiCodeBlock";
+import { EmptyState } from "@/components/patterns";
 
 function NewScheduleDialog({ onCreated }: { onCreated: () => void }) {
   const { apiFetch } = useApi();
@@ -285,48 +286,41 @@ export default function SchedulesTable() {
               ? (
                   <TableRow className="border-white/10 hover:bg-transparent">
                     <TableCell colSpan={7} className="p-0">
-                      <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/[0.04] p-8 m-4">
-                        <div className="flex flex-col gap-6 max-w-xl">
-                          <div>
-                            <p className="text-xs text-indigo-400 uppercase tracking-widest mb-2">Get started</p>
-                            <h3 className="text-xl font-semibold">Create your first recurring schedule</h3>
-                            <p className="text-sm text-white/50 mt-2">
-                              Schedules run jobs on a cron expression. Define once, and Fliq fires your HTTP endpoint on time, every time.
-                            </p>
-                          </div>
-                          <div className="flex flex-col gap-5">
-                            <div className="flex gap-4">
-                              <div className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-xs font-bold text-indigo-400">1</div>
-                              <div className="flex flex-col gap-1">
-                                <p className="text-sm font-medium">Get an API token</p>
-                                <p className="text-xs text-white/50">Head to Settings to create a token for authenticating your requests.</p>
-                                <Link href="/app/settings">
-                                  <Button size="sm" variant="outline" className="w-fit gap-1.5 border-white/10 hover:bg-white/5 mt-1">
-                                    <Settings className="h-3.5 w-3.5" />
-                                    Settings
-                                  </Button>
-                                </Link>
-                              </div>
-                            </div>
-                            <div className="flex gap-4">
-                              <div className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-xs font-bold text-indigo-400">2</div>
-                              <div className="flex flex-col gap-1">
-                                <p className="text-sm font-medium">Create a schedule via API or dashboard</p>
-                                <p className="text-xs text-white/50">
-                                  Use the <span className="text-white/70">New Schedule</span> button above, or POST to the schedules API.
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex gap-4">
-                              <div className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-xs font-bold text-indigo-400">3</div>
-                              <div className="flex flex-col gap-1">
-                                <p className="text-sm font-medium">Monitor runs here</p>
-                                <p className="text-xs text-white/50">Active schedules appear in this table with next/last run times and status.</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <EmptyState
+                        className="m-4"
+                        title="Create your first recurring schedule"
+                        steps={[
+                          {
+                            title: "Get an API token",
+                            description: (
+                              <>
+                                Schedules run jobs on a cron expression. Define once, and Fliq fires your HTTP endpoint on time, every time.
+                                <span className="block mt-2">Head to Settings to create a token for authenticating your requests.</span>
+                              </>
+                            ),
+                            action: (
+                              <Link href="/app/settings">
+                                <Button size="sm" variant="outline" className="w-fit gap-1.5 border-white/10 hover:bg-white/5">
+                                  <Settings className="h-3.5 w-3.5" />
+                                  Settings
+                                </Button>
+                              </Link>
+                            ),
+                          },
+                          {
+                            title: "Create a schedule via API or dashboard",
+                            description: (
+                              <>
+                                Use the <span className="text-white/70">New Schedule</span> button above, or POST to the schedules API.
+                              </>
+                            ),
+                          },
+                          {
+                            title: "Monitor runs here",
+                            description: "Active schedules appear in this table with next/last run times and status.",
+                          },
+                        ]}
+                      />
                     </TableCell>
                   </TableRow>
                 )

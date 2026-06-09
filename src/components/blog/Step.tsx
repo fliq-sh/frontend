@@ -11,7 +11,7 @@ export default function Step({
 }) {
   return (
     <div className="relative my-8 pl-14">
-      <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-400 font-semibold text-sm border border-indigo-500/30">
+      <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white font-semibold text-sm border border-white/20">
         {number}
       </div>
       <div>

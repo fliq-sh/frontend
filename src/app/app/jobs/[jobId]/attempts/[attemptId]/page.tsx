@@ -159,7 +159,7 @@ export default function AttemptDetailPage() {
       <section className="rounded-lg border border-white/10 bg-white/[0.02] p-5 flex flex-col gap-3">
         <p className="text-[11px] font-medium uppercase tracking-wider text-white/30">Request</p>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/30 rounded px-1.5 py-0.5">
+          <span className="text-[10px] font-mono font-bold text-white/80 bg-white/10 border border-white/20 rounded px-1.5 py-0.5">
             {job.method}
           </span>
           <span className="text-sm font-mono text-white/70 break-all">{job.url}</span>

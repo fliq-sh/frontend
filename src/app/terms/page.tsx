@@ -28,7 +28,7 @@ export default function TermsPage() {
                 <strong className="text-white">Beta service.</strong> Fliq is
                 provided as-is during the beta. We aim for high reliability (see
                 the{" "}
-                <a className="text-indigo-300 hover:text-indigo-200" href="/status">
+                <a className="text-white hover:text-white/70 underline underline-offset-4" href="/status">
                   live status page
                 </a>
                 ) but don&apos;t offer a contractual SLA yet — don&apos;t rely on
@@ -49,7 +49,7 @@ export default function TermsPage() {
               <p>
                 <strong className="text-white">Questions?</strong> Email{" "}
                 <a
-                  className="text-indigo-300 hover:text-indigo-200"
+                  className="text-white hover:text-white/70 underline underline-offset-4"
                   href={`mailto:${SITE.email}`}
                 >
                   {SITE.email}

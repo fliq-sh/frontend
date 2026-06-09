@@ -8,7 +8,7 @@ export default function AuthorCard({ name }: { name: string }) {
 
   return (
     <div className="flex items-center gap-4 py-6">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-400 font-semibold text-sm border border-indigo-500/30">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white font-semibold text-sm border border-white/20">
         {initials}
       </div>
       <div>

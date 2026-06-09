@@ -50,7 +50,7 @@ export default function CronExplainer() {
             placeholder="* * * * *"
             className={`flex-1 font-mono text-lg rounded-lg border bg-[#09090b] px-4 py-3 outline-none transition-colors ${
               result.valid
-                ? "border-white/10 focus:border-indigo-500/50"
+                ? "border-white/10 focus:border-white/25"
                 : "border-red-500/40 focus:border-red-500/60"
             }`}
           />
@@ -94,7 +94,7 @@ export default function CronExplainer() {
                 onClick={() => setExpr(p.expr)}
                 className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
                   active
-                    ? "border-indigo-500/40 bg-indigo-500/10 text-indigo-300"
+                    ? "border-white/30 bg-white/10 text-white"
                     : "border-white/10 bg-white/[0.03] text-white/60 hover:border-white/20 hover:text-white/80"
                 }`}
               >
@@ -129,7 +129,7 @@ export default function CronExplainer() {
       )}
 
       {/* CTA */}
-      <div className="mt-10 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 p-6 sm:p-8 text-center">
+      <div className="mt-10 rounded-2xl border border-white/15 bg-white/5 p-6 sm:p-8 text-center">
         <h2 className="text-xl font-bold tracking-tight mb-2">
           Schedule this on Fliq
         </h2>

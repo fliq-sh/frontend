@@ -68,7 +68,7 @@ export default function NotFound() {
         <div className="px-4 py-3 border-b border-white/10 grid grid-cols-2 gap-2 font-mono text-xs">
           <div>
             <p className="text-white/30 mb-0.5">URL</p>
-            <p className="text-indigo-300 truncate">GET {pathname}</p>
+            <p className="text-white/80 truncate">GET {pathname}</p>
           </div>
           <div>
             <p className="text-white/30 mb-0.5">Max retries</p>

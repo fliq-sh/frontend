@@ -94,7 +94,7 @@ export default function StatusClient() {
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
         <p className="text-sm text-white/60 leading-relaxed">
           This page pings{" "}
-          <code className="font-mono text-xs text-indigo-300">
+          <code className="font-mono text-xs text-white/80">
             {SITE.apiUrl}
             {SITE.healthPath}
           </code>{" "}

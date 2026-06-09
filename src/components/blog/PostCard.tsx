@@ -33,7 +33,7 @@ export default function PostCard({
           {tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-xs text-indigo-400"
+              className="rounded-full bg-white/10 border border-white/15 px-2.5 py-0.5 text-xs text-white/70"
             >
               {tag}
             </span>
@@ -41,7 +41,7 @@ export default function PostCard({
         </div>
 
         <h3
-          className={`font-semibold text-white group-hover:text-indigo-400 transition-colors ${
+          className={`font-semibold text-white group-hover:text-white/70 transition-colors ${
             featured ? "text-2xl" : "text-lg"
           }`}
         >

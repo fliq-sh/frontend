@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import BufferSandbox from "./BufferSandbox";
 
 // Pain-first marquee section for buffers (the GTM wedge). The headline hooks the
 // pain — getting rate-limited by the APIs you call — and the term "buffer" is
@@ -20,26 +21,6 @@ const points = [
     body: "No Redis, no rate-limiter service, no token-bucket code to maintain. Push items and forget them — it's Postgres-native, like the rest of Fliq.",
   },
 ];
-
-// Create a buffer, then push items onto it. Monochrome code — weight + opacity
-// carry hierarchy, not colour.
-const codeLines = [
-  { c: "comment", v: "# 1. Create a buffer pointed at the API you call" },
-  { c: "cmd", v: "curl -X POST https://api.fliq.sh/buffers \\" },
-  { c: "arg", v: `  -d '{ "url": "https://api.stripe.com/v1/...",` },
-  { c: "arg", v: `        "method": "POST", "rate_limit": 25 }'` },
-  { c: "blank", v: "" },
-  { c: "comment", v: "# 2. Push items — delivered in order, at your rate" },
-  { c: "cmd", v: "curl -X POST https://api.fliq.sh/buffers/$ID/items \\" },
-  { c: "arg", v: `  -d '{ "body": { "amount": 1999 } }'` },
-];
-
-const codeColor: Record<string, string> = {
-  comment: "text-white/35",
-  cmd: "text-white/90",
-  arg: "text-white/60",
-  blank: "text-white/0",
-};
 
 export default function Buffers() {
   return (
@@ -91,24 +72,8 @@ export default function Buffers() {
             </div>
           </div>
 
-          {/* Code — tight on purpose */}
-          <div className="rounded-2xl border border-white/10 bg-black/40 overflow-hidden">
-            <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-white/[0.06]">
-              <span className="w-2.5 h-2.5 rounded-full bg-white/10" />
-              <span className="w-2.5 h-2.5 rounded-full bg-white/10" />
-              <span className="w-2.5 h-2.5 rounded-full bg-white/10" />
-              <span className="ml-3 text-[10px] text-white/25 tracking-widest uppercase font-mono">
-                rate-limited delivery
-              </span>
-            </div>
-            <div className="p-4 font-mono text-xs leading-6 overflow-x-auto whitespace-pre">
-              {codeLines.map((line, i) => (
-                <div key={i} className={codeColor[line.c] ?? "text-white/70"}>
-                  {line.v === "" ? " " : line.v}
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Interactive buffer sandbox — the section's visual centerpiece */}
+          <BufferSandbox />
         </div>
       </div>
     </section>

@@ -31,7 +31,7 @@ export function DocUL({ children }: { children: React.ReactNode }) {
 export function DocLI({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex gap-2.5 items-start">
-      <span className="mt-1.5 w-1 h-1 rounded-full bg-indigo-400 flex-shrink-0" />
+      <span className="mt-1.5 w-1 h-1 rounded-full bg-white/40 flex-shrink-0" />
       <span>{children}</span>
     </li>
   );
@@ -39,7 +39,7 @@ export function DocLI({ children }: { children: React.ReactNode }) {
 
 export function DocCode({ children }: { children: React.ReactNode }) {
   return (
-    <code className="px-1.5 py-0.5 rounded bg-white/8 border border-white/10 text-indigo-300 text-xs font-mono">
+    <code className="px-1.5 py-0.5 rounded bg-white/8 border border-white/10 text-white/80 text-xs font-mono">
       {children}
     </code>
   );
@@ -79,7 +79,7 @@ export async function DocPre({ label, lang, children }: { label?: string; lang?:
 
 export function DocCallout({ type = "info", children }: { type?: "info" | "warning"; children: React.ReactNode }) {
   const styles = {
-    info:    "border-indigo-500/30 bg-indigo-500/[0.07] text-indigo-300",
+    info:    "border-white/15 bg-white/5 text-white/70",
     warning: "border-amber-500/30 bg-amber-500/[0.07] text-amber-300",
   };
   return (
@@ -103,7 +103,7 @@ export function DocNextPrev({
         </Link>
       ) : <span />}
       {next ? (
-        <Link href={next.href} className="text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1.5">
+        <Link href={next.href} className="text-white hover:text-white/70 transition-colors flex items-center gap-1.5">
           {next.label} <span>→</span>
         </Link>
       ) : <span />}

@@ -53,7 +53,7 @@ export const mdxComponents: MDXComponents = {
       return (
         <Link
           href={href}
-          className="text-indigo-400 underline underline-offset-2 hover:text-indigo-300 transition-colors"
+          className="text-white underline underline-offset-2 hover:text-white/70 transition-colors"
           {...props}
         >
           {children}
@@ -65,7 +65,7 @@ export const mdxComponents: MDXComponents = {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-indigo-400 underline underline-offset-2 hover:text-indigo-300 transition-colors"
+        className="text-white underline underline-offset-2 hover:text-white/70 transition-colors"
         {...props}
       >
         {children}
@@ -89,7 +89,7 @@ export const mdxComponents: MDXComponents = {
   ),
   blockquote: ({ children, ...props }) => (
     <blockquote
-      className="my-6 border-l-4 border-indigo-500/30 bg-white/5 py-3 px-4 italic [&>p]:m-0 [&>p]:text-white/60"
+      className="my-6 border-l-4 border-white/20 bg-white/5 py-3 px-4 italic [&>p]:m-0 [&>p]:text-white/60"
       {...props}
     >
       {children}
@@ -100,7 +100,7 @@ export const mdxComponents: MDXComponents = {
     if (!className) {
       return (
         <code
-          className="rounded bg-white/10 px-1.5 py-0.5 text-sm font-mono text-indigo-300"
+          className="rounded bg-white/10 px-1.5 py-0.5 text-sm font-mono text-white/80"
           {...props}
         >
           {children}

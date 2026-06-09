@@ -41,7 +41,7 @@ function txTypeBadge(type: CreditTxType) {
   switch (type) {
     case "stripe_topup":
       return (
-        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-white/10 text-white/80 border border-white/15">
           Top-up
         </span>
       );
@@ -83,7 +83,7 @@ function BalanceCard({ balance }: { balance: BillingBalance }) {
         </div>
         <div className="flex flex-col items-end gap-2">
           {balance.plan === "paid" ? (
-            <span className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <span className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-white/10 text-white/80 border border-white/15">
               Paid
             </span>
           ) : (
@@ -167,14 +167,14 @@ function TopUpSection({ creditsPerDollar }: { creditsPerDollar: number }) {
               className={cn(
                 "rounded-lg border px-3 py-3 text-center transition-colors",
                 isSelected
-                  ? "border-indigo-500 bg-indigo-500/10"
+                  ? "border-white/30 bg-white/[0.06]"
                   : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/[0.07]"
               )}
             >
               <p className={cn("text-base font-semibold", isSelected ? "text-white" : "text-white/80")}>
                 ${amount}
               </p>
-              <p className={cn("text-xs mt-0.5", isSelected ? "text-indigo-300" : "text-white/40")}>
+              <p className={cn("text-xs mt-0.5", isSelected ? "text-white/70" : "text-white/40")}>
                 {formatCredits(amount * creditsPerDollar)} credits
               </p>
             </button>
@@ -198,7 +198,7 @@ function TopUpSection({ creditsPerDollar }: { creditsPerDollar: number }) {
               setSelected(null);
               setError(null);
             }}
-            className="w-full rounded-md border border-white/10 bg-white/5 pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500/50 placeholder:text-white/20"
+            className="w-full rounded-md border border-white/10 bg-white/5 pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-white/30 placeholder:text-white/20"
           />
         </div>
         {dollarAmount > 0 && (

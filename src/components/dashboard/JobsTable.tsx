@@ -25,6 +25,7 @@ import {
 import { ChevronDown, ChevronRight, Code2, Settings, Layers, Clock, Activity, AlertTriangle, RefreshCw, Eye, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { ApiCodeBlock, JOB_SNIPPETS } from "./ApiCodeBlock";
+import { EmptyState, StatCard } from "@/components/patterns";
 
 const STATUS_VARIANT: Record<JobStatus, "default" | "secondary" | "destructive" | "outline"> = {
   pending: "secondary",
@@ -180,65 +181,37 @@ function NewJobDialog({ onCreated }: { onCreated: () => void }) {
 
 function GettingStarted() {
   return (
-    <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/[0.04] p-8">
-      <div className="flex flex-col gap-8 max-w-2xl">
-        <div>
-          <p className="text-xs text-indigo-400 uppercase tracking-widest mb-2">Get started</p>
-          <h3 className="text-xl font-semibold">Schedule your first job in 3 steps</h3>
-        </div>
-
-        <div className="flex flex-col gap-7">
-          {/* Step 1 */}
-          <div className="flex gap-4">
-            <div className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-xs font-bold text-indigo-400">
-              1
-            </div>
-            <div className="flex flex-col gap-2">
-              <p className="text-sm font-medium">Create an API token</p>
-              <p className="text-xs text-white/50">
-                Your token authenticates requests from your code, cron, or Postman.
-              </p>
-              <Link href="/app/settings">
-                <Button size="sm" variant="outline" className="w-fit gap-1.5 border-white/10 hover:bg-white/5 mt-1">
-                  <Settings className="h-3.5 w-3.5" />
-                  Settings → API Tokens
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          {/* Step 2 */}
-          <div className="flex gap-4">
-            <div className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-xs font-bold text-indigo-400">
-              2
-            </div>
-            <div className="flex flex-col gap-2 w-full">
-              <p className="text-sm font-medium">Schedule a job from your code</p>
-              <p className="text-xs text-white/50">
-                POST a URL + fire time — Fliq handles delivery, retries, and history.
-              </p>
-              <div className="mt-1">
-                <ApiCodeBlock snippets={JOB_SNIPPETS} />
-              </div>
-            </div>
-          </div>
-
-          {/* Step 3 */}
-          <div className="flex gap-4">
-            <div className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-xs font-bold text-indigo-400">
-              3
-            </div>
-            <div className="flex flex-col gap-1">
-              <p className="text-sm font-medium">Watch it run</p>
-              <p className="text-xs text-white/50">
-                Jobs appear here with live status, attempt history, and error details.
-                Prefer the dashboard UI? Hit <span className="text-white/70">New Job</span> above.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <EmptyState
+      title="Schedule your first job in 3 steps"
+      steps={[
+        {
+          title: "Create an API token",
+          description: "Your token authenticates requests from your code, cron, or Postman.",
+          action: (
+            <Link href="/app/settings">
+              <Button size="sm" variant="outline" className="w-fit gap-1.5 border-white/10 hover:bg-white/5">
+                <Settings className="h-3.5 w-3.5" />
+                Settings → API Tokens
+              </Button>
+            </Link>
+          ),
+        },
+        {
+          title: "Schedule a job from your code",
+          description: "POST a URL + fire time — Fliq handles delivery, retries, and history.",
+          action: <ApiCodeBlock snippets={JOB_SNIPPETS} />,
+        },
+        {
+          title: "Watch it run",
+          description: (
+            <>
+              Jobs appear here with live status, attempt history, and error details.
+              Prefer the dashboard UI? Hit <span className="text-white/70">New Job</span> above.
+            </>
+          ),
+        },
+      ]}
+    />
   );
 }
 
@@ -449,20 +422,18 @@ export default function JobsTable() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {([
-          { key: "total" as const, icon: Layers, color: "border-l-indigo-500", iconColor: "text-indigo-400" },
-          { key: "pending" as const, icon: Clock, color: "border-l-amber-500", iconColor: "text-amber-400" },
-          { key: "running" as const, icon: Activity, color: "border-l-green-500", iconColor: "text-green-400" },
-          { key: "failed" as const, icon: AlertTriangle, color: "border-l-red-500", iconColor: "text-red-400" },
-        ]).map(({ key, icon: Icon, color, iconColor }) => (
-          <div key={key} className={`rounded-lg border border-white/10 border-l-2 ${color} bg-white/5 px-4 py-3`}>
-            <div className="flex items-center gap-2">
-              <Icon className={`h-3.5 w-3.5 ${iconColor}`} />
-              <p className="text-xs text-white/40 uppercase tracking-wider">{key}</p>
-            </div>
-            <div className="text-2xl font-bold mt-1">
-              {loading ? <Skeleton className="h-8 w-12" /> : counts[key]}
-            </div>
-          </div>
+          { key: "total" as const, icon: Layers, tone: "neutral" as const },
+          { key: "pending" as const, icon: Clock, tone: "warning" as const },
+          { key: "running" as const, icon: Activity, tone: "success" as const },
+          { key: "failed" as const, icon: AlertTriangle, tone: "danger" as const },
+        ]).map(({ key, icon, tone }) => (
+          <StatCard
+            key={key}
+            icon={icon}
+            label={key}
+            tone={tone}
+            value={loading ? <Skeleton className="h-8 w-12" /> : counts[key]}
+          />
         ))}
       </div>
 

@@ -65,7 +65,8 @@ src/
 ├── components/
 │   ├── landing/                # One file per landing section (see below)
 │   ├── dashboard/              # Dashboard-specific components
-│   └── ui/                     # shadcn/ui primitives + globe.tsx
+│   ├── patterns/               # Fliq design-system composites (see below)
+│   └── ui/                     # shadcn/ui primitives ONLY (regenerable)
 ├── hooks/use-mobile.ts
 ├── lib/
 │   ├── api.ts                  # API client (fetch wrapper, JWT from Clerk)
@@ -84,9 +85,9 @@ consolidated the former 13 — see `docs/adr/0001`). Merged-away components
 | `Navbar.tsx` | Fixed header; Docs/Pricing/Compare + Resources dropdown + `LiveStatus` pill |
 | `Hero.tsx` | Devs-first headline + CTA + beta badge + inline `LiveStatus` + `SchedulerVisual` |
 | `Problem.tsx` | The cron trap (3 pains vs 3 solutions) **+ DIY-vs-Fliq table** (former `Comparison`) + `/vs` link |
-| `HowItWorks.tsx` | 3 steps (Schedule → Fire & retry → Inspect) **+ capability bento** (former `Features`) |
+| `HowItWorks.tsx` | 3 steps (Schedule → Fire & retry → Inspect) **+ interactive `JobSandbox`** ("See it run") **+ capability bento** (former `Features`) |
 | `Quickstart.tsx` | 4-tab code snippet (HTTP / Node.js / Python / curl) |
-| `Buffers.tsx` | **Marquee buffers section (the GTM wedge).** Pain-first H2 ("Call rate-limited APIs without the 429s"); teaches "buffer" in body. Links `/docs/buffers` |
+| `Buffers.tsx` | **Buffers section (the GTM wedge).** Pain-first H2 ("Call rate-limited APIs without the 429s"); teaches "buffer" in body; right column is the interactive `BufferSandbox`. Links `/docs/buffers` |
 | `UseCases.tsx` | One-time vs recurring/cron **+ featured AI-agent block** (former `Agents`) |
 | `Reliability.tsx` | Live status panel + 3 honest reliability mechanisms (no fabricated stats) |
 | `OpenSource.tsx` | Honest proof (open-source + live GitHub stars + real facts) **+ self-host/enterprise block** (former `Enterprise`) |
@@ -150,9 +151,11 @@ and reinforced fabricated "30+ regions" copy). Instead:
 - Opacity variants for hierarchy: `text-white/60` (body), `text-white/40` (captions), `text-white/20` (disabled/logos)
 - Subtle surfaces: `bg-white/5`, `bg-white/[0.03]`
 - Borders: `border-white/10`
-- **Monochrome — no colour accent.** White at opacities carries all hierarchy;
-  the primary CTA is a white button. Do **not** use `indigo-*`/`violet-*` or any
-  hue accent on marketing. Colour lives in exactly two places (see
+- **Monochrome — no colour accent.** Applies to the **whole frontend** (marketing
+  *and* dashboard, docs, blog, etc.). White at opacities carries all hierarchy;
+  the primary/active accent is white (white CTA button, white active sidebar
+  item). Do **not** use `indigo-*`/`violet-*` or any hue accent anywhere. Colour
+  lives in exactly two places (see
   `docs/adr/0001-monochrome-dark-iridescent-brand.md`):
   1. the **iridescent F-mark** (`FliqIcon`) — the one brand accent; don't add more.
   2. **traffic-light status** below.
@@ -165,6 +168,31 @@ and reinforced fabricated "30+ regions" copy). Instead:
 - All new landing sections get `border-t border-white/10` top border, a
   `section-breathe`/`section-tight` register, and `px-6` (container `max-w-7xl mx-auto`)
 - Mono (`font-mono`) for cron expressions, timestamps, latencies, code — the developer texture
+
+### Design-system composites (`src/components/patterns/`)
+
+Opinionated building blocks layered on the shadcn primitives in `ui/`. Reuse
+these instead of re-rolling — they keep marketing and dashboard consistent:
+
+- `SectionHeader` — eyebrow + H2 + subhead (center/left).
+- `StatusBadge` / `StatusDot` — the traffic-light pill/dot. Tones resolve from
+  `tones.ts` (`TONE`, `Tone`, `jobStatusTone(status)`) — the **single source** of
+  green/amber/red. Map job state via `jobStatusTone`, don't hardcode hues.
+- `StatCard` — metric tile with a traffic-light left accent (`tone="neutral"` is
+  the monochrome default).
+- `EmptyState` — the "Get started in N steps" onboarding card (used by empty
+  Jobs/Schedules/Buffers tables).
+
+Keep `ui/` for shadcn-generated primitives only (so the CLI can regenerate them);
+hand-written composites go in `patterns/`.
+
+### Interactive sandboxes (landing)
+
+`JobSandbox` (in `HowItWorks`) and `BufferSandbox` (in `Buffers`) are
+**client-side simulations** that let visitors play with scheduling / outbound
+rate-limiting. They are **NOT wired to the API** — per the honesty rule each
+shows an "interactive demo" label and illustrative data only. Both are
+`prefers-reduced-motion` aware and clean up their timers. See ADR 0001.
 
 ---
 
