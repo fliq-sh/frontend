@@ -81,9 +81,9 @@ export default function Problem() {
         {/* DIY vs Fliq — the proof. Dense on purpose. */}
         <div className="max-w-4xl mx-auto mt-20">
           <div className="rounded-2xl border border-white/10 overflow-hidden">
-            <div className="grid grid-cols-3 bg-white/5 border-b border-white/10">
-              <div className="p-4 text-sm text-white/40" />
-              <div className="p-4 text-sm font-medium text-white/60 text-center border-l border-white/10">
+            <div className="grid grid-cols-2 sm:grid-cols-3 bg-white/5 border-b border-white/10">
+              <div className="hidden sm:block p-4 text-sm text-white/40" />
+              <div className="p-4 text-sm font-medium text-white/60 text-center sm:border-l border-white/10">
                 DIY cron + worker
               </div>
               <div className="p-4 text-sm font-semibold text-white text-center border-l border-white/10">
@@ -94,12 +94,12 @@ export default function Problem() {
             {rows.map((row, i) => (
               <div
                 key={row.label}
-                className={`grid grid-cols-3 border-b border-white/10 last:border-0 ${
+                className={`grid grid-cols-2 sm:grid-cols-3 border-b border-white/10 last:border-0 ${
                   i % 2 === 0 ? "bg-transparent" : "bg-white/[0.02]"
                 }`}
               >
-                <div className="p-4 text-sm text-white/60 font-medium">{row.label}</div>
-                <div className="p-4 text-sm text-white/40 text-center border-l border-white/10">
+                <div className="col-span-2 sm:col-span-1 p-4 pb-1 sm:pb-4 text-sm text-white/60 font-medium">{row.label}</div>
+                <div className="p-4 text-sm text-white/40 text-center sm:border-l border-white/10">
                   {row.diy}
                 </div>
                 <div className="p-4 text-sm text-white font-medium text-center border-l border-white/10">
