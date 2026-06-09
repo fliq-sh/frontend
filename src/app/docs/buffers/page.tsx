@@ -10,9 +10,10 @@ export default async function Buffers() {
     <article>
       <DocH1>Buffers</DocH1>
       <DocLead>
-        A <strong>Buffer</strong> is a rate-limited HTTP request queue. Define a target
-        endpoint once, push items into the buffer, and Fliq drains them at your configured
-        rate — no infrastructure to manage.
+        A <strong>Buffer</strong> is an ordered stream that delivers your requests to one
+        endpoint at a rate you set — in submission order, with automatic retries, no
+        infrastructure to manage. Define the target once, push items in, and Fliq releases
+        them at your configured rate so you stay under the limit.
       </DocLead>
 
       <DocH2>When to use buffers</DocH2>
@@ -45,7 +46,7 @@ export default async function Buffers() {
   "method":          string,   // optional — GET | POST | PUT | PATCH | DELETE (default: POST)
   "headers":         object,   // optional — default headers for all items
   "timeout_seconds": number,   // optional — 1–3600 (default: 30)
-  "rate_limit":      number,   // optional — items per drain cycle, 1–1000 (default: 10)
+  "rate_limit":      number,   // optional — max requests per second, 1–1000 (default: 10)
   "max_retries":     number,   // optional — 0–20 (default: 3)
   "backoff":         string,   // optional — "exponential" | "linear" (default: "exponential")
   "webhook_url":     string,   // optional — notified on item completion/failure
@@ -88,17 +89,23 @@ export default async function Buffers() {
     "headers": { "X-Idempotency-Key": "pay_abc123" }
   }'`}</DocPre>
 
-      <DocH2>How draining works</DocH2>
+      <DocH2>How delivery works</DocH2>
       <DocP>
-        Fliq&apos;s scheduler polls for active buffers every second. On each cycle it
-        claims up to <DocCode>rate_limit</DocCode> pending items per buffer and executes
-        them sequentially. This guarantees your target endpoint never receives more
-        than <DocCode>rate_limit</DocCode> requests per second.
+        Each buffer is a per-second token bucket. Fliq refills up
+        to <DocCode>rate_limit</DocCode> tokens every second and spends one token per
+        request, so your target endpoint never receives more
+        than <DocCode>rate_limit</DocCode> requests per second — no bursts, no 429s.
+      </DocP>
+      <DocP>
+        Items are delivered <strong>one at a time, in submission order</strong>: at most
+        one request per buffer is in flight at any moment. If an item fails it retries in
+        place, holding its spot — a later item never overtakes an earlier one until that
+        earlier one either succeeds or exhausts its retries.
       </DocP>
 
       <DocH3>Item lifecycle</DocH3>
       <DocUL>
-        <DocLI><DocCode>pending</DocCode> — queued, waiting to be claimed</DocLI>
+        <DocLI><DocCode>pending</DocCode> — waiting its turn to be delivered</DocLI>
         <DocLI><DocCode>running</DocCode> — HTTP request in flight</DocLI>
         <DocLI><DocCode>completed</DocCode> — endpoint returned 2xx</DocLI>
         <DocLI><DocCode>failed</DocCode> — all retries exhausted without a 2xx</DocLI>
@@ -130,8 +137,8 @@ export default async function Buffers() {
 
       <DocH2>Pause and resume</DocH2>
       <DocP>
-        You can pause a buffer to temporarily stop draining without losing queued items.
-        New items can still be pushed while paused — they will be processed when you resume.
+        You can pause a buffer to temporarily stop delivery without losing pending items.
+        New items can still be pushed while paused — they are delivered when you resume.
       </DocP>
       <DocPre label="Pause / Resume" lang="bash">{`# Pause
 curl -X POST https://api.fliq.sh/buffers/BUFFER_ID/pause \\
@@ -160,6 +167,13 @@ curl https://api.fliq.sh/buffers/BUFFER_ID/items/ITEM_ID \\
         background reaper detects stale items within 30 seconds and either reschedules
         them (if retries remain) or marks them as failed. No manual intervention needed.
       </DocP>
+
+      <DocCallout type="info">
+        Delivery is <strong>at-least-once</strong>: if a worker crashes after calling your
+        endpoint but before recording the result, the request may be sent again on
+        recovery. Every delivery carries a stable <DocCode>X-Fliq-Delivery-Id</DocCode>{" "}
+        header — dedupe on it if your endpoint isn&apos;t idempotent.
+      </DocCallout>
 
       <DocCallout type="info">
         Deleting a buffer removes all its items. This action cannot be undone.
