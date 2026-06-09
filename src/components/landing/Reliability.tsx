@@ -20,7 +20,7 @@ const cards = [
 
 export default function Reliability() {
   return (
-    <section className="py-24 px-4 border-t border-white/10">
+    <section className="section-tight px-4 border-t border-white/10">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tight">
@@ -39,7 +39,7 @@ export default function Reliability() {
             <span className="text-white/20">·</span>
             <a
               href="/status"
-              className="text-sm text-indigo-300 hover:text-indigo-200 transition-colors"
+              className="text-sm text-white/60 hover:text-white transition-colors"
             >
               Full status &amp; uptime →
             </a>

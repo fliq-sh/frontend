@@ -4,9 +4,12 @@ interface FliqIconProps {
 }
 
 /**
- * Fliq F-lettermark icon (concept 03).
- * Geometric F: white vertical stroke + indigo horizontal bars + motion lines + corner accent dot.
- * Pure SVG — works in any context (navbar, footer, og images, etc.)
+ * Fliq F-lettermark icon.
+ *
+ * This is the ONE place colour lives in the marketing brand: the F is rendered
+ * in a holographic / iridescent spectrum while the rest of the site is strict
+ * monochrome white-on-dark. Keeping the iridescence contained to the mark is
+ * deliberate — see ADR 0001. Pure SVG; works anywhere (navbar, footer, OG).
  */
 export default function FliqIcon({ size = 32, className }: FliqIconProps) {
   return (
@@ -20,21 +23,19 @@ export default function FliqIcon({ size = 32, className }: FliqIconProps) {
       aria-label="Fliq"
     >
       <defs>
-        <linearGradient id="fi-g1" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%"   stopColor="#ffffff" />
-          <stop offset="100%" stopColor="#818cf8" />
+        {/* Single iridescent spectrum, swept diagonally across the whole mark
+            so the F reads as one continuous holographic surface. */}
+        <linearGradient id="fi-iri" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stopColor="#5eead4" />
+          <stop offset="30%"  stopColor="#818cf8" />
+          <stop offset="55%"  stopColor="#c084fc" />
+          <stop offset="78%"  stopColor="#f0abfc" />
+          <stop offset="100%" stopColor="#fcd34d" />
         </linearGradient>
-        <linearGradient id="fi-g2" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%"   stopColor="#818cf8" />
-          <stop offset="100%" stopColor="#6366f1" stopOpacity="0.6" />
-        </linearGradient>
-        <linearGradient id="fi-g3" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%"   stopColor="#a5b4fc" />
-          <stop offset="100%" stopColor="#6366f1" stopOpacity="0.4" />
-        </linearGradient>
-        <radialGradient id="fi-glow" cx="40%" cy="50%" r="50%">
-          <stop offset="0%"   stopColor="#6366f1" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+        <radialGradient id="fi-glow" cx="42%" cy="44%" r="55%">
+          <stop offset="0%"   stopColor="#c084fc" stopOpacity="0.22" />
+          <stop offset="60%"  stopColor="#818cf8" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="#818cf8" stopOpacity="0" />
         </radialGradient>
         <filter id="fi-dot-glow" x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur stdDeviation="3" result="blur" />
@@ -45,26 +46,22 @@ export default function FliqIcon({ size = 32, className }: FliqIconProps) {
         </filter>
       </defs>
 
-      {/* Ambient glow */}
+      {/* Ambient iridescent glow */}
       <ellipse cx="34" cy="36" rx="28" ry="28" fill="url(#fi-glow)" />
 
-      {/* Vertical stroke — white→indigo gradient */}
-      <rect x="18" y="14" width="9" height="44" rx="2" fill="url(#fi-g1)" />
+      {/* F — vertical stroke + two horizontal bars, all one iridescent fill */}
+      <rect x="18" y="14"   width="9"  height="44" rx="2" fill="url(#fi-iri)" />
+      <rect x="18" y="14"   width="36" height="9"  rx="2" fill="url(#fi-iri)" />
+      <rect x="18" y="31.5" width="26" height="8"  rx="2" fill="url(#fi-iri)" />
 
-      {/* Top horizontal bar — full width */}
-      <rect x="18" y="14" width="36" height="9" rx="2" fill="url(#fi-g2)" />
+      {/* Motion lines — neutral white, so only the F itself carries colour */}
+      <line x1="52" y1="27" x2="59" y2="27" stroke="rgba(255,255,255,0.55)" strokeWidth="2"   strokeLinecap="round" />
+      <line x1="54" y1="33" x2="59" y2="33" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="56" y1="39" x2="59" y2="39" stroke="rgba(255,255,255,0.18)" strokeWidth="1"   strokeLinecap="round" />
 
-      {/* Mid horizontal bar — classic F proportion */}
-      <rect x="18" y="31.5" width="26" height="8" rx="2" fill="url(#fi-g3)" />
-
-      {/* Motion lines — velocity / dispatch */}
-      <line x1="52" y1="27" x2="59" y2="27" stroke="rgba(99,102,241,0.7)"  strokeWidth="2"   strokeLinecap="round" />
-      <line x1="54" y1="33" x2="59" y2="33" stroke="rgba(99,102,241,0.45)" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="56" y1="39" x2="59" y2="39" stroke="rgba(99,102,241,0.25)" strokeWidth="1"   strokeLinecap="round" />
-
-      {/* Corner accent dot — top-right of top bar */}
-      <circle cx="54" cy="18.5" r="3"   fill="#6366f1" opacity="0.9" filter="url(#fi-dot-glow)" />
-      <circle cx="54" cy="18.5" r="1.5" fill="#c7d2fe" />
+      {/* Corner accent dot — iridescent highlight */}
+      <circle cx="54" cy="18.5" r="3"   fill="#f0abfc" opacity="0.95" filter="url(#fi-dot-glow)" />
+      <circle cx="54" cy="18.5" r="1.5" fill="#ffffff" />
     </svg>
   );
 }

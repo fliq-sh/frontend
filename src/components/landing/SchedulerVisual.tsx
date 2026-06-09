@@ -55,8 +55,8 @@ function advance(job: Job): Job {
 }
 
 const PHASE_META: Record<Phase, { label: string; dot: string; text: string }> = {
-  scheduled: { label: "scheduled", dot: "bg-indigo-400", text: "text-indigo-300" },
-  running: { label: "running", dot: "bg-sky-400", text: "text-sky-300" },
+  scheduled: { label: "scheduled", dot: "bg-white/40", text: "text-white/50" },
+  running: { label: "running", dot: "bg-white/70", text: "text-white/70" },
   retrying: { label: "retry", dot: "bg-amber-400", text: "text-amber-300" },
   success: { label: "200 OK", dot: "bg-green-400", text: "text-green-300" },
 };
@@ -94,7 +94,7 @@ export default function SchedulerVisual() {
 
   return (
     <div className="w-full max-w-xl mx-auto">
-      <div className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur-sm overflow-hidden shadow-[0_0_60px_rgba(99,102,241,0.10)]">
+      <div className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur-sm overflow-hidden shadow-[0_0_60px_rgba(255,255,255,0.06)]">
         {/* Window chrome */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.07]">
           <span className="w-2.5 h-2.5 rounded-full bg-white/10" />
@@ -111,7 +111,7 @@ export default function SchedulerVisual() {
 
         {/* Timeline track with scanning highlight */}
         <div className="relative h-1 bg-white/[0.04] overflow-hidden">
-          <div className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent animate-timeline-scan" />
+          <div className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-timeline-scan" />
         </div>
 
         {/* Job rows */}
@@ -127,7 +127,7 @@ export default function SchedulerVisual() {
                 <span
                   className={`text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded ${
                     job.method === "POST"
-                      ? "bg-indigo-500/15 text-indigo-300"
+                      ? "bg-white/15 text-white/70"
                       : "bg-white/10 text-white/50"
                   }`}
                 >

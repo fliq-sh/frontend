@@ -75,21 +75,22 @@ src/
 
 ### Landing sections (top → bottom in `page.tsx`)
 
+Order matches `page.tsx` (10 sections after the 2026 monochrome restyle, which
+consolidated the former 13 — see `docs/adr/0001`). Merged-away components
+(`Features`, `Agents`, `Comparison`, `Enterprise`) were folded in as noted.
+
 | Component | Description |
 |---|---|
 | `Navbar.tsx` | Fixed header; Docs/Pricing/Compare + Resources dropdown + `LiveStatus` pill |
 | `Hero.tsx` | Devs-first headline + CTA + beta badge + inline `LiveStatus` + `SchedulerVisual` |
-| `OpenSource.tsx` | Honest proof strip (replaces fake logos): open-source + live GitHub stars + real architecture facts |
-| `Problem.tsx` | The cron trap (3 pains) vs Fliq (3 solutions) |
-| `HowItWorks.tsx` | 3 steps: Schedule → Fire & retry → Inspect |
-| `Features.tsx` | Bento grid — one-API-call card + 5 honest capability cards |
+| `Problem.tsx` | The cron trap (3 pains vs 3 solutions) **+ DIY-vs-Fliq table** (former `Comparison`) + `/vs` link |
+| `HowItWorks.tsx` | 3 steps (Schedule → Fire & retry → Inspect) **+ capability bento** (former `Features`) |
 | `Quickstart.tsx` | 4-tab code snippet (HTTP / Node.js / Python / curl) |
-| `UseCases.tsx` | Two-column: one-time jobs vs recurring/cron |
-| `Agents.tsx` | The AI-agent/MCP differentiator (the "edge") |
-| `Comparison.tsx` | DIY cron vs Fliq + link to `/vs` |
+| `Buffers.tsx` | **Marquee buffers section (the GTM wedge).** Pain-first H2 ("Call rate-limited APIs without the 429s"); teaches "buffer" in body. Links `/docs/buffers` |
+| `UseCases.tsx` | One-time vs recurring/cron **+ featured AI-agent block** (former `Agents`) |
 | `Reliability.tsx` | Live status panel + 3 honest reliability mechanisms (no fabricated stats) |
+| `OpenSource.tsx` | Honest proof (open-source + live GitHub stars + real facts) **+ self-host/enterprise block** (former `Enterprise`) |
 | `PricingTeaser.tsx` | 3-tier cards (Beta free) + CTA to `/pricing` |
-| `Enterprise.tsx` | Self-hosted/enterprise CTA, `mailto:enterprise@fliq.sh` |
 | `FAQ.tsx` | Accordion (data in `faq-data.ts`); emits FAQPage JSON-LD via `page.tsx` |
 | `Footer.tsx` | Product / Compare / Resources columns + `LiveStatus` + legal |
 
@@ -149,11 +150,20 @@ and reinforced fabricated "30+ regions" copy). Instead:
 - Opacity variants for hierarchy: `text-white/60` (body), `text-white/40` (captions), `text-white/20` (disabled/logos)
 - Subtle surfaces: `bg-white/5`, `bg-white/[0.03]`
 - Borders: `border-white/10`
-- Indigo accent: `text-indigo-400`, `border-indigo-500/30`, `bg-indigo-500/10`
+- **Monochrome — no colour accent.** White at opacities carries all hierarchy;
+  the primary CTA is a white button. Do **not** use `indigo-*`/`violet-*` or any
+  hue accent on marketing. Colour lives in exactly two places (see
+  `docs/adr/0001-monochrome-dark-iridescent-brand.md`):
+  1. the **iridescent F-mark** (`FliqIcon`) — the one brand accent; don't add more.
+  2. **traffic-light status** below.
 - **Traffic-light semantics** (mirrors job state): green = operational/success
   (`text-green-400`), amber = retry/degraded (`text-amber-400`), red =
   failure/down (`text-red-400`). Used by `LiveStatus` and `SchedulerVisual`.
-- All new landing sections get `border-t border-white/10` top border and `py-24 px-4` padding
+- **Airiness is two registers** (utilities in `globals.css`): `.section-breathe`
+  for narrative sections, `.section-tight` for technical/dense ones (code,
+  tables, status). Pick by section type — don't space everything uniformly.
+- All new landing sections get `border-t border-white/10` top border, a
+  `section-breathe`/`section-tight` register, and `px-6` (container `max-w-7xl mx-auto`)
 - Mono (`font-mono`) for cron expressions, timestamps, latencies, code — the developer texture
 
 ---

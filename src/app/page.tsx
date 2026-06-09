@@ -3,7 +3,6 @@ import dynamic from "next/dynamic";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import Footer from "@/components/landing/Footer";
-import OpenSource from "@/components/landing/OpenSource";
 import { faqs } from "@/components/landing/faq-data";
 import { SITE } from "@/lib/site";
 
@@ -11,14 +10,12 @@ import { SITE } from "@/lib/site";
 const noop = () => null;
 const Problem       = dynamic(() => import("@/components/landing/Problem"),       { loading: noop });
 const HowItWorks    = dynamic(() => import("@/components/landing/HowItWorks"),    { loading: noop });
-const Features      = dynamic(() => import("@/components/landing/Features"),      { loading: noop });
 const Quickstart    = dynamic(() => import("@/components/landing/Quickstart"),    { loading: noop });
+const Buffers       = dynamic(() => import("@/components/landing/Buffers"),       { loading: noop });
 const UseCases      = dynamic(() => import("@/components/landing/UseCases"),      { loading: noop });
-const Agents        = dynamic(() => import("@/components/landing/Agents"),        { loading: noop });
-const Comparison    = dynamic(() => import("@/components/landing/Comparison"),    { loading: noop });
 const Reliability   = dynamic(() => import("@/components/landing/Reliability"),   { loading: noop });
 const PricingTeaser = dynamic(() => import("@/components/landing/PricingTeaser"), { loading: noop });
-const Enterprise    = dynamic(() => import("@/components/landing/Enterprise"),    { loading: noop });
+const OpenSource    = dynamic(() => import("@/components/landing/OpenSource"),    { loading: noop });
 const FAQ           = dynamic(() => import("@/components/landing/FAQ"),           { loading: noop });
 
 export const metadata: Metadata = {
@@ -45,7 +42,7 @@ const faqJsonLd = {
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#09090b] text-white">
+    <div className="dark flex flex-col min-h-screen bg-[#09090b] text-white">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
@@ -56,40 +53,31 @@ export default function LandingPage() {
         {/* 1 ── Hero (devs-first) + live scheduler visual */}
         <Hero />
 
-        {/* 2 ── Honest proof: open source + how it really works (replaces fake logos) */}
-        <OpenSource />
-
-        {/* 3 ── The cron trap */}
+        {/* 2 ── The cron trap (problem + DIY-vs-Fliq proof) */}
         <Problem />
 
-        {/* 4 ── How it works */}
+        {/* 3 ── How it works (steps + capability bento) */}
         <HowItWorks />
 
-        {/* 5 ── Features */}
-        <Features />
-
-        {/* 6 ── Quickstart code */}
+        {/* 4 ── Quickstart code */}
         <Quickstart />
 
-        {/* 7 ── What people build */}
+        {/* 5 ── Buffers: call rate-limited APIs without the 429s (the wedge) */}
+        <Buffers />
+
+        {/* 6 ── What people build (use cases + featured AI-agent block) */}
         <UseCases />
 
-        {/* 8 ── The AI-agent edge (differentiator) */}
-        <Agents />
-
-        {/* 9 ── Why not DIY cron */}
-        <Comparison />
-
-        {/* 10 ── Reliability you can watch (live status) */}
+        {/* 7 ── Reliability you can watch (live status) */}
         <Reliability />
 
-        {/* 11 ── Beta-free pricing */}
+        {/* 8 ── Open source & self-host */}
+        <OpenSource />
+
+        {/* 9 ── Beta-free pricing */}
         <PricingTeaser />
 
-        {/* 12 ── Self-hosted / enterprise */}
-        <Enterprise />
-
-        {/* 13 ── FAQ */}
+        {/* 10 ── FAQ */}
         <FAQ />
       </main>
 

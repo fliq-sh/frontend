@@ -87,7 +87,7 @@ export default async function Quickstart() {
   };
 
   return (
-    <section className="py-24 px-4 border-t border-white/10">
+    <section className="section-tight px-4 border-t border-white/10">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Left: copy */}
