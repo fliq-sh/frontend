@@ -1,16 +1,23 @@
-# Marketing site is dark + monochrome, with iridescence confined to the F-mark
+# The frontend is dark + monochrome, with iridescence confined to the F-mark
 
 Status: accepted
 
 ## Decision
 
-The fliq.sh marketing site uses a **dark** background with a **strictly
-monochrome** white-on-dark palette: white (at varying opacities) carries all
-visual hierarchy, and the primary CTA is a white button. Colour appears in
-exactly two places: the **iridescent F-mark** (`FliqIcon` — the one brand
-accent) and **traffic-light status semantics** (green/amber/red) that encode job
-state in `LiveStatus` / `SchedulerVisual`. No indigo/violet accent, no scattered
-rainbow or glassmorphism.
+The **entire fliq.sh frontend** — marketing site *and* the `/app` dashboard, plus
+docs, blog, pricing, comparison, and legal pages — uses a **dark** background
+with a **strictly monochrome** white-on-dark palette: white (at varying
+opacities) carries all visual hierarchy, and the primary/active/interactive
+accent is white (e.g. the primary CTA and the active sidebar item are white, not
+a hue). Colour appears in exactly two places: the **iridescent F-mark**
+(`FliqIcon` — the one brand accent) and **traffic-light status semantics**
+(green/amber/red) that encode job/execution/billing state. No indigo/violet
+accent anywhere, no scattered rainbow or glassmorphism.
+
+*(Originally scoped to the marketing site; widened to the whole frontend in the
+2026-06 design-system unification, which removed the residual `indigo-*` the
+dashboard and secondary pages still carried and pulled shared composites into
+`src/components/patterns/`.)*
 
 ## Why this is surprising (and why it's deliberate)
 
@@ -46,7 +53,18 @@ the F-mark, where its rarity makes it read as intentional.
 - Airiness is **two registers**, not global: `.section-breathe` for narrative
   sections, `.section-tight` for technical ones (code, tables, status) where
   whitespace weakens the content.
-- The dark token set is applied to marketing surfaces via the `.dark` class on
-  the landing wrapper, which makes the shadcn `primary` (now pure white) the CTA.
-- Do not reintroduce `indigo-*`/`violet-*` or add new colour to the landing
-  without revisiting this ADR.
+- The dark token set is global: `<html class="dark">` makes the shadcn `primary`
+  (now pure white) the accent everywhere. The token layer itself is monochrome —
+  `--sidebar-primary` and `--chart-*` were de-coloured (they shipped as the
+  rainbow shadcn defaults) so nothing leaks a hue through a component default.
+- Traffic-light status is centralised in `src/components/patterns/tones.ts` and
+  surfaced via `StatusBadge`/`StatusDot`/`StatCard` — the single source of
+  green/amber/red across marketing (`LiveStatus`, `SchedulerVisual`) and the
+  dashboard (job rows, attempts, stat tiles, billing).
+- Two **interactive sandboxes** teach the product on the landing — `JobSandbox`
+  (scheduling) and `BufferSandbox` (outbound rate limiting). They are
+  **client-side simulations, not wired to the API**; per the repo honesty rule
+  each carries an "interactive demo" label and uses illustrative data, so they're
+  never mistaken for live metrics.
+- Do not reintroduce `indigo-*`/`violet-*` or add new colour anywhere in the
+  frontend without revisiting this ADR.

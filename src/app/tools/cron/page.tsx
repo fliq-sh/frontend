@@ -76,7 +76,7 @@ export default function CronToolPage() {
         {/* Hero */}
         <section className="py-24 px-4">
           <div className="max-w-3xl mx-auto text-center mb-12">
-            <div className="inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs text-indigo-300 mb-6">
+            <div className="inline-block rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs text-white/70 mb-6">
               Free developer tool
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">

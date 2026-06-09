@@ -131,7 +131,7 @@ export default async function BlogPost({ params }: PageProps) {
                   <Link
                     key={tag}
                     href={`/blog/tag/${tag}`}
-                    className="rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-xs text-indigo-400 hover:bg-indigo-500/20 transition-colors"
+                    className="rounded-full bg-white/10 border border-white/15 px-2.5 py-0.5 text-xs text-white/70 hover:bg-white/15 transition-colors"
                   >
                     {tag}
                   </Link>

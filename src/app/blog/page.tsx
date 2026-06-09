@@ -54,7 +54,7 @@ export default function BlogIndex() {
             <div className="flex flex-wrap gap-2 mb-10">
               <Link
                 href="/blog"
-                className="rounded-full bg-indigo-500/20 border border-indigo-500/30 px-3 py-1 text-xs text-indigo-400 font-medium"
+                className="rounded-full bg-white/10 border border-white/15 px-3 py-1 text-xs text-white/70 font-medium hover:bg-white/15 transition-colors"
               >
                 All posts
               </Link>

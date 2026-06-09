@@ -44,7 +44,7 @@ export default function PrivacyPage() {
               <p>
                 <strong className="text-white">Deletion.</strong> Email{" "}
                 <a
-                  className="text-indigo-300 hover:text-indigo-200"
+                  className="text-white hover:text-white/70 underline underline-offset-4"
                   href={`mailto:${SITE.email}`}
                 >
                   {SITE.email}

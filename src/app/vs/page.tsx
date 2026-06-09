@@ -50,15 +50,15 @@ export default function ComparisonsIndexPage() {
               <Link
                 key={c.slug}
                 href={`/vs/${c.slug}`}
-                className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-indigo-500/30 hover:bg-white/[0.05]"
+                className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/25 hover:bg-white/[0.05]"
               >
-                <h2 className="text-lg font-semibold tracking-tight group-hover:text-indigo-400 transition-colors">
+                <h2 className="text-lg font-semibold tracking-tight group-hover:text-white/70 transition-colors">
                   Fliq vs {c.competitor}
                 </h2>
                 <p className="mt-2 text-sm text-white/40">
                   {c.competitorTagline}
                 </p>
-                <span className="mt-4 inline-block text-sm text-indigo-400">
+                <span className="mt-4 inline-block text-sm text-white/70">
                   Compare →
                 </span>
               </Link>

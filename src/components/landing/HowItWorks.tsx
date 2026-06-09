@@ -1,6 +1,9 @@
 // "How it works" — the three-step narrative followed by the capability bento.
 // (Merged from the former HowItWorks + Features sections.)
 
+import { SectionHeader } from "@/components/patterns";
+import JobSandbox from "./JobSandbox";
+
 const steps = [
   {
     number: "01",
@@ -132,6 +135,16 @@ export default function HowItWorks() {
               </p>
             </div>
           ))}
+        </div>
+
+        {/* Interactive sandbox */}
+        <div className="mt-20">
+          <SectionHeader
+            title="See it run"
+            subtitle="Schedule a job and watch it fire, retry, and record — it's a demo, not live."
+            className="mb-10"
+          />
+          <JobSandbox />
         </div>
 
         {/* Capabilities bento */}

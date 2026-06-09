@@ -9,9 +9,9 @@ const CONFIG: Record<
 > = {
   info: {
     icon: Info,
-    border: "border-indigo-500/30",
-    bg: "bg-indigo-500/5",
-    iconColor: "text-indigo-400",
+    border: "border-white/15",
+    bg: "bg-white/5",
+    iconColor: "text-white/70",
   },
   warning: {
     icon: AlertTriangle,

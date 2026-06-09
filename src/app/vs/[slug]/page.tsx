@@ -108,7 +108,7 @@ export default async function ComparisonPage({
             >
               ← All comparisons
             </Link>
-            <div className="mt-6 inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-300">
+            <div className="mt-6 inline-block rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/70">
               {c.competitorTagline}
             </div>
             <h1 className="mt-4 text-4xl sm:text-5xl font-bold tracking-tight">
@@ -148,8 +148,8 @@ export default async function ComparisonPage({
                 {c.whenCompetitor}
               </p>
             </div>
-            <div className="rounded-2xl border border-indigo-500/30 bg-indigo-500/10 p-8">
-              <h2 className="text-xl font-bold tracking-tight mb-3 text-indigo-300">
+            <div className="rounded-2xl border border-white/30 bg-white/[0.06] p-8">
+              <h2 className="text-xl font-bold tracking-tight mb-3 text-white">
                 When Fliq fits better
               </h2>
               <p className="text-white/70 leading-relaxed">{c.whenFliq}</p>

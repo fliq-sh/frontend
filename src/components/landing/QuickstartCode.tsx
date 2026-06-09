@@ -25,7 +25,7 @@ export default function QuickstartCode({ highlighted, raw }: QuickstartCodeProps
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2.5 text-xs font-medium transition-colors ${
               activeTab === tab
-                ? "text-white border-b-2 border-indigo-500"
+                ? "text-white border-b-2 border-white"
                 : "text-white/40 hover:text-white/60"
             }`}
           >

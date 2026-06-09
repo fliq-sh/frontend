@@ -35,7 +35,7 @@ export default async function TagPage({ params }: PageProps) {
       <main className="flex-1 pt-14">
         <section className="py-20 px-4 border-b border-white/10">
           <div className="max-w-4xl mx-auto text-center">
-            <p className="text-sm text-indigo-400 mb-2">Tag</p>
+            <p className="text-sm text-white/40 uppercase tracking-widest mb-2">Tag</p>
             <h1 className="text-4xl font-bold tracking-tight mb-4">{tag}</h1>
             <p className="text-white/60">
               {posts.length} post{posts.length !== 1 ? "s" : ""}
@@ -58,7 +58,7 @@ export default async function TagPage({ params }: PageProps) {
                 href={`/blog/tag/${t}`}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                   t === tag
-                    ? "bg-indigo-500/20 border border-indigo-500/30 text-indigo-400"
+                    ? "bg-white/10 border border-white/15 text-white/70 hover:bg-white/15"
                     : "border border-white/10 text-white/50 hover:text-white hover:border-white/20"
                 }`}
               >

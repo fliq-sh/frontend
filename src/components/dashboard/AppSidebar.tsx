@@ -73,10 +73,10 @@ export default function AppSidebar() {
                     {...("external" in item ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                     className={cn(
                       "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
-                      isActive && "border-l-2 border-indigo-500 bg-indigo-500/10 text-white"
+                      isActive && "border-l-2 border-white bg-white/10 text-white"
                     )}
                   >
-                    <Icon className={cn("h-4 w-4", isActive ? "text-indigo-400" : "text-white/50")} />
+                    <Icon className={cn("h-4 w-4", isActive ? "text-white" : "text-white/50")} />
                     <span>{item.label}</span>
                   </Link>
                 </SidebarMenuButton>
@@ -99,7 +99,7 @@ export default function AppSidebar() {
                   className="rounded-full"
                 />
               ) : (
-                <div className="h-8 w-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-medium text-indigo-400">
+                <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-medium text-white/80">
                   {displayName[0]}
                 </div>
               )}
@@ -125,7 +125,7 @@ export default function AppSidebar() {
                   className="rounded-full"
                 />
               ) : (
-                <div className="h-8 w-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-medium text-indigo-400">
+                <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-medium text-white/80">
                   {displayName[0]}
                 </div>
               )}

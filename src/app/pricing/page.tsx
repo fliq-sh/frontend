@@ -136,7 +136,7 @@ export default function PricingPage() {
             </p>
 
             {/* Beta banner */}
-            <div className="inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-2 text-sm text-indigo-300">
+            <div className="inline-block rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-white/70">
               100k credits / day · free during beta · no strings attached
             </div>
           </div>
@@ -150,13 +150,13 @@ export default function PricingPage() {
                 key={tier.name}
                 className={`relative flex flex-col rounded-2xl border p-8 ${
                   tier.highlight
-                    ? "border-indigo-500/50 bg-indigo-950/20"
+                    ? "border-white/30 bg-white/[0.06]"
                     : "border-white/10 bg-white/[0.03]"
                 }`}
               >
                 {tier.badge && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-indigo-600 px-3 py-0.5 text-xs font-medium text-white">
+                    <span className="rounded-full bg-white px-3 py-0.5 text-xs font-medium text-[#09090b]">
                       {tier.badge}
                     </span>
                   </div>

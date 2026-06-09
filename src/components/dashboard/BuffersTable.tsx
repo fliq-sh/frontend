@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { ChevronDown, ChevronRight, Layers, Settings } from "lucide-react";
 import Link from "next/link";
+import { EmptyState } from "@/components/patterns";
 
 // ── Create Buffer Dialog ─────────────────────────────────────────────────────
 
@@ -344,48 +345,41 @@ export default function BuffersTable() {
               ? (
                   <TableRow className="border-white/10 hover:bg-transparent">
                     <TableCell colSpan={8} className="p-0">
-                      <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/[0.04] p-8 m-4">
-                        <div className="flex flex-col gap-6 max-w-xl">
-                          <div>
-                            <p className="text-xs text-indigo-400 uppercase tracking-widest mb-2">Get started</p>
-                            <h3 className="text-xl font-semibold">Create your first rate-limited buffer</h3>
-                            <p className="text-sm text-white/50 mt-2">
-                              Buffers let you push HTTP requests and have them executed at a controlled rate. Perfect for third-party APIs with strict rate limits.
-                            </p>
-                          </div>
-                          <div className="flex flex-col gap-5">
-                            <div className="flex gap-4">
-                              <div className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-xs font-bold text-indigo-400">1</div>
-                              <div className="flex flex-col gap-1">
-                                <p className="text-sm font-medium">Get an API token</p>
-                                <p className="text-xs text-white/50">Head to Settings to create a token for authenticating your requests.</p>
-                                <Link href="/app/settings">
-                                  <Button size="sm" variant="outline" className="w-fit gap-1.5 border-white/10 hover:bg-white/5 mt-1">
-                                    <Settings className="h-3.5 w-3.5" />
-                                    Settings
-                                  </Button>
-                                </Link>
-                              </div>
-                            </div>
-                            <div className="flex gap-4">
-                              <div className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-xs font-bold text-indigo-400">2</div>
-                              <div className="flex flex-col gap-1">
-                                <p className="text-sm font-medium">Create a buffer</p>
-                                <p className="text-xs text-white/50">
-                                  Use the <span className="text-white/70">New Buffer</span> button above. Set a target URL and rate limit (req/s).
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex gap-4">
-                              <div className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-xs font-bold text-indigo-400">3</div>
-                              <div className="flex flex-col gap-1">
-                                <p className="text-sm font-medium">Push items &amp; monitor</p>
-                                <p className="text-xs text-white/50">Push requests into the buffer. Fliq fires them at your configured rate with automatic 429 retry handling.</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <EmptyState
+                        className="m-4"
+                        title="Create your first rate-limited buffer"
+                        steps={[
+                          {
+                            title: "Get an API token",
+                            description: (
+                              <>
+                                Buffers let you push HTTP requests and have them executed at a controlled rate. Perfect for third-party APIs with strict rate limits.
+                                <span className="block mt-2">Head to Settings to create a token for authenticating your requests.</span>
+                              </>
+                            ),
+                            action: (
+                              <Link href="/app/settings">
+                                <Button size="sm" variant="outline" className="w-fit gap-1.5 border-white/10 hover:bg-white/5">
+                                  <Settings className="h-3.5 w-3.5" />
+                                  Settings
+                                </Button>
+                              </Link>
+                            ),
+                          },
+                          {
+                            title: "Create a buffer",
+                            description: (
+                              <>
+                                Use the <span className="text-white/70">New Buffer</span> button above. Set a target URL and rate limit (req/s).
+                              </>
+                            ),
+                          },
+                          {
+                            title: "Push items & monitor",
+                            description: "Push requests into the buffer. Fliq fires them at your configured rate with automatic 429 retry handling.",
+                          },
+                        ]}
+                      />
                     </TableCell>
                   </TableRow>
                 )
