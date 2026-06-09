@@ -16,4 +16,4 @@ export { ConfirmButton } from "./ConfirmButton";
 export { RelativeTime } from "./RelativeTime";
 export { CopyButton } from "./CopyButton";
 export { Empty, KeyVal } from "./Empty";
-export { Field, TextInput, Select, Textarea, FormError, fieldClass } from "./Form";
+export { Field, TextInput, Select, Textarea, FormError, parseJsonObject, fieldClass } from "./Form";

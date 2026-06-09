@@ -1,9 +1,22 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { formatDistanceToNow, differenceInSeconds } from "date-fns";
-import { useApi, createJobsApi, Job, JobAttempt, JobStatus, CreateJobInput } from "@/lib/api";
+import { useCallback, useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  ChevronDown,
+  ChevronRight,
+  Code2,
+  Settings,
+  Zap,
+} from "lucide-react";
+import {
+  useApi,
+  createJobsApi,
+  Job,
+  JobStatus,
+} from "@/lib/api";
+import { useCursorList } from "@/hooks/use-cursor-list";
+import { usePoll } from "@/hooks/use-poll";
 import {
   Table,
   TableBody,
@@ -12,7 +25,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -22,22 +34,44 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ChevronDown, ChevronRight, Code2, Settings, Layers, Clock, Activity, AlertTriangle, RefreshCw, Eye, ChevronLeft } from "lucide-react";
-import Link from "next/link";
 import { ApiCodeBlock, JOB_SNIPPETS } from "./ApiCodeBlock";
-import { EmptyState, StatCard } from "@/components/patterns";
+import { AttemptsPanel } from "./AttemptsPanel";
+import { EmptyState } from "@/components/patterns";
+import { jobStatusTone } from "@/components/patterns";
+import {
+  PageHeader,
+  SectionCard,
+  StatusPill,
+  MethodChip,
+  FilterTabs,
+  type FilterTab,
+  SearchInput,
+  Pagination,
+  RefreshControls,
+  ConfirmButton,
+  RelativeTime,
+  Empty,
+  Field,
+  TextInput,
+  Select,
+  Textarea,
+  FormError,
+  parseJsonObject,
+} from "./ui";
 
-const STATUS_VARIANT: Record<JobStatus, "default" | "secondary" | "destructive" | "outline"> = {
-  pending: "secondary",
-  running: "default",
-  completed: "outline",
-  failed: "destructive",
-  cancelled: "secondary",
-};
+const STATUS_TABS: FilterTab<JobStatus | "all">[] = [
+  { value: "all", label: "All" },
+  { value: "pending", label: "Pending", tone: "warning" },
+  { value: "running", label: "Running", tone: "neutral" },
+  { value: "completed", label: "Completed", tone: "success" },
+  { value: "failed", label: "Failed", tone: "danger" },
+  { value: "cancelled", label: "Cancelled", tone: "danger" },
+];
+
+// ─── Create dialog ─────────────────────────────────────────────────────────
 
 function NewJobDialog({ onCreated }: { onCreated: () => void }) {
   const { apiFetch } = useApi();
-  const api = createJobsApi(apiFetch);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,13 +81,13 @@ function NewJobDialog({ onCreated }: { onCreated: () => void }) {
     scheduled_at: new Date(Date.now() + 60_000).toISOString().slice(0, 16),
     max_retries: 3,
     timeout_seconds: 30,
+    headers: "",
     body: "",
     webhook_url: "",
   });
 
-  function handleOpenChange(val: boolean) {
-    setOpen(val);
-    if (!val) setError(null);
+  function reset() {
+    setError(null);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -61,12 +95,15 @@ function NewJobDialog({ onCreated }: { onCreated: () => void }) {
     setLoading(true);
     setError(null);
     try {
+      const headers = parseJsonObject(form.headers, "Headers");
+      const api = createJobsApi(apiFetch);
       await api.create({
         url: form.url,
         method: form.method,
         scheduled_at: new Date(form.scheduled_at).toISOString(),
         max_retries: form.max_retries,
         timeout_seconds: form.timeout_seconds,
+        headers,
         body: form.body || undefined,
         webhook_url: form.webhook_url || undefined,
       });
@@ -80,98 +117,85 @@ function NewJobDialog({ onCreated }: { onCreated: () => void }) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset(); }}>
       <DialogTrigger asChild>
-        <Button size="sm">New Job</Button>
+        <Button size="sm">Schedule job</Button>
       </DialogTrigger>
-      <DialogContent className="bg-[#09090b] border-white/10">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border-white/10 bg-[#09090b]">
         <DialogHeader>
-          <DialogTitle>Schedule a Job</DialogTitle>
+          <DialogTitle>Schedule a job</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
-          {error && (
-            <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm text-red-400">
-              {error}
-            </div>
-          )}
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/60">URL</label>
-            <input
-              className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+        <form onSubmit={handleSubmit} className="mt-2 flex flex-col gap-4">
+          <FormError message={error} />
+          <Field label="Target URL">
+            <TextInput
               required
               value={form.url}
               onChange={(e) => setForm({ ...form, url: e.target.value })}
               placeholder="https://example.com/webhook"
             />
-          </div>
+          </Field>
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/60">Method</label>
-              <select
-                className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none"
-                value={form.method}
-                onChange={(e) => setForm({ ...form, method: e.target.value })}
-              >
+            <Field label="Method">
+              <Select value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value })}>
                 {["GET", "POST", "PUT", "PATCH", "DELETE"].map((m) => (
                   <option key={m} value={m}>{m}</option>
                 ))}
-              </select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/60">Scheduled At (local)</label>
-              <input
+              </Select>
+            </Field>
+            <Field label="Run at" hint="Your local time">
+              <TextInput
                 type="datetime-local"
-                className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none"
                 value={form.scheduled_at}
                 onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })}
               />
-            </div>
+            </Field>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/60">Max Retries</label>
-              <input
+            <Field label="Max retries">
+              <TextInput
                 type="number"
                 min={0}
                 max={20}
-                className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none"
                 value={form.max_retries}
                 onChange={(e) => setForm({ ...form, max_retries: Number(e.target.value) })}
               />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/60">Timeout (seconds)</label>
-              <input
+            </Field>
+            <Field label="Timeout" hint="seconds">
+              <TextInput
                 type="number"
                 min={1}
                 max={3600}
-                className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none"
                 value={form.timeout_seconds}
                 onChange={(e) => setForm({ ...form, timeout_seconds: Number(e.target.value) })}
               />
-            </div>
+            </Field>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/60">Webhook URL (optional)</label>
-            <input
-              className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
-              value={form.webhook_url}
-              onChange={(e) => setForm({ ...form, webhook_url: e.target.value })}
-              placeholder="https://example.com/webhook-callback"
+          <Field label="Headers" hint="Optional JSON object">
+            <Textarea
+              rows={2}
+              value={form.headers}
+              onChange={(e) => setForm({ ...form, headers: e.target.value })}
+              placeholder='{"Authorization": "Bearer …"}'
             />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/60">Body (JSON, optional)</label>
-            <textarea
+          </Field>
+          <Field label="Body" hint="Optional">
+            <Textarea
               rows={3}
-              className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-white/20"
               value={form.body}
               onChange={(e) => setForm({ ...form, body: e.target.value })}
               placeholder='{"key": "value"}'
             />
-          </div>
+          </Field>
+          <Field label="Webhook URL" hint="Optional — notified on completion">
+            <TextInput
+              value={form.webhook_url}
+              onChange={(e) => setForm({ ...form, webhook_url: e.target.value })}
+              placeholder="https://example.com/callback"
+            />
+          </Field>
           <Button type="submit" disabled={loading}>
-            {loading ? "Scheduling…" : "Schedule Job"}
+            {loading ? "Scheduling…" : "Schedule job"}
           </Button>
         </form>
       </DialogContent>
@@ -205,8 +229,8 @@ function GettingStarted() {
           title: "Watch it run",
           description: (
             <>
-              Jobs appear here with live status, attempt history, and error details.
-              Prefer the dashboard UI? Hit <span className="text-white/70">New Job</span> above.
+              Jobs appear here with live status, attempt history, and error details. Prefer the UI?
+              Hit <span className="text-white/70">Schedule job</span> above.
             </>
           ),
         },
@@ -215,174 +239,61 @@ function GettingStarted() {
   );
 }
 
-// ─── Attempts Rows ─────────────────────────────────────────────────────────────
+// ─── Shared row bits ───────────────────────────────────────────────────────
 
-function AttemptsRows({ job, colSpan, webhookUrl }: { job: Job; colSpan: number; webhookUrl?: string | null }) {
+function JobActions({ job, onChanged }: { job: Job; onChanged: () => void }) {
   const { apiFetch } = useApi();
-  const api = createJobsApi(apiFetch);
-  const [attempts, setAttempts] = useState<JobAttempt[] | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api.listAttempts(job.id)
-      .then((data) => setAttempts(data ?? []))
-      .catch(() => setAttempts([]))
-      .finally(() => setLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [job.id]);
-
-  if (loading) {
-    return (
-      <TableRow className="border-white/10 bg-white/[0.02]">
-        <TableCell colSpan={colSpan} className="py-3 pl-10">
-          <Skeleton className="h-4 w-48" />
-        </TableCell>
-      </TableRow>
-    );
-  }
-
-  if (!attempts || attempts.length === 0) {
-    return (
-      <TableRow className="border-white/10 bg-white/[0.02]">
-        <TableCell colSpan={colSpan} className="py-3 pl-10 text-xs text-white/40">
-          No attempts yet.
-        </TableCell>
-      </TableRow>
-    );
-  }
-
+  const cancellable = job.status === "pending" || job.status === "running";
+  if (!cancellable) return null;
   return (
-    <>
-      {webhookUrl && (
-        <TableRow className="border-white/10 bg-white/[0.02] hover:bg-white/[0.02]">
-          <TableCell colSpan={colSpan} className="pt-3 pb-1 pl-10">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-white/30">Webhook:</span>{" "}
-            <span className="text-xs text-white/60 font-mono">{webhookUrl}</span>
-          </TableCell>
-        </TableRow>
-      )}
-      <TableRow className="border-white/10 bg-white/[0.02] hover:bg-white/[0.02]">
-        <TableCell colSpan={colSpan} className="pt-3 pb-1 pl-10">
-          <div className="flex gap-6 text-[11px] font-medium uppercase tracking-wider text-white/30">
-            <span className="w-16">Attempt</span>
-            <span className="w-28">Worker</span>
-            <span className="w-32">Started</span>
-            <span className="w-16">Duration</span>
-            <span className="w-12">HTTP</span>
-            <span className="flex-1">Error</span>
-            <span className="w-6" />
-          </div>
-        </TableCell>
-      </TableRow>
-      {attempts.map((a) => {
-        const duration = a.completed_at
-          ? `${differenceInSeconds(new Date(a.completed_at), new Date(a.started_at))}s`
-          : "in progress";
-        const isSuccess = !!a.status_code && a.status_code >= 200 && a.status_code < 300;
-        const willRetry = !isSuccess && a.attempt_num < job.max_retries;
-        const statusClass = isSuccess
-          ? "border-green-500/40 bg-green-500/10 text-green-400"
-          : willRetry
-          ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-400"
-          : "border-red-500/40 bg-red-500/10 text-red-400";
-        return (
-          <TableRow key={a.id} className="border-white/10 bg-white/[0.02] hover:bg-white/[0.03]">
-            <TableCell colSpan={colSpan} className="py-1.5 pl-10">
-              <div className="flex gap-6 items-center text-xs text-white/60">
-                <span className="w-16 font-mono">#{a.attempt_num}</span>
-                <span className="w-28 font-mono truncate">{a.worker_id}</span>
-                <span className="w-32">{formatDistanceToNow(new Date(a.started_at), { addSuffix: true })}</span>
-                <span className="w-16">{duration}</span>
-                <span className="w-12">
-                  {!!a.status_code && (
-                    <span className={`inline-flex items-center rounded border px-1.5 py-0 text-[10px] font-medium ${statusClass}`}>
-                      {a.status_code}
-                    </span>
-                  )}
-                </span>
-                <span className="flex-1 min-w-0">
-                  {a.error ? (
-                    <span
-                      className="text-red-400 truncate block max-w-[200px] cursor-default"
-                      title={a.error}
-                    >
-                      {a.error}
-                    </span>
-                  ) : (
-                    <span className="text-white/30">—</span>
-                  )}
-                </span>
-                <Link
-                  href={`/app/jobs/${job.id}/attempts/${a.id}`}
-                  className="inline-flex items-center justify-center rounded p-0.5 text-white/30 hover:text-white/60 hover:bg-white/10 transition-colors shrink-0"
-                  title="View attempt details"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Eye className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </TableCell>
-          </TableRow>
-        );
-      })}
-      <TableRow className="border-white/10 bg-white/[0.02]">
-        <TableCell colSpan={colSpan} className="py-2" />
-      </TableRow>
-    </>
+    <ConfirmButton
+      title="Cancel this job?"
+      description="It won't run (or, if running, won't retry). This can't be undone."
+      confirmLabel="Cancel job"
+      onConfirm={async () => {
+        await createJobsApi(apiFetch).cancel(job.id);
+        onChanged();
+      }}
+      trigger={
+        <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300">
+          Cancel
+        </Button>
+      }
+    />
   );
 }
 
+// ─── Main ──────────────────────────────────────────────────────────────────
+
 export default function JobsTable() {
   const { apiFetch } = useApi();
-  const api = createJobsApi(apiFetch);
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState<JobStatus | "all">("all");
+  const [search, setSearch] = useState("");
   const [showCode, setShowCode] = useState(false);
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [auto, setAuto] = useState(true);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  // Pagination — derived from URL search params
-  const cursor = searchParams.get("cursor") ?? undefined;
-  const cursorStack = searchParams.get("prev")?.split(",").filter(Boolean) ?? [];
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const fetcher = useCallback(
+    async (cursor: string | undefined) => {
+      const api = createJobsApi(apiFetch);
+      const res = await api.list({ limit: 25, cursor, status: status === "all" ? undefined : status });
+      return { items: res.jobs ?? [], nextCursor: res.next_cursor };
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [status],
+  );
 
-  function setParams(params: Record<string, string | undefined>) {
-    const next = new URLSearchParams(searchParams.toString());
-    for (const [k, v] of Object.entries(params)) {
-      if (v) next.set(k, v);
-      else next.delete(k);
-    }
-    router.replace(`?${next.toString()}`, { scroll: false });
-  }
+  const list = useCursorList<Job>(fetcher, [status]);
+  usePoll(list.reload, 10_000, auto);
 
-  const load = useCallback(async (activeCursor?: string) => {
-    setLoading(true);
-    try {
-      const result = await api.list({ limit: 50, cursor: activeCursor });
-      setJobs(result.jobs ?? []);
-      setNextCursor(result.next_cursor);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return list.items;
+    return list.items.filter((j) => j.url.toLowerCase().includes(q) || j.id.toLowerCase().includes(q));
+  }, [list.items, search]);
 
-  useEffect(() => { load(cursor); }, [load, cursor]);
-
-  function handleRefresh() {
-    load(cursor);
-  }
-
-  async function handleCancel(id: string) {
-    await api.cancel(id);
-    await load(cursor);
-  }
-
-  function toggleExpand(id: string) {
-    setExpandedIds((prev) => {
+  function toggle(id: string) {
+    setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -390,191 +301,174 @@ export default function JobsTable() {
     });
   }
 
-  function handleNext() {
-    if (!nextCursor) return;
-    // Use "_" as sentinel for the first page (cursor was undefined)
-    const entry = cursor ?? "_";
-    const prev = [...cursorStack, entry].join(",");
-    setParams({ cursor: nextCursor, prev });
-  }
-
-  function handlePrev() {
-    if (cursorStack.length === 0) return;
-    const stack = [...cursorStack];
-    const prev = stack.pop()!;
-    setParams({
-      cursor: prev === "_" ? undefined : prev,
-      prev: stack.length > 0 ? stack.join(",") : undefined,
-    });
-  }
-
-  const counts = {
-    total: jobs.length,
-    pending: jobs.filter((j) => j.status === "pending").length,
-    running: jobs.filter((j) => j.status === "running").length,
-    failed: jobs.filter((j) => j.status === "failed").length,
-  };
-
-  const COL_SPAN = 7;
+  const showGettingStarted = !list.loading && list.items.length === 0 && status === "all" && !list.hasPrev;
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {([
-          { key: "total" as const, icon: Layers, tone: "neutral" as const },
-          { key: "pending" as const, icon: Clock, tone: "warning" as const },
-          { key: "running" as const, icon: Activity, tone: "success" as const },
-          { key: "failed" as const, icon: AlertTriangle, tone: "danger" as const },
-        ]).map(({ key, icon, tone }) => (
-          <StatCard
-            key={key}
-            icon={icon}
-            label={key}
-            tone={tone}
-            value={loading ? <Skeleton className="h-8 w-12" /> : counts[key]}
-          />
-        ))}
-      </div>
+    <div className="flex flex-col gap-5">
+      <PageHeader
+        title="Jobs"
+        description="One-off HTTP jobs — scheduled, executed, and retried with full history."
+        actions={
+          <>
+            <RefreshControls onRefresh={list.reload} loading={list.loading} auto={auto} onToggleAuto={setAuto} />
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5 border-white/10 text-white/60 hover:text-white"
+              onClick={() => setShowCode((v) => !v)}
+            >
+              <Code2 className="h-3.5 w-3.5" />
+              API
+            </Button>
+            <NewJobDialog onCreated={list.reload} />
+          </>
+        }
+      />
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Jobs</h2>
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-white/40 hover:text-white/70"
-            onClick={handleRefresh}
-            disabled={loading}
-            title="Refresh"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-white/40 hover:text-white/70 gap-1.5"
-            onClick={() => setShowCode((v) => !v)}
-          >
-            <Code2 className="h-3.5 w-3.5" />
-            {showCode ? "Hide API" : "API"}
-          </Button>
-          <NewJobDialog onCreated={() => load(cursor)} />
-        </div>
-      </div>
-
-      {/* API Code Examples (toggle) */}
       {showCode && <ApiCodeBlock snippets={JOB_SNIPPETS} />}
 
-      {/* Getting started — shown until first job exists */}
-      {!loading && jobs.length === 0 && cursorStack.length === 0 && <GettingStarted />}
+      {showGettingStarted ? (
+        <GettingStarted />
+      ) : (
+        <>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <FilterTabs tabs={STATUS_TABS} value={status} onChange={setStatus} className="sm:max-w-fit" />
+            <SearchInput value={search} onChange={setSearch} placeholder="Filter by URL or ID…" className="sm:w-64" />
+          </div>
 
-      {/* Table — hidden when empty and on first page */}
-      {(loading || jobs.length > 0 || cursorStack.length > 0) && (
-        <div className="rounded-lg border border-white/10 overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="w-8" />
-                <TableHead className="text-white/40">ID</TableHead>
-                <TableHead className="text-white/40">URL</TableHead>
-                <TableHead className="text-white/40">Status</TableHead>
-                <TableHead className="text-white/40">Scheduled</TableHead>
-                <TableHead className="text-white/40">Created</TableHead>
-                <TableHead className="text-white/40 text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading
-                ? Array.from({ length: 5 }).map((_, i) => (
+          <p className="text-xs text-white/35">
+            {list.loading ? "Loading…" : `${filtered.length} job${filtered.length === 1 ? "" : "s"} on this page`}
+            {search && " (filtered)"}
+          </p>
+
+          {/* Desktop table */}
+          <div className="hidden overflow-hidden rounded-xl border border-white/10 md:block">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-white/10 hover:bg-transparent">
+                  <TableHead className="w-8" />
+                  <TableHead className="text-white/40">Status</TableHead>
+                  <TableHead className="text-white/40">Endpoint</TableHead>
+                  <TableHead className="text-white/40">Scheduled</TableHead>
+                  <TableHead className="text-white/40">Created</TableHead>
+                  <TableHead className="text-white/40">Attempts</TableHead>
+                  <TableHead className="text-right text-white/40">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {list.loading ? (
+                  Array.from({ length: 6 }).map((_, i) => (
                     <TableRow key={i} className="border-white/10">
-                      {Array.from({ length: COL_SPAN }).map((_, j) => (
-                        <TableCell key={j}>
-                          <Skeleton className="h-4 w-full" />
-                        </TableCell>
+                      {Array.from({ length: 7 }).map((_, j) => (
+                        <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                       ))}
                     </TableRow>
                   ))
-                : jobs.map((job) => {
-                    const expanded = expandedIds.has(job.id);
+                ) : filtered.length === 0 ? (
+                  <TableRow className="border-white/10 hover:bg-transparent">
+                    <TableCell colSpan={7} className="p-0">
+                      <Empty icon={Zap} title="No jobs match" description="Try a different status or clear the search." />
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filtered.map((job) => {
+                    const isOpen = expanded.has(job.id);
                     return (
                       <>
                         <TableRow
                           key={job.id}
-                          className="border-white/10 hover:bg-white/5 cursor-pointer"
-                          onClick={() => toggleExpand(job.id)}
+                          className="cursor-pointer border-white/10 hover:bg-white/[0.03]"
+                          onClick={() => toggle(job.id)}
                         >
-                          <TableCell className="w-8 pl-3 pr-0 text-white/30">
-                            {expanded
-                              ? <ChevronDown className="h-3.5 w-3.5" />
-                              : <ChevronRight className="h-3.5 w-3.5" />}
-                          </TableCell>
-                          <TableCell className="font-mono text-xs text-white/60">
-                            {job.id.slice(0, 8)}…
-                          </TableCell>
-                          <TableCell className="max-w-[200px] truncate text-sm">
-                            {job.url}
+                          <TableCell className="pl-3 pr-0 text-white/30">
+                            {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={STATUS_VARIANT[job.status]}>
-                              {job.status}
-                            </Badge>
+                            <StatusPill tone={jobStatusTone(job.status)} label={job.status} pulse={job.status === "running"} />
                           </TableCell>
-                          <TableCell className="text-sm text-white/60">
-                            {formatDistanceToNow(new Date(job.scheduled_at), { addSuffix: true })}
+                          <TableCell className="max-w-[280px]">
+                            <div className="flex items-center gap-2">
+                              <MethodChip method={job.method} />
+                              <span className="truncate text-sm text-white/80" title={job.url}>{job.url}</span>
+                            </div>
                           </TableCell>
-                          <TableCell className="text-sm text-white/60">
-                            {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}
+                          <TableCell className="text-sm text-white/55">
+                            <RelativeTime date={job.scheduled_at} />
+                          </TableCell>
+                          <TableCell className="text-sm text-white/55">
+                            <RelativeTime date={job.created_at} />
+                          </TableCell>
+                          <TableCell className="text-sm tabular-nums text-white/55">
+                            {job.attempts}/{job.max_retries + 1}
                           </TableCell>
                           <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                            {(job.status === "pending" || job.status === "running") && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-red-400 hover:text-red-300"
-                                onClick={() => handleCancel(job.id)}
-                              >
-                                Cancel
-                              </Button>
-                            )}
+                            <JobActions job={job} onChanged={list.reload} />
                           </TableCell>
                         </TableRow>
-                        {expanded && (
-                          <AttemptsRows key={`${job.id}-attempts`} job={job} colSpan={COL_SPAN} webhookUrl={job.webhook_url} />
+                        {isOpen && (
+                          <TableRow key={`${job.id}-x`} className="border-white/10 hover:bg-transparent">
+                            <TableCell colSpan={7} className="p-0">
+                              <AttemptsPanel job={job} />
+                            </TableCell>
+                          </TableRow>
                         )}
                       </>
                     );
-                  })}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
-      {/* Pagination */}
-      {(cursorStack.length > 0 || nextCursor) && (
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-white/40 hover:text-white/70 gap-1.5"
-            onClick={handlePrev}
-            disabled={cursorStack.length === 0 || loading}
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
-            Previous
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-white/40 hover:text-white/70 gap-1.5"
-            onClick={handleNext}
-            disabled={!nextCursor || loading}
-          >
-            Next
-            <ChevronRight className="h-3.5 w-3.5" />
-          </Button>
-        </div>
+          {/* Mobile cards */}
+          <div className="flex flex-col gap-2 md:hidden">
+            {list.loading ? (
+              Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-xl" />)
+            ) : filtered.length === 0 ? (
+              <SectionCard noPadding>
+                <Empty icon={Zap} title="No jobs match" description="Try a different status or clear the search." />
+              </SectionCard>
+            ) : (
+              filtered.map((job) => {
+                const isOpen = expanded.has(job.id);
+                return (
+                  <div key={job.id} className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.02]">
+                    <button className="flex w-full items-start gap-3 p-3 text-left" onClick={() => toggle(job.id)}>
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1.5 flex items-center gap-2">
+                          <StatusPill tone={jobStatusTone(job.status)} label={job.status} pulse={job.status === "running"} />
+                          <MethodChip method={job.method} />
+                        </div>
+                        <p className="truncate font-mono text-xs text-white/70">{job.url}</p>
+                        <p className="mt-1 text-[11px] text-white/35">
+                          Runs <RelativeTime date={job.scheduled_at} /> · {job.attempts}/{job.max_retries + 1} attempts
+                        </p>
+                      </div>
+                      {isOpen ? <ChevronDown className="h-4 w-4 shrink-0 text-white/30" /> : <ChevronRight className="h-4 w-4 shrink-0 text-white/30" />}
+                    </button>
+                    {isOpen && (
+                      <div className="border-t border-white/10">
+                        <AttemptsPanel job={job} />
+                        <div className="flex justify-end px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                          <JobActions job={job} onChanged={list.reload} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          <Pagination
+            onPrev={list.goPrev}
+            onNext={list.goNext}
+            hasPrev={list.hasPrev}
+            hasNext={list.hasNext}
+            disabled={list.loading}
+            page={list.page}
+          />
+        </>
       )}
     </div>
   );

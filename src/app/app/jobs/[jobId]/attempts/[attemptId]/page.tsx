@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { differenceInSeconds, format } from "date-fns";
 import { useApi, createJobsApi, Job, JobAttempt } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -70,7 +70,6 @@ function CopyLinkButton() {
 
 export default function AttemptDetailPage() {
   const params = useParams<{ jobId: string; attemptId: string }>();
-  const router = useRouter();
   const { apiFetch } = useApi();
   const api = createJobsApi(apiFetch);
 

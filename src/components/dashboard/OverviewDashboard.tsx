@@ -59,6 +59,9 @@ interface OverviewData {
   buffers: Buffer[];
   txns: CreditTransaction[];
   txnCapped: boolean;
+  /** Wall-clock at fetch time — captured here (an event, not render) so the
+   *  derived time windows stay pure/stable across re-renders. */
+  now: number;
 }
 
 export default function OverviewDashboard() {
@@ -80,7 +83,7 @@ export default function OverviewDashboard() {
         buffersApi.list({ limit: 100 }).then((r) => r.buffers ?? []).catch(() => []),
         billingApi.listTransactions({ limit: TX_SAMPLE }).then((r) => r.transactions ?? []).catch(() => []),
       ]);
-      setData({ jobs, schedules, buffers, txns, txnCapped: txns.length >= TX_SAMPLE });
+      setData({ jobs, schedules, buffers, txns, txnCapped: txns.length >= TX_SAMPLE, now: Date.now() });
     } finally {
       setLoading(false);
     }
@@ -130,8 +133,7 @@ function OverviewBody({
   dailyLimit: number | null;
   plan: string | null;
 }) {
-  const now = Date.now();
-  const { jobs, schedules, buffers, txns, txnCapped } = data;
+  const { jobs, schedules, buffers, txns, txnCapped, now } = data;
 
   // Executions are derived from credit transactions (1 job_execution = 1 credit).
   const executions = txns.filter((t) => t.type === "job_execution");

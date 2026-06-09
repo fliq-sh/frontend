@@ -182,3 +182,79 @@ res = httpx.post(
 schedule = res.json()
 print(schedule["id"])  # schedule created ✓`,
 };
+
+export const BUFFER_SNIPPETS: ApiSnippets = {
+  curl: `# 1. Create a rate-limited buffer
+curl -X POST https://api.fliq.sh/buffers \\
+  -H "Authorization: Bearer <your-token>" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "Stripe API",
+    "url": "https://api.stripe.com/v1/charges",
+    "method": "POST",
+    "rate_limit": 25
+  }'
+
+# 2. Push items — Fliq releases them at rate_limit/sec
+curl -X POST https://api.fliq.sh/buffers/<buffer-id>/items \\
+  -H "Authorization: Bearer <your-token>" \\
+  -d '{"amount": 1000, "currency": "usd"}'`,
+
+  TypeScript: `// 1. Create a rate-limited buffer
+const buffer = await fetch("https://api.fliq.sh/buffers", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer <your-token>",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    name: "Stripe API",
+    url: "https://api.stripe.com/v1/charges",
+    method: "POST",
+    rate_limit: 25, // requests per second
+  }),
+}).then((r) => r.json());
+
+// 2. Push items — released at rate_limit/sec with 429 retries
+await fetch(\`https://api.fliq.sh/buffers/\${buffer.id}/items\`, {
+  method: "POST",
+  headers: { "Authorization": "Bearer <your-token>" },
+  body: JSON.stringify({ amount: 1000, currency: "usd" }),
+});`,
+
+  Go: `// 1. Create a rate-limited buffer
+body, _ := json.Marshal(map[string]any{
+  "name":       "Stripe API",
+  "url":        "https://api.stripe.com/v1/charges",
+  "method":     "POST",
+  "rate_limit": 25,
+})
+req, _ := http.NewRequest("POST",
+  "https://api.fliq.sh/buffers",
+  bytes.NewBuffer(body))
+req.Header.Set("Authorization", "Bearer <your-token>")
+req.Header.Set("Content-Type", "application/json")
+resp, _ := (&http.Client{}).Do(req)
+// 2. POST items to /buffers/<id>/items to enqueue them.`,
+
+  Python: `import httpx
+
+# 1. Create a rate-limited buffer
+buffer = httpx.post(
+    "https://api.fliq.sh/buffers",
+    headers={"Authorization": "Bearer <your-token>"},
+    json={
+        "name": "Stripe API",
+        "url": "https://api.stripe.com/v1/charges",
+        "method": "POST",
+        "rate_limit": 25,  # requests per second
+    },
+).json()
+
+# 2. Push items — released at rate_limit/sec
+httpx.post(
+    f"https://api.fliq.sh/buffers/{buffer['id']}/items",
+    headers={"Authorization": "Bearer <your-token>"},
+    json={"amount": 1000, "currency": "usd"},
+)`,
+};
