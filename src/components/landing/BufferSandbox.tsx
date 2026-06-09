@@ -95,7 +95,7 @@ export default function BufferSandbox() {
         </div>
 
         {/* buffer (left) → metered release → target (right) */}
-        <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 px-4 py-6">
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] items-stretch sm:items-center gap-3 px-4 py-6">
           {/* The tank */}
           <div className="rounded-lg border border-white/10 bg-white/[0.02] p-2 min-h-[180px] flex flex-col gap-1">
             <div className="flex items-center justify-between px-1 pb-1">
@@ -132,12 +132,12 @@ export default function BufferSandbox() {
             <span className="font-mono text-[10px] tabular-nums text-white/50">
               {rate}/s
             </span>
-            <span className="text-lg leading-none">→</span>
+            <span className="text-lg leading-none rotate-90 sm:rotate-0">→</span>
           </div>
 
           {/* Target */}
           <div
-            className={`w-28 rounded-lg border px-2 py-3 text-center transition-colors ${
+            className={`w-full sm:w-28 rounded-lg border px-2 py-3 text-center transition-colors ${
               flash ? "border-green-400/40 bg-green-400/[0.06]" : "border-white/10 bg-white/[0.03]"
             }`}
           >
