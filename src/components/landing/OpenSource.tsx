@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { SITE, FACTS } from "@/lib/site";
 
 const proof = [
@@ -9,6 +10,15 @@ const proof = [
   { label: "At-least-once", detail: FACTS.delivery },
   { label: "Crash recovery", detail: FACTS.crashRecovery },
   { label: "Full history", detail: FACTS.history },
+];
+
+// Self-host / enterprise (merged in from the former Enterprise section).
+const selfHost = [
+  "Deploy on your own metal or any cloud",
+  "No data leaves your infrastructure",
+  "A dedicated support channel and SLA",
+  "SSO / SAML integration",
+  "Custom data retention policies",
 ];
 
 // Live GitHub star count — honest (shows the real number) and hides itself if
@@ -32,17 +42,18 @@ export default function OpenSource() {
   const stars = useStars(SITE.github.starsRepo);
 
   return (
-    <section className="py-16 px-4 border-t border-white/10">
+    <section className="section-breathe px-6 border-t border-white/10">
       <div className="max-w-7xl mx-auto">
+        {/* Built in the open — honest proof */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
           <div>
             <p className="text-xs text-white/40 uppercase tracking-widest mb-2">
               Built in the open
             </p>
-            <h2 className="text-2xl font-bold tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
               No magic numbers. Just the actual system.
             </h2>
-            <p className="mt-2 text-white/50 max-w-xl text-sm">
+            <p className="mt-3 text-white/50 max-w-xl text-sm">
               Fliq is a young, beta product — so instead of inventing SLAs and
               customer logos, here&apos;s how it really works and where the code
               lives.
@@ -78,6 +89,40 @@ export default function OpenSource() {
               <p className="text-xs text-white/50 leading-relaxed">{p.detail}</p>
             </div>
           ))}
+        </div>
+
+        {/* Self-hosted & enterprise — open source means you can run it yourself */}
+        <div className="mt-12 rounded-2xl border border-white/10 bg-white/[0.03] p-8 md:p-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <p className="text-xs text-white/40 uppercase tracking-widest mb-4">
+                Self-hosted &amp; enterprise
+              </p>
+              <h3 className="text-2xl sm:text-3xl font-bold tracking-tight mb-4">
+                Run Fliq on your own infrastructure.
+              </h3>
+              <p className="text-white/60 leading-relaxed mb-8">
+                Fliq is Postgres-native and open source — so the whole stack can
+                run on your Kubernetes cluster, your cloud account, or
+                air-gapped on-prem. Same API, full control. Self-hosted and
+                enterprise plans land after the beta.
+              </p>
+              <Button size="lg" asChild>
+                <Link href={`mailto:${SITE.enterpriseEmail}`}>Talk to us →</Link>
+              </Button>
+            </div>
+
+            <div className="space-y-3">
+              {selfHost.map((feature) => (
+                <div key={feature} className="flex gap-3 items-start">
+                  <div className="mt-0.5 flex-shrink-0 h-5 w-5 rounded-full border border-green-500/40 bg-green-500/10 flex items-center justify-center">
+                    <span className="text-green-400 text-xs">✓</span>
+                  </div>
+                  <span className="text-white/80">{feature}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

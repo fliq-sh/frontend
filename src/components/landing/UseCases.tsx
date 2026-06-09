@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const oneTimeUseCases = [
   {
     emoji: "✉️",
@@ -44,12 +46,30 @@ const cronUseCases = [
   },
 ];
 
+// AI agents — formerly its own section, now a featured use case within "what
+// people build" (buffers is the headline differentiator; agents is one strong
+// use case among many).
+const agentPoints = [
+  {
+    title: "Agents need to wake themselves up",
+    body: "A script ends when it returns. An agent has to run again tomorrow at 9am, or every 15 minutes. Fliq is the durable timer that calls your agent back.",
+  },
+  {
+    title: "Schedule in natural language",
+    body: "Fliq ships an MCP server. Point Claude, Cursor, or your own agent at it and it can create, inspect, pause, and cancel jobs as tool calls — no glue code.",
+  },
+  {
+    title: "Retries and history, so runs don't vanish",
+    body: "Every agent invocation is an HTTP call with automatic retries and a recorded outcome. When a 3am run fails, you see the attempt — not silence.",
+  },
+];
+
 export default function UseCases() {
   return (
-    <section className="py-24 px-4 border-t border-white/10">
+    <section className="section-breathe px-6 border-t border-white/10">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
             What people build with Fliq
           </h2>
           <p className="mt-4 text-white/60 max-w-xl mx-auto">
@@ -61,7 +81,7 @@ export default function UseCases() {
           {/* One-time */}
           <div>
             <div className="mb-6">
-              <span className="inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-400 uppercase tracking-widest">
+              <span className="inline-block rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/70 uppercase tracking-widest">
                 One-time executions
               </span>
               <p className="mt-3 text-white/60 text-sm">
@@ -87,7 +107,7 @@ export default function UseCases() {
           {/* Cron */}
           <div>
             <div className="mb-6">
-              <span className="inline-block rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 text-xs text-purple-400 uppercase tracking-widest">
+              <span className="inline-block rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/70 uppercase tracking-widest">
                 Recurring / Cron
               </span>
               <p className="mt-3 text-white/60 text-sm">
@@ -111,10 +131,40 @@ export default function UseCases() {
           </div>
         </div>
 
+        {/* Featured use case: AI agents */}
+        <div className="mt-12 rounded-2xl border border-white/10 bg-white/[0.03] p-8">
+          <div className="max-w-2xl mb-8">
+            <span className="inline-block rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/70 uppercase tracking-widest">
+              Featured · AI agents
+            </span>
+            <h3 className="mt-4 text-2xl font-bold tracking-tight">
+              The execution layer your AI agents are missing
+            </h3>
+            <p className="mt-3 text-white/60 leading-relaxed">
+              The same reliable scheduler backend teams use is exactly what
+              autonomous agents need — a durable, observable way to run on a
+              schedule and pick work back up.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {agentPoints.map((p) => (
+              <div key={p.title}>
+                <h4 className="text-base font-semibold mb-2">{p.title}</h4>
+                <p className="text-sm text-white/60 leading-relaxed">{p.body}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6">
+            <Link href="/docs" className="text-sm text-white/70 hover:text-white underline underline-offset-4 transition-colors">
+              Read the MCP &amp; agent docs →
+            </Link>
+          </div>
+        </div>
+
         {/* Code teaser */}
         <div className="mt-12 rounded-xl border border-white/10 bg-black/40 p-6 font-mono text-sm">
-          <p className="text-white/30 mb-3 text-xs">// Schedule a welcome email in one call</p>
-          <p className="text-indigo-400">POST</p>
+          <p className="text-white/30 mb-3 text-xs">{"// Schedule a welcome email in one call"}</p>
+          <p className="text-white font-semibold">POST</p>
           <p className="text-white/80">
             {`{ "url": "https://api.myapp.com/emails/welcome",`}
           </p>

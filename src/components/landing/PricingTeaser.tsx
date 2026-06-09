@@ -24,18 +24,18 @@ const tiers = [
 
 export default function PricingTeaser() {
   return (
-    <section className="py-24 px-4 relative overflow-hidden">
+    <section className="section-breathe px-4 relative overflow-hidden">
       {/* Glowing top separator */}
       <div className="absolute top-0 inset-x-0 separator-glow" />
       {/* Glowing bottom separator */}
       <div className="absolute bottom-0 inset-x-0 separator-glow" />
 
-      {/* Indigo radial glow — the visual peak of the page */}
+      {/* Monochrome radial glow — the visual peak of the page */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 90% 100% at 50% 50%, rgba(99,102,241,0.13) 0%, rgba(67,56,202,0.07) 45%, transparent 72%)",
+            "radial-gradient(ellipse 90% 100% at 50% 50%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 45%, transparent 72%)",
         }}
       />
 
@@ -64,14 +64,14 @@ export default function PricingTeaser() {
               key={tier.name}
               className={`p-6 rounded-2xl border ${
                 tier.highlight
-                  ? "border-indigo-400/50 bg-indigo-500/[0.12] shadow-[0_0_40px_rgba(99,102,241,0.18)]"
+                  ? "border-white/15 bg-white/5 shadow-[0_0_40px_rgba(255,255,255,0.06)]"
                   : "border-white/10 bg-white/[0.03]"
               }`}
             >
               <h3 className="text-lg font-semibold mb-2">{tier.name}</h3>
               <p
                 className={`text-2xl font-bold mb-1 ${
-                  tier.highlight ? "text-indigo-300" : tier.comingSoon ? "text-white/40" : "text-white"
+                  tier.highlight ? "text-white" : tier.comingSoon ? "text-white/40" : "text-white"
                 }`}
               >
                 {tier.price}

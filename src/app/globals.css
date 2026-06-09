@@ -89,8 +89,10 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  /* Monochrome system: the primary action is pure white on near-black. White is
+     the accent — colour appears only on the iridescent F-mark. */
+  --primary: oklch(1 0 0);
+  --primary-foreground: oklch(0.145 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -152,15 +154,62 @@
 }
 
 /* ─── Gradient line separators ───────────────────────────────────────────── */
+/* Monochrome hairline — white fades to nothing at both ends. */
 .separator-glow {
   height: 1px;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(99, 102, 241, 0.5) 35%,
-    rgba(139, 92, 246, 0.4) 65%,
+    rgba(255, 255, 255, 0.18) 50%,
     transparent 100%
   );
+}
+
+/* ─── Iridescent accent — the ONE place colour lives ──────────────────────── */
+/* Holographic spectrum, used deliberately and rarely (the F-mark, and at most
+   one signature moment per page). Everything else stays strict monochrome.
+   Do NOT scatter this — its rarity is what keeps it from reading "vibe-coded". */
+:root {
+  --iridescent: linear-gradient(
+    115deg,
+    #5eead4 0%,
+    #818cf8 28%,
+    #c084fc 52%,
+    #f0abfc 74%,
+    #fcd34d 100%
+  );
+}
+.text-iridescent {
+  background: var(--iridescent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ─── Section rhythm ──────────────────────────────────────────────────────── */
+/* Two airiness registers. "breathe" = generous vertical space for narrative
+   sections (hero, problem, use-cases, pricing, faq). "tight" = disciplined
+   density for technical sections (code, tables, status) where whitespace would
+   weaken the content. See ADR 0001. */
+.section-breathe {
+  padding-top: 7rem;
+  padding-bottom: 7rem;
+}
+@media (min-width: 640px) {
+  .section-breathe {
+    padding-top: 10rem;
+    padding-bottom: 10rem;
+  }
+}
+.section-tight {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+@media (min-width: 640px) {
+  .section-tight {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
 }
 
 /* ─── Scheduler hero visual ───────────────────────────────────────────────── */
