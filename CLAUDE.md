@@ -57,22 +57,46 @@ src/
 │   ├── sign-in/[[...sign-in]]/ # Clerk-hosted sign-in
 │   ├── sign-up/[[...sign-up]]/ # Clerk-hosted sign-up
 │   └── app/                    # Protected dashboard (requires Clerk session)
-│       ├── layout.tsx
-│       ├── page.tsx            # Jobs dashboard
+│       ├── layout.tsx          # Sidebar + header + BalanceProvider; centered max-w-6xl main
+│       ├── page.tsx            # Overview home (metrics, usage chart, recent/upcoming)
+│       ├── jobs/page.tsx       # Jobs table (was the old /app root)
+│       ├── jobs/[jobId]/attempts/[attemptId]/page.tsx  # single attempt detail
 │       ├── schedules/page.tsx
-│       ├── executions/page.tsx
-│       └── settings/page.tsx
+│       ├── buffers/page.tsx
+│       ├── billing/page.tsx    # balance + usage charts + transaction history
+│       └── settings/page.tsx   # API tokens, signing secret, Clerk account
 ├── components/
 │   ├── landing/                # One file per landing section (see below)
-│   ├── dashboard/              # Dashboard-specific components
+│   ├── dashboard/              # Dashboard feature components (tables, overview, header, sidebar)
+│   │   └── ui/                 # Dashboard UI kit (see below) — shared across /app routes
 │   ├── patterns/               # Fliq design-system composites (see below)
 │   └── ui/                     # shadcn/ui primitives ONLY (regenerable)
-├── hooks/use-mobile.ts
+├── hooks/
+│   ├── use-mobile.ts
+│   ├── use-poll.ts             # interval polling, pauses on hidden tab (auto-refresh)
+│   └── use-cursor-list.ts      # shared cursor pagination for the dashboard tables
 ├── lib/
 │   ├── api.ts                  # API client (fetch wrapper, JWT from Clerk)
+│   ├── dashboard.ts            # number/time formatting + client-side metric aggregation
 │   └── utils.ts                # cn() helper (clsx + tailwind-merge)
 └── proxy.ts
 ```
+
+### Dashboard UI kit (`src/components/dashboard/ui/`)
+
+Composites layered on the shadcn primitives + `patterns/` tokens, shared by every
+`/app` route so the tables/pages stay consistent. There is **no server-side stats
+endpoint** (see core-api router) — Overview/Billing metrics are derived client-side
+from the existing list endpoints (`bucketByTime`/`countSince` in `lib/dashboard.ts`)
+and **labelled honestly** when the sample is capped. Pieces: `PageHeader`,
+`MetricCard` (value + progress quota bar + inline chart slot), `SectionCard`,
+`Sparkline`/`MiniBars` (dependency-free monochrome SVG charts — no chart lib),
+`StatusPill`/`MethodChip`, `FilterTabs`, `SearchInput`, `Pagination`,
+`RefreshControls` (Live toggle → `usePoll`), `ConfirmButton` (destructive
+Delete/Cancel now require confirmation), `RelativeTime`, `CopyButton`, `Empty`,
+and `Form` field helpers (`Field`/`TextInput`/`Select`/`Textarea`/`parseJsonObject`).
+Tables render a `<Table>` on `md+` and a stacked card list on mobile (no horizontal
+scroll). Monochrome + traffic-light only, per ADR 0001.
 
 ### Landing sections (top → bottom in `page.tsx`)
 

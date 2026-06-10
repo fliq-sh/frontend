@@ -1,10 +1,5 @@
-import { Suspense } from "react";
-import JobsTable from "@/components/dashboard/JobsTable";
+import OverviewDashboard from "@/components/dashboard/OverviewDashboard";
 
-export default function JobsPage() {
-  return (
-    <Suspense>
-      <JobsTable />
-    </Suspense>
-  );
+export default function OverviewPage() {
+  return <OverviewDashboard />;
 }

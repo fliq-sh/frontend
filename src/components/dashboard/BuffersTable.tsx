@@ -1,8 +1,25 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { formatDistanceToNow } from "date-fns";
-import { useApi, createBuffersApi, Buffer, BufferItem } from "@/lib/api";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  ChevronDown,
+  ChevronRight,
+  Code2,
+  Layers,
+  Settings,
+  Pause,
+  Play,
+  Gauge,
+} from "lucide-react";
+import {
+  useApi,
+  createBuffersApi,
+  Buffer,
+  BufferItem,
+} from "@/lib/api";
+import { useCursorList } from "@/hooks/use-cursor-list";
+import { usePoll } from "@/hooks/use-poll";
 import {
   Table,
   TableBody,
@@ -11,7 +28,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -21,15 +37,48 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ChevronDown, ChevronRight, Layers, Settings } from "lucide-react";
-import Link from "next/link";
-import { EmptyState } from "@/components/patterns";
+import { ApiCodeBlock, BUFFER_SNIPPETS } from "./ApiCodeBlock";
+import { EmptyState, jobStatusTone } from "@/components/patterns";
+import {
+  PageHeader,
+  SectionCard,
+  StatusPill,
+  MethodChip,
+  FilterTabs,
+  type FilterTab,
+  SearchInput,
+  Pagination,
+  RefreshControls,
+  ConfirmButton,
+  RelativeTime,
+  Empty,
+  Field,
+  TextInput,
+  Select,
+  Textarea,
+  FormError,
+  parseJsonObject,
+} from "./ui";
+import { httpStatusTone } from "@/lib/dashboard";
 
-// ── Create Buffer Dialog ─────────────────────────────────────────────────────
+type Filter = "all" | "active" | "paused";
+const FILTER_TABS: FilterTab<Filter>[] = [
+  { value: "all", label: "All" },
+  { value: "active", label: "Active", tone: "success" },
+  { value: "paused", label: "Paused", tone: "warning" },
+];
+
+const ITEM_STATES: { key: BufferItem["status"]; label: string }[] = [
+  { key: "pending", label: "Pending" },
+  { key: "running", label: "Running" },
+  { key: "completed", label: "Completed" },
+  { key: "failed", label: "Failed" },
+];
+
+// ─── Create dialog ─────────────────────────────────────────────────────────
 
 function NewBufferDialog({ onCreated }: { onCreated: () => void }) {
   const { apiFetch } = useApi();
-  const api = createBuffersApi(apiFetch);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,26 +89,29 @@ function NewBufferDialog({ onCreated }: { onCreated: () => void }) {
     rate_limit: 10,
     max_retries: 3,
     timeout_seconds: 30,
+    headers: "",
     webhook_url: "",
   });
-
-  function handleOpenChange(val: boolean) {
-    setOpen(val);
-    if (!val) setError(null);
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const { webhook_url, ...rest } = form;
+      const headers = parseJsonObject(form.headers, "Headers");
+      const api = createBuffersApi(apiFetch);
       await api.create({
-        ...rest,
-        webhook_url: webhook_url || undefined,
+        name: form.name,
+        url: form.url,
+        method: form.method,
+        rate_limit: form.rate_limit,
+        max_retries: form.max_retries,
+        timeout_seconds: form.timeout_seconds,
+        headers,
+        webhook_url: form.webhook_url || undefined,
       });
       setOpen(false);
-      setForm({ name: "", url: "", method: "POST", rate_limit: 10, max_retries: 3, timeout_seconds: 30, webhook_url: "" });
+      setForm({ name: "", url: "", method: "POST", rate_limit: 10, max_retries: 3, timeout_seconds: 30, headers: "", webhook_url: "" });
       onCreated();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create buffer");
@@ -69,130 +121,74 @@ function NewBufferDialog({ onCreated }: { onCreated: () => void }) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setError(null); }}>
       <DialogTrigger asChild>
-        <Button size="sm">New Buffer</Button>
+        <Button size="sm">New buffer</Button>
       </DialogTrigger>
-      <DialogContent className="bg-[#09090b] border-white/10">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border-white/10 bg-[#09090b]">
         <DialogHeader>
-          <DialogTitle>Create Buffer</DialogTitle>
+          <DialogTitle>Create buffer</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
-          {error && (
-            <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm text-red-400">
-              {error}
-            </div>
-          )}
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/60">Name</label>
-            <input
-              className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
-              required
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Stripe API buffer"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/60">Target URL</label>
-            <input
-              className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
-              required
-              value={form.url}
-              onChange={(e) => setForm({ ...form, url: e.target.value })}
-              placeholder="https://api.stripe.com/v1/charges"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="mt-2 flex flex-col gap-4">
+          <FormError message={error} />
+          <Field label="Name">
+            <TextInput required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Stripe API" />
+          </Field>
+          <Field label="Target URL">
+            <TextInput required value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://api.stripe.com/v1/charges" />
+          </Field>
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/60">Method</label>
-              <select
-                className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm"
-                value={form.method}
-                onChange={(e) => setForm({ ...form, method: e.target.value })}
-              >
+            <Field label="Method">
+              <Select value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value })}>
                 {["GET", "POST", "PUT", "PATCH", "DELETE"].map((m) => (
                   <option key={m} value={m}>{m}</option>
                 ))}
-              </select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/60">Rate Limit (req/s)</label>
-              <input
-                type="number"
-                min={1}
-                max={1000}
-                className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm"
-                value={form.rate_limit}
-                onChange={(e) => setForm({ ...form, rate_limit: Number(e.target.value) })}
-              />
-            </div>
+              </Select>
+            </Field>
+            <Field label="Rate limit" hint="requests / second">
+              <TextInput type="number" min={1} max={1000} value={form.rate_limit} onChange={(e) => setForm({ ...form, rate_limit: Number(e.target.value) })} />
+            </Field>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/60">Max Retries</label>
-              <input
-                type="number"
-                min={0}
-                max={20}
-                className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm"
-                value={form.max_retries}
-                onChange={(e) => setForm({ ...form, max_retries: Number(e.target.value) })}
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/60">Timeout (s)</label>
-              <input
-                type="number"
-                min={1}
-                max={3600}
-                className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm"
-                value={form.timeout_seconds}
-                onChange={(e) => setForm({ ...form, timeout_seconds: Number(e.target.value) })}
-              />
-            </div>
+            <Field label="Max retries">
+              <TextInput type="number" min={0} max={20} value={form.max_retries} onChange={(e) => setForm({ ...form, max_retries: Number(e.target.value) })} />
+            </Field>
+            <Field label="Timeout" hint="seconds">
+              <TextInput type="number" min={1} max={3600} value={form.timeout_seconds} onChange={(e) => setForm({ ...form, timeout_seconds: Number(e.target.value) })} />
+            </Field>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/60">Webhook URL (optional)</label>
-            <input
-              className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
-              value={form.webhook_url}
-              onChange={(e) => setForm({ ...form, webhook_url: e.target.value })}
-              placeholder="https://example.com/webhook-callback"
-            />
-          </div>
-          <Button type="submit" disabled={loading}>
-            {loading ? "Creating…" : "Create Buffer"}
-          </Button>
+          <Field label="Headers" hint="Optional JSON object — sent on every release">
+            <Textarea rows={2} value={form.headers} onChange={(e) => setForm({ ...form, headers: e.target.value })} placeholder='{"Authorization": "Bearer …"}' />
+          </Field>
+          <Field label="Webhook URL" hint="Optional">
+            <TextInput value={form.webhook_url} onChange={(e) => setForm({ ...form, webhook_url: e.target.value })} placeholder="https://example.com/callback" />
+          </Field>
+          <Button type="submit" disabled={loading}>{loading ? "Creating…" : "Create buffer"}</Button>
         </form>
       </DialogContent>
     </Dialog>
   );
 }
 
-// ── Push Item Dialog ─────────────────────────────────────────────────────────
-
 function PushItemDialog({ bufferId, onPushed }: { bufferId: string; onPushed: () => void }) {
   const { apiFetch } = useApi();
-  const api = createBuffersApi(apiFetch);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [body, setBody] = useState("");
-
-  function handleOpenChange(val: boolean) {
-    setOpen(val);
-    if (!val) { setError(null); setBody(""); }
-  }
+  const [headers, setHeaders] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      await api.pushItem(bufferId, { body: body || undefined });
+      const parsedHeaders = parseJsonObject(headers, "Headers");
+      const api = createBuffersApi(apiFetch);
+      await api.pushItem(bufferId, { body: body || undefined, headers: parsedHeaders });
       setOpen(false);
       setBody("");
+      setHeaders("");
       onPushed();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to push item");
@@ -202,269 +198,327 @@ function PushItemDialog({ bufferId, onPushed }: { bufferId: string; onPushed: ()
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setError(null); } }}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="ghost">Push Item</Button>
+        <Button size="sm" variant="outline" className="border-white/10 text-white/70 hover:text-white">Push item</Button>
       </DialogTrigger>
-      <DialogContent className="bg-[#09090b] border-white/10">
+      <DialogContent className="border-white/10 bg-[#09090b]">
         <DialogHeader>
-          <DialogTitle>Push Item to Buffer</DialogTitle>
+          <DialogTitle>Push item to buffer</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
-          {error && (
-            <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm text-red-400">
-              {error}
-            </div>
-          )}
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/60">Request Body (optional)</label>
-            <textarea
-              className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm font-mono min-h-[120px] focus:outline-none focus:ring-1 focus:ring-white/20"
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              placeholder='{"key": "value"}'
-            />
-          </div>
-          <Button type="submit" disabled={loading}>
-            {loading ? "Pushing…" : "Push Item"}
-          </Button>
+        <form onSubmit={handleSubmit} className="mt-2 flex flex-col gap-4">
+          <FormError message={error} />
+          <Field label="Request body" hint="Optional — sent to the target URL">
+            <Textarea rows={5} value={body} onChange={(e) => setBody(e.target.value)} placeholder='{"key": "value"}' />
+          </Field>
+          <Field label="Headers" hint="Optional JSON object">
+            <Textarea rows={2} value={headers} onChange={(e) => setHeaders(e.target.value)} placeholder='{"Idempotency-Key": "…"}' />
+          </Field>
+          <Button type="submit" disabled={loading}>{loading ? "Pushing…" : "Push item"}</Button>
         </form>
       </DialogContent>
     </Dialog>
   );
 }
 
-// ── Item Status Badge ────────────────────────────────────────────────────────
-
-function itemStatusVariant(status: string) {
-  switch (status) {
-    case "completed": return "default" as const;
-    case "failed": return "destructive" as const;
-    case "running": return "secondary" as const;
-    default: return "outline" as const;
-  }
+function GettingStarted() {
+  return (
+    <EmptyState
+      title="Create your first rate-limited buffer"
+      steps={[
+        {
+          title: "Get an API token",
+          description: "Buffers accept a firehose of requests and release them at a controlled rate — ideal for third-party APIs with strict limits.",
+          action: (
+            <Link href="/app/settings">
+              <Button size="sm" variant="outline" className="w-fit gap-1.5 border-white/10 hover:bg-white/5">
+                <Settings className="h-3.5 w-3.5" />
+                Settings
+              </Button>
+            </Link>
+          ),
+        },
+        {
+          title: "Create a buffer",
+          description: (<>Set a target URL and a rate limit (req/s) via <span className="text-white/70">New buffer</span> or the API.</>),
+          action: <ApiCodeBlock snippets={BUFFER_SNIPPETS} />,
+        },
+        {
+          title: "Push items & watch them drain",
+          description: "Push requests in; Fliq fires them at your rate with automatic 429 retry handling. Expand a buffer to see item status.",
+        },
+      ]}
+    />
+  );
 }
 
-// ── Main Component ───────────────────────────────────────────────────────────
+// ─── Items panel (expand) ──────────────────────────────────────────────────
+
+function BufferItems({ bufferId, reloadKey }: { bufferId: string; reloadKey: number }) {
+  const { apiFetch } = useApi();
+  const [items, setItems] = useState<BufferItem[] | null>(null);
+
+  useEffect(() => {
+    const api = createBuffersApi(apiFetch);
+    setItems(null);
+    api
+      .listItems(bufferId, { limit: 20 })
+      .then((r) => setItems(r.items ?? []))
+      .catch(() => setItems([]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bufferId, reloadKey]);
+
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { pending: 0, running: 0, completed: 0, failed: 0 };
+    for (const it of items ?? []) c[it.status] = (c[it.status] ?? 0) + 1;
+    return c;
+  }, [items]);
+
+  return (
+    <div className="bg-white/[0.015] px-4 py-3 sm:px-5">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        {ITEM_STATES.map(({ key, label }) => (
+          <StatusPill key={key} tone={jobStatusTone(key)} label={`${counts[key] ?? 0} ${label.toLowerCase()}`} />
+        ))}
+      </div>
+      {items === null ? (
+        <Skeleton className="h-5 w-48" />
+      ) : items.length === 0 ? (
+        <p className="text-xs text-white/35">No items yet — push one to get started.</p>
+      ) : (
+        <ul className="flex flex-col gap-1">
+          {items.map((it) => (
+            <li key={it.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border border-white/5 bg-white/[0.02] px-3 py-2 text-xs">
+              <StatusPill tone={jobStatusTone(it.status)} label={it.status} pulse={it.status === "running"} />
+              <span className="font-mono text-white/40">{it.id.slice(0, 8)}…</span>
+              {it.status_code != null && <StatusPill tone={httpStatusTone(it.status_code)} label={`HTTP ${it.status_code}`} />}
+              {it.retry_count > 0 && <span className="text-white/40">retry {it.retry_count}/{it.max_retries}</span>}
+              {it.last_error && <span className="min-w-0 flex-1 truncate text-red-400/80" title={it.last_error}>{it.last_error}</span>}
+              <RelativeTime date={it.created_at} className="ml-auto text-white/35" />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// ─── Row actions ───────────────────────────────────────────────────────────
+
+function BufferActions({ b, onChanged, onPushed }: { b: Buffer; onChanged: () => void; onPushed: () => void }) {
+  const { apiFetch } = useApi();
+  const api = createBuffersApi(apiFetch);
+  return (
+    <div className="flex items-center justify-end gap-1">
+      <PushItemDialog bufferId={b.id} onPushed={onPushed} />
+      <Button
+        size="sm"
+        variant="ghost"
+        className="gap-1.5 text-white/60 hover:text-white"
+        onClick={async () => {
+          if (b.paused) await api.resume(b.id);
+          else await api.pause(b.id);
+          onChanged();
+        }}
+      >
+        {b.paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
+        {b.paused ? "Resume" : "Pause"}
+      </Button>
+      <ConfirmButton
+        title={`Delete "${b.name}"?`}
+        description="Queued items are dropped and the buffer stops releasing. This can't be undone."
+        confirmLabel="Delete buffer"
+        onConfirm={async () => { await api.delete(b.id); onChanged(); }}
+        trigger={<Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300">Delete</Button>}
+      />
+    </div>
+  );
+}
+
+// ─── Main ──────────────────────────────────────────────────────────────────
 
 export default function BuffersTable() {
   const { apiFetch } = useApi();
-  const api = createBuffersApi(apiFetch);
-  const [buffers, setBuffers] = useState<Buffer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [itemsMap, setItemsMap] = useState<Record<string, BufferItem[]>>({});
+  const [filter, setFilter] = useState<Filter>("all");
+  const [search, setSearch] = useState("");
+  const [showCode, setShowCode] = useState(false);
+  const [auto, setAuto] = useState(false);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [reloadKeys, setReloadKeys] = useState<Record<string, number>>({});
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { buffers } = await api.list({ limit: 50 });
-      setBuffers(buffers ?? []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const fetcher = useCallback(async (cursor: string | undefined) => {
+    const api = createBuffersApi(apiFetch);
+    const res = await api.list({ limit: 25, cursor });
+    return { items: res.buffers ?? [], nextCursor: res.next_cursor };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  const list = useCursorList<Buffer>(fetcher, []);
+  usePoll(list.reload, 15_000, auto);
 
-  async function toggleExpand(id: string) {
-    const next = new Set(expandedIds);
-    if (next.has(id)) {
-      next.delete(id);
-    } else {
-      next.add(id);
-      if (!itemsMap[id]) {
-        try {
-          const { items } = await api.listItems(id, { limit: 10 });
-          setItemsMap((prev) => ({ ...prev, [id]: items ?? [] }));
-        } catch (err) {
-          console.error(err);
-        }
-      }
-    }
-    setExpandedIds(next);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return list.items.filter((b) => {
+      if (filter === "active" && b.paused) return false;
+      if (filter === "paused" && !b.paused) return false;
+      if (q && !(b.name.toLowerCase().includes(q) || b.url.toLowerCase().includes(q))) return false;
+      return true;
+    });
+  }, [list.items, filter, search]);
+
+  function toggle(id: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+  function bumpItems(id: string) {
+    setReloadKeys((prev) => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
   }
 
-  async function toggleStatus(b: Buffer) {
-    if (b.paused) {
-      await api.resume(b.id);
-    } else {
-      await api.pause(b.id);
-    }
-    await load();
-  }
-
-  async function handleDelete(id: string) {
-    await api.delete(id);
-    await load();
-  }
-
-  async function refreshItems(bufferId: string) {
-    try {
-      const { items } = await api.listItems(bufferId, { limit: 10 });
-      setItemsMap((prev) => ({ ...prev, [bufferId]: items ?? [] }));
-    } catch (err) {
-      console.error(err);
-    }
-  }
+  const showGettingStarted = !list.loading && list.items.length === 0 && !list.hasPrev;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Buffers</h2>
-        <NewBufferDialog onCreated={load} />
-      </div>
+    <div className="flex flex-col gap-5">
+      <PageHeader
+        title="Buffers"
+        description="Push a firehose of requests; Fliq releases them at a fixed rate with 429 retries."
+        actions={
+          <>
+            <RefreshControls onRefresh={list.reload} loading={list.loading} auto={auto} onToggleAuto={setAuto} />
+            <Button size="sm" variant="outline" className="gap-1.5 border-white/10 text-white/60 hover:text-white" onClick={() => setShowCode((v) => !v)}>
+              <Code2 className="h-3.5 w-3.5" />
+              API
+            </Button>
+            <NewBufferDialog onCreated={list.reload} />
+          </>
+        }
+      />
 
-      <div className="rounded-lg border border-white/10 overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-white/10 hover:bg-transparent">
-              <TableHead className="text-white/40 w-8" />
-              <TableHead className="text-white/40">Name</TableHead>
-              <TableHead className="text-white/40">URL</TableHead>
-              <TableHead className="text-white/40">Method</TableHead>
-              <TableHead className="text-white/40">Rate Limit</TableHead>
-              <TableHead className="text-white/40">Status</TableHead>
-              <TableHead className="text-white/40">Created</TableHead>
-              <TableHead className="text-white/40 text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading
-              ? Array.from({ length: 3 }).map((_, i) => (
-                  <TableRow key={i} className="border-white/10">
-                    {Array.from({ length: 8 }).map((_, j) => (
-                      <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              : buffers.length === 0
-              ? (
+      {showCode && <ApiCodeBlock snippets={BUFFER_SNIPPETS} />}
+
+      {showGettingStarted ? (
+        <GettingStarted />
+      ) : (
+        <>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <FilterTabs tabs={FILTER_TABS} value={filter} onChange={setFilter} className="sm:max-w-fit" />
+            <SearchInput value={search} onChange={setSearch} placeholder="Filter by name or URL…" className="sm:w-64" />
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden overflow-hidden rounded-xl border border-white/10 md:block">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-white/10 hover:bg-transparent">
+                  <TableHead className="w-8" />
+                  <TableHead className="text-white/40">Name</TableHead>
+                  <TableHead className="text-white/40">Endpoint</TableHead>
+                  <TableHead className="text-white/40">Rate</TableHead>
+                  <TableHead className="text-white/40">Status</TableHead>
+                  <TableHead className="text-white/40">Created</TableHead>
+                  <TableHead className="text-right text-white/40">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {list.loading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <TableRow key={i} className="border-white/10">
+                      {Array.from({ length: 7 }).map((_, j) => (
+                        <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : filtered.length === 0 ? (
                   <TableRow className="border-white/10 hover:bg-transparent">
-                    <TableCell colSpan={8} className="p-0">
-                      <EmptyState
-                        className="m-4"
-                        title="Create your first rate-limited buffer"
-                        steps={[
-                          {
-                            title: "Get an API token",
-                            description: (
-                              <>
-                                Buffers let you push HTTP requests and have them executed at a controlled rate. Perfect for third-party APIs with strict rate limits.
-                                <span className="block mt-2">Head to Settings to create a token for authenticating your requests.</span>
-                              </>
-                            ),
-                            action: (
-                              <Link href="/app/settings">
-                                <Button size="sm" variant="outline" className="w-fit gap-1.5 border-white/10 hover:bg-white/5">
-                                  <Settings className="h-3.5 w-3.5" />
-                                  Settings
-                                </Button>
-                              </Link>
-                            ),
-                          },
-                          {
-                            title: "Create a buffer",
-                            description: (
-                              <>
-                                Use the <span className="text-white/70">New Buffer</span> button above. Set a target URL and rate limit (req/s).
-                              </>
-                            ),
-                          },
-                          {
-                            title: "Push items & monitor",
-                            description: "Push requests into the buffer. Fliq fires them at your configured rate with automatic 429 retry handling.",
-                          },
-                        ]}
-                      />
+                    <TableCell colSpan={7} className="p-0">
+                      <Empty icon={Layers} title="No buffers match" description="Adjust the filter or clear the search." />
                     </TableCell>
                   </TableRow>
-                )
-              : buffers.map((b) => {
-                  const isExpanded = expandedIds.has(b.id);
-                  const items = itemsMap[b.id] ?? [];
-                  return (
-                    <>
-                      <TableRow key={b.id} className="border-white/10 hover:bg-white/5 cursor-pointer" onClick={() => toggleExpand(b.id)}>
-                        <TableCell className="w-8 pr-0">
-                          {isExpanded
-                            ? <ChevronDown className="h-4 w-4 text-white/40" />
-                            : <ChevronRight className="h-4 w-4 text-white/40" />}
-                        </TableCell>
-                        <TableCell className="font-medium">{b.name}</TableCell>
-                        <TableCell className="max-w-[200px] truncate text-sm text-white/60">{b.url}</TableCell>
-                        <TableCell className="text-sm font-mono text-white/60">{b.method}</TableCell>
-                        <TableCell className="text-sm">{b.rate_limit} req/s</TableCell>
-                        <TableCell>
-                          <Badge variant={b.paused ? "secondary" : "default"}>
-                            {b.paused ? "paused" : "active"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-white/60">
-                          {formatDistanceToNow(new Date(b.created_at), { addSuffix: true })}
-                        </TableCell>
-                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex justify-end gap-2">
-                            <PushItemDialog bufferId={b.id} onPushed={() => refreshItems(b.id)} />
-                            <Button size="sm" variant="ghost" onClick={() => toggleStatus(b)}>
-                              {b.paused ? "Resume" : "Pause"}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-red-400 hover:text-red-300"
-                              onClick={() => handleDelete(b.id)}
-                            >
-                              Delete
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                      {isExpanded && (
-                        <TableRow key={`${b.id}-items`} className="border-white/10 hover:bg-transparent">
-                          <TableCell colSpan={8} className="p-0">
-                            <div className="bg-white/[0.02] border-t border-white/5 px-6 py-4">
-                              <p className="text-xs text-white/40 uppercase tracking-wider mb-3">Recent Items</p>
-                              {items.length === 0 ? (
-                                <p className="text-sm text-white/30">No items yet. Push an item to get started.</p>
-                              ) : (
-                                <div className="flex flex-col gap-2">
-                                  {items.map((item) => (
-                                    <div
-                                      key={item.id}
-                                      className="flex items-center gap-4 rounded-md border border-white/5 bg-white/[0.02] px-4 py-2.5 text-sm"
-                                    >
-                                      <Badge variant={itemStatusVariant(item.status)} className="text-xs">
-                                        {item.status}
-                                      </Badge>
-                                      <span className="text-white/40 font-mono text-xs">{item.id.slice(0, 8)}…</span>
-                                      {item.status_code && (
-                                        <span className="text-white/50 text-xs">HTTP {item.status_code}</span>
-                                      )}
-                                      {item.last_error && (
-                                        <span className="text-red-400/70 text-xs truncate max-w-[200px]">{item.last_error}</span>
-                                      )}
-                                      <span className="text-white/30 text-xs ml-auto">
-                                        {item.retry_count > 0 && `retry ${item.retry_count}/${item.max_retries} · `}
-                                        {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
+                ) : (
+                  filtered.map((b) => {
+                    const isOpen = expanded.has(b.id);
+                    return (
+                      <>
+                        <TableRow key={b.id} className="cursor-pointer border-white/10 hover:bg-white/[0.03]" onClick={() => toggle(b.id)}>
+                          <TableCell className="pl-3 pr-0 text-white/30">
+                            {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                          </TableCell>
+                          <TableCell className="font-medium text-white/85">{b.name}</TableCell>
+                          <TableCell className="max-w-[260px]">
+                            <div className="flex items-center gap-2">
+                              <MethodChip method={b.method} />
+                              <span className="truncate text-sm text-white/70" title={b.url}>{b.url}</span>
                             </div>
                           </TableCell>
+                          <TableCell className="whitespace-nowrap text-sm text-white/70">
+                            <span className="inline-flex items-center gap-1">
+                              <Gauge className="h-3.5 w-3.5 text-white/30" />
+                              {b.rate_limit}/s
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <StatusPill tone={b.paused ? "warning" : "success"} label={b.paused ? "Paused" : "Active"} pulse={!b.paused} />
+                          </TableCell>
+                          <TableCell className="text-sm text-white/55"><RelativeTime date={b.created_at} /></TableCell>
+                          <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                            <BufferActions b={b} onChanged={list.reload} onPushed={() => bumpItems(b.id)} />
+                          </TableCell>
                         </TableRow>
-                      )}
-                    </>
-                  );
-                })}
-          </TableBody>
-        </Table>
-      </div>
+                        {isOpen && (
+                          <TableRow key={`${b.id}-x`} className="border-white/10 hover:bg-transparent">
+                            <TableCell colSpan={7} className="p-0"><BufferItems bufferId={b.id} reloadKey={reloadKeys[b.id] ?? 0} /></TableCell>
+                          </TableRow>
+                        )}
+                      </>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="flex flex-col gap-2 md:hidden">
+            {list.loading ? (
+              Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-xl" />)
+            ) : filtered.length === 0 ? (
+              <SectionCard noPadding><Empty icon={Layers} title="No buffers match" /></SectionCard>
+            ) : (
+              filtered.map((b) => {
+                const isOpen = expanded.has(b.id);
+                return (
+                  <div key={b.id} className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.02]">
+                    <button className="flex w-full items-start gap-3 p-3 text-left" onClick={() => toggle(b.id)}>
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1 flex items-center gap-2">
+                          <span className="truncate font-medium text-white/85">{b.name}</span>
+                          <StatusPill tone={b.paused ? "warning" : "success"} label={b.paused ? "Paused" : "Active"} />
+                        </div>
+                        <p className="truncate font-mono text-xs text-white/60">{b.method} {b.url}</p>
+                        <p className="mt-1 text-[11px] text-white/40">{b.rate_limit} req/s</p>
+                      </div>
+                      {isOpen ? <ChevronDown className="h-4 w-4 shrink-0 text-white/30" /> : <ChevronRight className="h-4 w-4 shrink-0 text-white/30" />}
+                    </button>
+                    {isOpen && (
+                      <div className="border-t border-white/10">
+                        <BufferItems bufferId={b.id} reloadKey={reloadKeys[b.id] ?? 0} />
+                        <div className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                          <BufferActions b={b} onChanged={list.reload} onPushed={() => bumpItems(b.id)} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          <Pagination onPrev={list.goPrev} onNext={list.goNext} hasPrev={list.hasPrev} hasNext={list.hasNext} disabled={list.loading} page={list.page} />
+        </>
+      )}
     </div>
   );
 }

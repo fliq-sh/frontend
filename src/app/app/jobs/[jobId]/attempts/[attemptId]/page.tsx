@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { differenceInSeconds, format } from "date-fns";
 import { useApi, createJobsApi, Job, JobAttempt } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -70,7 +70,6 @@ function CopyLinkButton() {
 
 export default function AttemptDetailPage() {
   const params = useParams<{ jobId: string; attemptId: string }>();
-  const router = useRouter();
   const { apiFetch } = useApi();
   const api = createJobsApi(apiFetch);
 
@@ -117,7 +116,7 @@ export default function AttemptDetailPage() {
   if (error || !job || !attempt) {
     return (
       <div className="max-w-2xl mx-auto flex flex-col gap-4">
-        <Link href="/app" className="text-sm text-white/40 hover:text-white/60 flex items-center gap-1">
+        <Link href="/app/jobs" className="text-sm text-white/40 hover:text-white/60 flex items-center gap-1">
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to Jobs
         </Link>
@@ -145,7 +144,7 @@ export default function AttemptDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/app" className="text-white/40 hover:text-white/60 transition-colors">
+          <Link href="/app/jobs" className="text-white/40 hover:text-white/60 transition-colors">
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <h1 className="text-lg font-semibold">
