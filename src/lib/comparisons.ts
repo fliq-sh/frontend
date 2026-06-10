@@ -556,6 +556,77 @@ export const COMPARISONS: Comparison[] = [
       },
     ],
   },
+  {
+    slug: "hookdeck",
+    competitor: "Hookdeck",
+    competitorTagline: "Event gateway for inbound & outbound webhooks",
+    metaTitle: "Fliq vs Hookdeck — scheduler + buffers vs webhook gateway",
+    metaDescription:
+      "Fliq vs Hookdeck: a Postgres-native HTTP scheduler with rate-limited outbound buffers vs an event gateway for ingesting and delivering webhooks. When to use each.",
+    intro:
+      "Hookdeck is an event gateway: it ingests inbound webhooks, queues them, and delivers them to your endpoints reliably — with retries and destination rate limiting (its open-source Outpost handles outbound delivery). Fliq starts from the other end: it's time-triggered. You schedule cron or one-off HTTP jobs, and its buffers release queued outbound calls at a controlled rate so you stop getting 429'd. If your trigger is an incoming event, Hookdeck fits; if your trigger is a clock — or you just need to pace your own outbound calls — Fliq fits.",
+    whenCompetitor:
+      "Your work is driven by inbound events: you need to receive webhooks from Stripe, GitHub, or partners, verify and transform them, fan out, and deliver reliably with full observability. Hookdeck is purpose-built for that webhook-infrastructure job, and Outpost open-sources the outbound-delivery half.",
+    whenFliq:
+      "Your trigger is time, not an inbound event — cron schedules and one-off jobs — and you want to release outbound calls to a rate-limited API at a steady pace (buffers) without standing up Redis. Fliq is Postgres-native, open source, records every attempt, and exposes an MCP server so AI agents can schedule and pace jobs.",
+    matrix: [
+      {
+        dimension: "Trigger model",
+        fliq: "Time-triggered: cron + one-off jobs",
+        competitor: "Event-triggered: inbound webhook → delivery",
+      },
+      {
+        dimension: "Scheduling (cron / one-off)",
+        fliq: "Yes — native",
+        competitor: "No — events, not a clock",
+      },
+      {
+        dimension: "Outbound rate limiting",
+        fliq: "Buffers: queue + rate-limited release",
+        competitor: "Destination rate limits (Outpost)",
+      },
+      {
+        dimension: "Inbound webhook ingestion",
+        fliq: "No — you call Fliq's API",
+        competitor: "Yes — the core product",
+      },
+      {
+        dimension: "Automatic retries",
+        fliq: "Configurable backoff, per-job",
+        competitor: "Yes, with replay",
+      },
+      {
+        dimension: "Execution history",
+        fliq: "Full per-attempt history",
+        competitor: "Event & delivery logs",
+      },
+      {
+        dimension: "AI agents (MCP)",
+        fliq: "MCP server included",
+        competitor: "No",
+      },
+      {
+        dimension: "Self-host",
+        fliq: "Yes (open source)",
+        competitor: "Outpost self-hostable; gateway managed",
+      },
+      {
+        dimension: "Open source",
+        fliq: "Yes",
+        competitor: "Outpost yes; platform proprietary",
+      },
+      {
+        dimension: "Pricing model",
+        fliq: "Free in beta, then $1/100k",
+        competitor: "Freemium, tiered by throughput",
+      },
+      {
+        dimension: "Best for",
+        fliq: "Scheduled jobs + rate-limited outbound",
+        competitor: "Inbound webhook infra & delivery",
+      },
+    ],
+  },
 ];
 
 export function getComparison(slug: string): Comparison | undefined {
