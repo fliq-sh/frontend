@@ -36,8 +36,7 @@ export function MetricCard({
   const body = (
     <div
       className={cn(
-        "group relative flex h-full flex-col rounded-xl border border-foreground/10 border-l-2 bg-foreground/[0.03] p-4 transition-colors",
-        t.borderL,
+        "group relative flex h-full flex-col rounded-xl border border-foreground/10 bg-foreground/[0.03] p-4 transition-colors",
         href && "hover:bg-foreground/[0.06] cursor-pointer",
         className,
       )}

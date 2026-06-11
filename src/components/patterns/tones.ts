@@ -13,17 +13,15 @@ export interface ToneTokens {
   text: string;
   /** Solid dot / fill. */
   dot: string;
-  /** Left accent border for stat tiles. */
-  borderL: string;
   /** Icon colour. */
   icon: string;
 }
 
 export const TONE: Record<Tone, ToneTokens> = {
-  success: { text: "text-green-300", dot: "bg-green-400", borderL: "border-l-green-500", icon: "text-green-400" },
-  warning: { text: "text-amber-300", dot: "bg-amber-400", borderL: "border-l-amber-500", icon: "text-amber-400" },
-  danger:  { text: "text-red-300",   dot: "bg-red-400",   borderL: "border-l-red-500",   icon: "text-red-400"   },
-  neutral: { text: "text-foreground/60",  dot: "bg-foreground/40",  borderL: "border-l-foreground/40",  icon: "text-foreground/60"  },
+  success: { text: "text-green-300", dot: "bg-green-400", icon: "text-green-400" },
+  warning: { text: "text-amber-300", dot: "bg-amber-400", icon: "text-amber-400" },
+  danger:  { text: "text-red-300",   dot: "bg-red-400",    icon: "text-red-400"   },
+  neutral: { text: "text-foreground/60",  dot: "bg-foreground/40",  icon: "text-foreground/60"  },
 };
 
 /** Map a Fliq job/execution status string onto a traffic-light tone. */

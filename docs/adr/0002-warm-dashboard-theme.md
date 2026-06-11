@@ -67,6 +67,11 @@ ADR 0001 warned about:
 - **No rainbow chart ramp.** The `--chart-*` ramp is a single-hue orange-into-
   warm-neutral progression, not a multi-hue spectrum. Job/execution status is
   encoded by the green/amber/red traffic-light tokens, never by chart hues.
+- **No traffic-light left-accent stripes on tiles.** The `MetricCard`/`StatCard`
+  tiles dropped the coloured `border-l-2` accent (green/amber/red/neutral) — a
+  multi-coloured stripe per tile read as decorative. Tiles now carry a uniform
+  hairline border; status still reads from the small tone-coloured icon, the
+  progress bar, and the status pills. The `borderL` tone token was retired.
 - No decorative gradients, glow blobs, glassmorphism, or emoji in the dashboard
   UI; the only blur is the frosted sticky header (mirrors the landing nav).
 
