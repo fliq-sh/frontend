@@ -58,16 +58,16 @@ export function ConfirmButton({
       }}
     >
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="bg-[#09090b] border-white/10 sm:max-w-sm">
+      <DialogContent className="theme-warm bg-popover text-foreground border-foreground/10 sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription className="text-white/50">{description}</DialogDescription>}
+          {description && <DialogDescription className="text-foreground/50">{description}</DialogDescription>}
         </DialogHeader>
         {error && (
           <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</div>
         )}
         <DialogFooter className="gap-2 sm:gap-2">
-          <Button variant="outline" className="border-white/10" onClick={() => setOpen(false)} disabled={loading}>
+          <Button variant="outline" className="border-foreground/10" onClick={() => setOpen(false)} disabled={loading}>
             Cancel
           </Button>
           <Button

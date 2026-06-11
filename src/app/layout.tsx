@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Bricolage_Grotesque, Inter, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
@@ -14,6 +14,23 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+// Warm "fliq.sh" type system — used inside the dashboard (.theme-warm) only.
+// Marketing keeps Geist; these just declare the CSS variables on <body>.
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-display",
+  subsets: ["latin"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains",
   subsets: ["latin"],
 });
 
@@ -111,7 +128,7 @@ export default function RootLayout({
     <ClerkProvider appearance={{ baseTheme: dark }}>
       <html lang="en" className="dark">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#09090b] text-white`}
+          className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased bg-[#09090b] text-white`}
         >
           <script
             type="application/ld+json"

@@ -7,7 +7,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <BalanceProvider>
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="theme-warm flex min-h-screen w-full bg-background text-foreground">
           <AppSidebar />
           <div className="flex min-w-0 flex-1 flex-col">
             <DashboardHeader />

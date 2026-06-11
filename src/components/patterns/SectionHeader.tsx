@@ -24,7 +24,7 @@ export function SectionHeader({
   return (
     <div className={cn(centered ? "text-center" : "max-w-2xl", className)}>
       {eyebrow && (
-        <p className="text-xs text-white/40 uppercase tracking-widest mb-3">
+        <p className="text-xs text-foreground/40 uppercase tracking-widest mb-3">
           {eyebrow}
         </p>
       )}
@@ -32,7 +32,7 @@ export function SectionHeader({
       {subtitle && (
         <p
           className={cn(
-            "mt-4 text-white/60 leading-relaxed",
+            "mt-4 text-foreground/60 leading-relaxed",
             centered && "max-w-xl mx-auto",
             subtitleClassName,
           )}

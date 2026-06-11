@@ -35,12 +35,12 @@ export function SearchInput({
 
   return (
     <div className={cn("relative flex items-center", className)}>
-      <Search className="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-white/30" />
+      <Search className="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-foreground/30" />
       <input
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-md border border-white/10 bg-white/5 py-1.5 pl-8 pr-7 text-sm text-white placeholder:text-white/30 focus:border-white/20 focus:outline-none focus:ring-1 focus:ring-white/20"
+        className="w-full rounded-md border border-foreground/10 bg-foreground/5 py-1.5 pl-8 pr-7 text-sm text-foreground placeholder:text-foreground/30 focus:border-foreground/20 focus:outline-none focus:ring-1 focus:ring-foreground/20"
       />
       {text && (
         <button
@@ -49,7 +49,7 @@ export function SearchInput({
             setText("");
             onChange("");
           }}
-          className="absolute right-2 text-white/30 hover:text-white/60"
+          className="absolute right-2 text-foreground/30 hover:text-foreground/60"
           aria-label="Clear search"
         >
           <X className="h-3.5 w-3.5" />

@@ -121,7 +121,7 @@ function NewJobDialog({ onCreated }: { onCreated: () => void }) {
       <DialogTrigger asChild>
         <Button size="sm">Schedule job</Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto border-white/10 bg-[#09090b]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border-foreground/10 theme-warm bg-popover text-foreground">
         <DialogHeader>
           <DialogTitle>Schedule a job</DialogTitle>
         </DialogHeader>
@@ -213,7 +213,7 @@ function GettingStarted() {
           description: "Your token authenticates requests from your code, cron, or Postman.",
           action: (
             <Link href="/app/settings">
-              <Button size="sm" variant="outline" className="w-fit gap-1.5 border-white/10 hover:bg-white/5">
+              <Button size="sm" variant="outline" className="w-fit gap-1.5 border-foreground/10 hover:bg-foreground/5">
                 <Settings className="h-3.5 w-3.5" />
                 Settings → API Tokens
               </Button>
@@ -230,7 +230,7 @@ function GettingStarted() {
           description: (
             <>
               Jobs appear here with live status, attempt history, and error details. Prefer the UI?
-              Hit <span className="text-white/70">Schedule job</span> above.
+              Hit <span className="text-foreground/70">Schedule job</span> above.
             </>
           ),
         },
@@ -314,7 +314,7 @@ export default function JobsTable() {
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 border-white/10 text-white/60 hover:text-white"
+              className="gap-1.5 border-foreground/10 text-foreground/60 hover:text-foreground"
               onClick={() => setShowCode((v) => !v)}
             >
               <Code2 className="h-3.5 w-3.5" />
@@ -336,36 +336,36 @@ export default function JobsTable() {
             <SearchInput value={search} onChange={setSearch} placeholder="Filter by URL or ID…" className="sm:w-64" />
           </div>
 
-          <p className="text-xs text-white/35">
+          <p className="text-xs text-foreground/35">
             {list.loading ? "Loading…" : `${filtered.length} job${filtered.length === 1 ? "" : "s"} on this page`}
             {search && " (filtered)"}
           </p>
 
           {/* Desktop table */}
-          <div className="hidden overflow-hidden rounded-xl border border-white/10 md:block">
+          <div className="hidden overflow-hidden rounded-xl border border-foreground/10 md:block">
             <Table>
               <TableHeader>
-                <TableRow className="border-white/10 hover:bg-transparent">
+                <TableRow className="border-foreground/10 hover:bg-transparent">
                   <TableHead className="w-8" />
-                  <TableHead className="text-white/40">Status</TableHead>
-                  <TableHead className="text-white/40">Endpoint</TableHead>
-                  <TableHead className="text-white/40">Scheduled</TableHead>
-                  <TableHead className="text-white/40">Created</TableHead>
-                  <TableHead className="text-white/40">Attempts</TableHead>
-                  <TableHead className="text-right text-white/40">Actions</TableHead>
+                  <TableHead className="text-foreground/40">Status</TableHead>
+                  <TableHead className="text-foreground/40">Endpoint</TableHead>
+                  <TableHead className="text-foreground/40">Scheduled</TableHead>
+                  <TableHead className="text-foreground/40">Created</TableHead>
+                  <TableHead className="text-foreground/40">Attempts</TableHead>
+                  <TableHead className="text-right text-foreground/40">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {list.loading ? (
                   Array.from({ length: 6 }).map((_, i) => (
-                    <TableRow key={i} className="border-white/10">
+                    <TableRow key={i} className="border-foreground/10">
                       {Array.from({ length: 7 }).map((_, j) => (
                         <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                       ))}
                     </TableRow>
                   ))
                 ) : filtered.length === 0 ? (
-                  <TableRow className="border-white/10 hover:bg-transparent">
+                  <TableRow className="border-foreground/10 hover:bg-transparent">
                     <TableCell colSpan={7} className="p-0">
                       <Empty icon={Zap} title="No jobs match" description="Try a different status or clear the search." />
                     </TableCell>
@@ -377,10 +377,10 @@ export default function JobsTable() {
                       <>
                         <TableRow
                           key={job.id}
-                          className="cursor-pointer border-white/10 hover:bg-white/[0.03]"
+                          className="cursor-pointer border-foreground/10 hover:bg-foreground/[0.03]"
                           onClick={() => toggle(job.id)}
                         >
-                          <TableCell className="pl-3 pr-0 text-white/30">
+                          <TableCell className="pl-3 pr-0 text-foreground/30">
                             {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                           </TableCell>
                           <TableCell>
@@ -389,16 +389,16 @@ export default function JobsTable() {
                           <TableCell className="max-w-[280px]">
                             <div className="flex items-center gap-2">
                               <MethodChip method={job.method} />
-                              <span className="truncate text-sm text-white/80" title={job.url}>{job.url}</span>
+                              <span className="truncate text-sm text-foreground/80" title={job.url}>{job.url}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-sm text-white/55">
+                          <TableCell className="text-sm text-foreground/55">
                             <RelativeTime date={job.scheduled_at} />
                           </TableCell>
-                          <TableCell className="text-sm text-white/55">
+                          <TableCell className="text-sm text-foreground/55">
                             <RelativeTime date={job.created_at} />
                           </TableCell>
-                          <TableCell className="text-sm tabular-nums text-white/55">
+                          <TableCell className="text-sm tabular-nums text-foreground/55">
                             {job.attempts}/{job.max_retries + 1}
                           </TableCell>
                           <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
@@ -406,7 +406,7 @@ export default function JobsTable() {
                           </TableCell>
                         </TableRow>
                         {isOpen && (
-                          <TableRow key={`${job.id}-x`} className="border-white/10 hover:bg-transparent">
+                          <TableRow key={`${job.id}-x`} className="border-foreground/10 hover:bg-transparent">
                             <TableCell colSpan={7} className="p-0">
                               <AttemptsPanel job={job} />
                             </TableCell>
@@ -432,22 +432,22 @@ export default function JobsTable() {
               filtered.map((job) => {
                 const isOpen = expanded.has(job.id);
                 return (
-                  <div key={job.id} className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.02]">
+                  <div key={job.id} className="overflow-hidden rounded-xl border border-foreground/10 bg-foreground/[0.02]">
                     <button className="flex w-full items-start gap-3 p-3 text-left" onClick={() => toggle(job.id)}>
                       <div className="min-w-0 flex-1">
                         <div className="mb-1.5 flex items-center gap-2">
                           <StatusPill tone={jobStatusTone(job.status)} label={job.status} pulse={job.status === "running"} />
                           <MethodChip method={job.method} />
                         </div>
-                        <p className="truncate font-mono text-xs text-white/70">{job.url}</p>
-                        <p className="mt-1 text-[11px] text-white/35">
+                        <p className="truncate font-mono text-xs text-foreground/70">{job.url}</p>
+                        <p className="mt-1 text-[11px] text-foreground/35">
                           Runs <RelativeTime date={job.scheduled_at} /> · {job.attempts}/{job.max_retries + 1} attempts
                         </p>
                       </div>
-                      {isOpen ? <ChevronDown className="h-4 w-4 shrink-0 text-white/30" /> : <ChevronRight className="h-4 w-4 shrink-0 text-white/30" />}
+                      {isOpen ? <ChevronDown className="h-4 w-4 shrink-0 text-foreground/30" /> : <ChevronRight className="h-4 w-4 shrink-0 text-foreground/30" />}
                     </button>
                     {isOpen && (
-                      <div className="border-t border-white/10">
+                      <div className="border-t border-foreground/10">
                         <AttemptsPanel job={job} />
                         <div className="flex justify-end px-3 py-2" onClick={(e) => e.stopPropagation()}>
                           <JobActions job={job} onChanged={list.reload} />

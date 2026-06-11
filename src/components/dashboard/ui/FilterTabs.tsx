@@ -29,7 +29,7 @@ export function FilterTabs<T extends string>({
     <div
       role="tablist"
       className={cn(
-        "flex items-center gap-1 overflow-x-auto rounded-lg border border-white/10 bg-white/[0.03] p-1 no-scrollbar",
+        "flex items-center gap-1 overflow-x-auto rounded-lg border border-foreground/10 bg-foreground/[0.03] p-1 no-scrollbar",
         className,
       )}
     >
@@ -43,7 +43,7 @@ export function FilterTabs<T extends string>({
             onClick={() => onChange(tab.value)}
             className={cn(
               "inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-              active ? "bg-white/10 text-white" : "text-white/45 hover:text-white/70",
+              active ? "bg-foreground/10 text-foreground" : "text-foreground/45 hover:text-foreground/70",
             )}
           >
             {tab.tone && tab.tone !== "neutral" && (
@@ -51,7 +51,7 @@ export function FilterTabs<T extends string>({
             )}
             {tab.label}
             {typeof tab.count === "number" && (
-              <span className={cn("tabular-nums", active ? "text-white/60" : "text-white/30")}>{tab.count}</span>
+              <span className={cn("tabular-nums", active ? "text-foreground/60" : "text-foreground/30")}>{tab.count}</span>
             )}
           </button>
         );

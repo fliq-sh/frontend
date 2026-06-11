@@ -96,7 +96,8 @@ and **labelled honestly** when the sample is capped. Pieces: `PageHeader`,
 Delete/Cancel now require confirmation), `RelativeTime`, `CopyButton`, `Empty`,
 and `Form` field helpers (`Field`/`TextInput`/`Select`/`Textarea`/`parseJsonObject`).
 Tables render a `<Table>` on `md+` and a stacked card list on mobile (no horizontal
-scroll). Monochrome + traffic-light only, per ADR 0001.
+scroll). Warm "fliq.sh" theme + traffic-light status, per ADR 0002 (the
+dashboard re-skin); the marketing site stays monochrome-dark per ADR 0001.
 
 ### Landing sections (top → bottom in `page.tsx`)
 
@@ -171,12 +172,24 @@ and reinforced fabricated "30+ regions" copy). Instead:
 
 ## Styling conventions
 
-- Dark background: `bg-[#09090b]` (zinc-950 equivalent)
+> **Two themes (ADR 0002).** The conventions below describe the **marketing
+> surface** (landing, pricing, status, `/vs`, tools, docs, blog, legal), which
+> stays dark + monochrome. The signed-in **`/app` dashboard** now uses the warm
+> "fliq.sh" palette (cream bg, dark ink, burnt-orange accent, Bricolage
+> headings), applied via a single `.theme-warm` scope on the dashboard layout —
+> see `docs/adr/0002-warm-dashboard-theme.md`. In dashboard code, prefer
+> semantic tokens (`bg-card`, `text-muted-foreground`, `border-border`,
+> `bg-primary`) or the `*-foreground/N` opacity pattern (which renders white on
+> marketing and dark ink in the dashboard) — **never hardcode `*-white/N` or hex
+> backgrounds** there.
+
+- Dark background (marketing): `bg-[#09090b]` (zinc-950 equivalent)
 - Opacity variants for hierarchy: `text-white/60` (body), `text-white/40` (captions), `text-white/20` (disabled/logos)
 - Subtle surfaces: `bg-white/5`, `bg-white/[0.03]`
 - Borders: `border-white/10`
-- **Monochrome — no colour accent.** Applies to the **whole frontend** (marketing
-  *and* dashboard, docs, blog, etc.). White at opacities carries all hierarchy;
+- **Monochrome — no colour accent.** Applies to the **marketing surface**
+  (the dashboard is warm — see the note above and ADR 0002).
+  White at opacities carries all hierarchy;
   the primary/active accent is white (white CTA button, white active sidebar
   item). Do **not** use `indigo-*`/`violet-*` or any hue accent anywhere. Colour
   lives in exactly two places (see

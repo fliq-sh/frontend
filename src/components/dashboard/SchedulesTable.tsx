@@ -75,9 +75,9 @@ function CronPreview({ expr }: { expr: string }) {
     return <p className="text-xs text-red-400">{result.error}</p>;
   }
   return (
-    <div className="flex flex-col gap-1.5 rounded-md border border-white/10 bg-white/[0.03] px-3 py-2">
-      <p className="text-xs text-white/70">{result.description}</p>
-      <p className="text-[11px] text-white/35">
+    <div className="flex flex-col gap-1.5 rounded-md border border-foreground/10 bg-foreground/[0.03] px-3 py-2">
+      <p className="text-xs text-foreground/70">{result.description}</p>
+      <p className="text-[11px] text-foreground/35">
         Next: {result.nextRuns.map((d) => formatUtc(d)).join(" · ")} UTC
       </p>
     </div>
@@ -138,7 +138,7 @@ function NewScheduleDialog({ onCreated }: { onCreated: () => void }) {
       <DialogTrigger asChild>
         <Button size="sm">New schedule</Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto border-white/10 bg-[#09090b]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border-foreground/10 theme-warm bg-popover text-foreground">
         <DialogHeader>
           <DialogTitle>Create schedule</DialogTitle>
         </DialogHeader>
@@ -167,7 +167,7 @@ function NewScheduleDialog({ onCreated }: { onCreated: () => void }) {
                 key={p.expr}
                 type="button"
                 onClick={() => setForm({ ...form, cron_expr: p.expr })}
-                className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-white/60 transition-colors hover:border-white/20 hover:text-white"
+                className="rounded-md border border-foreground/10 bg-foreground/5 px-2 py-1 text-[11px] text-foreground/60 transition-colors hover:border-foreground/20 hover:text-foreground"
               >
                 {p.label}
               </button>
@@ -234,7 +234,7 @@ function GettingStarted() {
           description: "Schedules fire your HTTP endpoint on a cron expression — define once, run forever.",
           action: (
             <Link href="/app/settings">
-              <Button size="sm" variant="outline" className="w-fit gap-1.5 border-white/10 hover:bg-white/5">
+              <Button size="sm" variant="outline" className="w-fit gap-1.5 border-foreground/10 hover:bg-foreground/5">
                 <Settings className="h-3.5 w-3.5" />
                 Settings
               </Button>
@@ -244,7 +244,7 @@ function GettingStarted() {
         {
           title: "Create a schedule",
           description: (
-            <>Use <span className="text-white/70">New schedule</span> above, or POST to the schedules API.</>
+            <>Use <span className="text-foreground/70">New schedule</span> above, or POST to the schedules API.</>
           ),
           action: <ApiCodeBlock snippets={SCHEDULE_SNIPPETS} />,
         },
@@ -273,19 +273,19 @@ function ScheduleRuns({ scheduleId }: { scheduleId: string }) {
   }, [scheduleId]);
 
   return (
-    <div className="bg-white/[0.015] px-4 py-3 sm:px-5">
-      <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-white/30">Recent runs</p>
+    <div className="bg-foreground/[0.015] px-4 py-3 sm:px-5">
+      <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-foreground/30">Recent runs</p>
       {jobs === null ? (
         <Skeleton className="h-5 w-40" />
       ) : jobs.length === 0 ? (
-        <p className="text-xs text-white/35">No runs yet.</p>
+        <p className="text-xs text-foreground/35">No runs yet.</p>
       ) : (
         <ul className="flex flex-col gap-1">
           {jobs.map((j) => (
             <li key={j.id} className="flex items-center gap-3 text-xs">
               <StatusPill tone={jobStatusTone(j.status)} label={j.status} />
-              <RelativeTime date={j.scheduled_at} className="text-white/40" />
-              <Link href={`/app/jobs`} className="ml-auto text-white/35 hover:text-white">view</Link>
+              <RelativeTime date={j.scheduled_at} className="text-foreground/40" />
+              <Link href={`/app/jobs`} className="ml-auto text-foreground/35 hover:text-foreground">view</Link>
             </li>
           ))}
         </ul>
@@ -304,7 +304,7 @@ function ScheduleActions({ s, onChanged }: { s: Schedule; onChanged: () => void 
       <Button
         size="sm"
         variant="ghost"
-        className="gap-1.5 text-white/60 hover:text-white"
+        className="gap-1.5 text-foreground/60 hover:text-foreground"
         onClick={async () => {
           if (s.paused) await api.resume(s.id);
           else await api.pause(s.id);
@@ -383,7 +383,7 @@ export default function SchedulesTable() {
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 border-white/10 text-white/60 hover:text-white"
+              className="gap-1.5 border-foreground/10 text-foreground/60 hover:text-foreground"
               onClick={() => setShowCode((v) => !v)}
             >
               <Code2 className="h-3.5 w-3.5" />
@@ -406,30 +406,30 @@ export default function SchedulesTable() {
           </div>
 
           {/* Desktop table */}
-          <div className="hidden overflow-hidden rounded-xl border border-white/10 md:block">
+          <div className="hidden overflow-hidden rounded-xl border border-foreground/10 md:block">
             <Table>
               <TableHeader>
-                <TableRow className="border-white/10 hover:bg-transparent">
+                <TableRow className="border-foreground/10 hover:bg-transparent">
                   <TableHead className="w-8" />
-                  <TableHead className="text-white/40">Name</TableHead>
-                  <TableHead className="text-white/40">Schedule</TableHead>
-                  <TableHead className="text-white/40">Endpoint</TableHead>
-                  <TableHead className="text-white/40">Status</TableHead>
-                  <TableHead className="text-white/40">Next run</TableHead>
-                  <TableHead className="text-right text-white/40">Actions</TableHead>
+                  <TableHead className="text-foreground/40">Name</TableHead>
+                  <TableHead className="text-foreground/40">Schedule</TableHead>
+                  <TableHead className="text-foreground/40">Endpoint</TableHead>
+                  <TableHead className="text-foreground/40">Status</TableHead>
+                  <TableHead className="text-foreground/40">Next run</TableHead>
+                  <TableHead className="text-right text-foreground/40">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {list.loading ? (
                   Array.from({ length: 4 }).map((_, i) => (
-                    <TableRow key={i} className="border-white/10">
+                    <TableRow key={i} className="border-foreground/10">
                       {Array.from({ length: 7 }).map((_, j) => (
                         <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                       ))}
                     </TableRow>
                   ))
                 ) : filtered.length === 0 ? (
-                  <TableRow className="border-white/10 hover:bg-transparent">
+                  <TableRow className="border-foreground/10 hover:bg-transparent">
                     <TableCell colSpan={7} className="p-0">
                       <Empty icon={CalendarClock} title="No schedules match" description="Adjust the filter or clear the search." />
                     </TableCell>
@@ -440,33 +440,33 @@ export default function SchedulesTable() {
                     const human = humanizeCron(s.cron_expr);
                     return (
                       <>
-                        <TableRow key={s.id} className="cursor-pointer border-white/10 hover:bg-white/[0.03]" onClick={() => toggle(s.id)}>
-                          <TableCell className="pl-3 pr-0 text-white/30">
+                        <TableRow key={s.id} className="cursor-pointer border-foreground/10 hover:bg-foreground/[0.03]" onClick={() => toggle(s.id)}>
+                          <TableCell className="pl-3 pr-0 text-foreground/30">
                             {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                           </TableCell>
-                          <TableCell className="font-medium text-white/85">{s.name}</TableCell>
+                          <TableCell className="font-medium text-foreground/85">{s.name}</TableCell>
                           <TableCell className="max-w-[200px]">
-                            <p className="font-mono text-xs text-white/70">{s.cron_expr}</p>
-                            {human && <p className="truncate text-[11px] text-white/35">{human}</p>}
+                            <p className="font-mono text-xs text-foreground/70">{s.cron_expr}</p>
+                            {human && <p className="truncate text-[11px] text-foreground/35">{human}</p>}
                           </TableCell>
                           <TableCell className="max-w-[220px]">
                             <div className="flex items-center gap-2">
                               <MethodChip method={s.method} />
-                              <span className="truncate text-sm text-white/70" title={s.url}>{s.url}</span>
+                              <span className="truncate text-sm text-foreground/70" title={s.url}>{s.url}</span>
                             </div>
                           </TableCell>
                           <TableCell>
                             <StatusPill tone={s.paused ? "warning" : "success"} label={s.paused ? "Paused" : "Active"} pulse={!s.paused} />
                           </TableCell>
-                          <TableCell className="text-sm text-white/55">
-                            {s.paused ? <span className="text-white/30">—</span> : <RelativeTime date={s.next_run_at} />}
+                          <TableCell className="text-sm text-foreground/55">
+                            {s.paused ? <span className="text-foreground/30">—</span> : <RelativeTime date={s.next_run_at} />}
                           </TableCell>
                           <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                             <ScheduleActions s={s} onChanged={list.reload} />
                           </TableCell>
                         </TableRow>
                         {isOpen && (
-                          <TableRow key={`${s.id}-x`} className="border-white/10 hover:bg-transparent">
+                          <TableRow key={`${s.id}-x`} className="border-foreground/10 hover:bg-transparent">
                             <TableCell colSpan={7} className="p-0"><ScheduleRuns scheduleId={s.id} /></TableCell>
                           </TableRow>
                         )}
@@ -491,26 +491,26 @@ export default function SchedulesTable() {
                 const isOpen = expanded.has(s.id);
                 const human = humanizeCron(s.cron_expr);
                 return (
-                  <div key={s.id} className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.02]">
+                  <div key={s.id} className="overflow-hidden rounded-xl border border-foreground/10 bg-foreground/[0.02]">
                     <button className="flex w-full items-start gap-3 p-3 text-left" onClick={() => toggle(s.id)}>
                       <div className="min-w-0 flex-1">
                         <div className="mb-1 flex items-center gap-2">
-                          <span className="truncate font-medium text-white/85">{s.name}</span>
+                          <span className="truncate font-medium text-foreground/85">{s.name}</span>
                           <StatusPill tone={s.paused ? "warning" : "success"} label={s.paused ? "Paused" : "Active"} />
                         </div>
-                        <p className="font-mono text-xs text-white/60">{s.cron_expr}</p>
-                        {human && <p className="text-[11px] text-white/35">{human}</p>}
-                        <p className="mt-1 truncate text-[11px] text-white/40">
+                        <p className="font-mono text-xs text-foreground/60">{s.cron_expr}</p>
+                        {human && <p className="text-[11px] text-foreground/35">{human}</p>}
+                        <p className="mt-1 truncate text-[11px] text-foreground/40">
                           {s.method} {s.url}
                         </p>
                         {!s.paused && (
-                          <p className="mt-1 text-[11px] text-white/40">Next <RelativeTime date={s.next_run_at} /></p>
+                          <p className="mt-1 text-[11px] text-foreground/40">Next <RelativeTime date={s.next_run_at} /></p>
                         )}
                       </div>
-                      {isOpen ? <ChevronDown className="h-4 w-4 shrink-0 text-white/30" /> : <ChevronRight className="h-4 w-4 shrink-0 text-white/30" />}
+                      {isOpen ? <ChevronDown className="h-4 w-4 shrink-0 text-foreground/30" /> : <ChevronRight className="h-4 w-4 shrink-0 text-foreground/30" />}
                     </button>
                     {isOpen && (
-                      <div className="border-t border-white/10">
+                      <div className="border-t border-foreground/10">
                         <ScheduleRuns scheduleId={s.id} />
                         <div className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                           <ScheduleActions s={s} onChanged={list.reload} />

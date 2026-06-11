@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 /** Shared input styling so every dashboard form field looks identical. */
 export const fieldClass =
-  "w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/25 focus:outline-none focus:ring-1 focus:ring-white/30 focus:border-white/20 transition-colors disabled:opacity-50";
+  "w-full rounded-md border border-foreground/10 bg-foreground/5 px-3 py-2 text-sm text-foreground placeholder:text-foreground/25 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-colors disabled:opacity-50";
 
 /** Label + optional hint wrapper around a single control. */
 export function Field({
@@ -20,11 +20,11 @@ export function Field({
 }) {
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      <label htmlFor={htmlFor} className="text-xs font-medium text-white/60">
+      <label htmlFor={htmlFor} className="text-xs font-medium text-foreground/60">
         {label}
       </label>
       {children}
-      {hint && <p className="text-xs text-white/35">{hint}</p>}
+      {hint && <p className="text-xs text-foreground/35">{hint}</p>}
     </div>
   );
 }

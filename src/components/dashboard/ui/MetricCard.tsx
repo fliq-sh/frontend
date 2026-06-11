@@ -36,16 +36,16 @@ export function MetricCard({
   const body = (
     <div
       className={cn(
-        "group relative flex h-full flex-col rounded-xl border border-white/10 border-l-2 bg-white/[0.03] p-4 transition-colors",
+        "group relative flex h-full flex-col rounded-xl border border-foreground/10 border-l-2 bg-foreground/[0.03] p-4 transition-colors",
         t.borderL,
-        href && "hover:bg-white/[0.06] cursor-pointer",
+        href && "hover:bg-foreground/[0.06] cursor-pointer",
         className,
       )}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           {Icon && <Icon className={cn("h-3.5 w-3.5 shrink-0", t.icon)} />}
-          <p className="truncate text-xs font-medium uppercase tracking-wider text-white/40">{label}</p>
+          <p className="truncate text-xs font-medium uppercase tracking-wider text-foreground/40">{label}</p>
         </div>
         {chart && <div className="shrink-0 opacity-80">{chart}</div>}
       </div>
@@ -55,7 +55,7 @@ export function MetricCard({
       </div>
 
       {typeof progress === "number" && (
-        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-foreground/10">
           <div
             className={cn("h-full rounded-full", progressTone(progress, tone))}
             style={{ width: `${Math.min(100, Math.max(0, progress * 100))}%` }}
@@ -63,7 +63,7 @@ export function MetricCard({
         </div>
       )}
 
-      {sub && <p className="mt-2 text-xs text-white/40">{sub}</p>}
+      {sub && <p className="mt-2 text-xs text-foreground/40">{sub}</p>}
     </div>
   );
 
@@ -75,5 +75,5 @@ function progressTone(fraction: number, tone: Tone): string {
   // Neutral quota bar: stays white until near the cap, then warns/alarms.
   if (fraction >= 0.9) return "bg-red-400";
   if (fraction >= 0.75) return "bg-amber-400";
-  return "bg-white/70";
+  return "bg-foreground/70";
 }

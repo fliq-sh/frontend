@@ -74,19 +74,19 @@ function NewTokenBanner({ token, onDismiss }: { token: CreateTokenResponse; onDi
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-sm font-medium text-amber-200">Copy your token now — it won&apos;t be shown again</p>
-          <p className="mt-0.5 text-xs text-white/50">
-            <span className="font-medium text-white/70">{token.name}</span> · {token.prefix}…
+          <p className="mt-0.5 text-xs text-foreground/50">
+            <span className="font-medium text-foreground/70">{token.name}</span> · {token.prefix}…
           </p>
         </div>
-        <Button size="sm" variant="ghost" className="shrink-0 text-white/40 hover:text-white/70" onClick={onDismiss}>
+        <Button size="sm" variant="ghost" className="shrink-0 text-foreground/40 hover:text-foreground/70" onClick={onDismiss}>
           Dismiss
         </Button>
       </div>
       <div className="flex items-center gap-2">
-        <code className="flex-1 break-all rounded border border-white/10 bg-black/40 px-3 py-2 font-mono text-xs text-white/80">
+        <code className="flex-1 break-all rounded border border-foreground/10 bg-foreground/5 px-3 py-2 font-mono text-xs text-foreground/80">
           {token.token}
         </code>
-        <CopyButton value={token.token} label="Copy" variant="outline" className="shrink-0 border-white/10" />
+        <CopyButton value={token.token} label="Copy" variant="outline" className="shrink-0 border-foreground/10" />
       </div>
     </div>
   );
@@ -110,7 +110,7 @@ function TokenRow({ token, onRevoked }: { token: APIToken; onRevoked: () => void
     <div className="flex items-center justify-between gap-4 py-3">
       <div className="min-w-0">
         <p className="truncate text-sm font-medium">{token.name}</p>
-        <p className="mt-0.5 font-mono text-xs text-white/40">
+        <p className="mt-0.5 font-mono text-xs text-foreground/40">
           {token.prefix}… ·{" "}
           {token.last_used_at ? (
             <>last used <RelativeTime date={token.last_used_at} /></>
@@ -164,7 +164,7 @@ function APITokensCard() {
         {newToken && <NewTokenBanner token={newToken} onDismiss={() => setNewToken(null)} />}
 
         {showForm && (
-          <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/[0.02] p-3">
+          <div className="flex flex-col gap-2 rounded-lg border border-foreground/10 bg-foreground/[0.02] p-3">
             <NewTokenForm
               onCreated={(res) => {
                 setNewToken(res);
@@ -172,18 +172,18 @@ function APITokensCard() {
                 load();
               }}
             />
-            <button className="text-left text-xs text-white/30 hover:text-white/50" onClick={() => setShowForm(false)}>
+            <button className="text-left text-xs text-foreground/30 hover:text-foreground/50" onClick={() => setShowForm(false)}>
               Cancel
             </button>
           </div>
         )}
 
         {loading ? (
-          <p className="py-2 text-sm text-white/30">Loading…</p>
+          <p className="py-2 text-sm text-foreground/30">Loading…</p>
         ) : tokens.length === 0 ? (
           <Empty icon={KeyRound} title="No tokens yet" description="Create one to call the Fliq API from your code." />
         ) : (
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-foreground/5">
             {tokens.map((tok) => (
               <TokenRow key={tok.id} token={tok} onRevoked={load} />
             ))}
@@ -238,20 +238,20 @@ function SigningSecretCard() {
       description="Verify that requests to your endpoints are genuinely from Fliq."
     >
       {loading ? (
-        <p className="py-2 text-sm text-white/30">Loading…</p>
+        <p className="py-2 text-sm text-foreground/30">Loading…</p>
       ) : secret ? (
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <code className="flex-1 break-all rounded border border-white/10 bg-black/40 px-3 py-2 font-mono text-xs text-white/80">
+            <code className="flex-1 break-all rounded border border-foreground/10 bg-foreground/5 px-3 py-2 font-mono text-xs text-foreground/80">
               {revealed ? secret.secret : "whsec_••••••••••••••••••••••••••••••••"}
             </code>
-            <Button size="sm" variant="outline" className="shrink-0 border-white/10" onClick={() => setRevealed((v) => !v)}>
+            <Button size="sm" variant="outline" className="shrink-0 border-foreground/10" onClick={() => setRevealed((v) => !v)}>
               {revealed ? "Hide" : "Reveal"}
             </Button>
-            {revealed && <CopyButton value={secret.secret} variant="outline" className="shrink-0 border-white/10" />}
+            {revealed && <CopyButton value={secret.secret} variant="outline" className="shrink-0 border-foreground/10" />}
           </div>
           <div className="flex items-center justify-between">
-            <p className="text-xs text-white/35">
+            <p className="text-xs text-foreground/35">
               Created <RelativeTime date={secret.created_at} />
             </p>
             <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300" disabled={rotating} onClick={handleRotate}>

@@ -18,8 +18,8 @@ export function MiniBars({
   bars,
   height = 56,
   className,
-  barClass = "bg-white/25",
-  activeBarClass = "bg-white/70",
+  barClass = "bg-foreground/25",
+  activeBarClass = "bg-foreground/70",
 }: {
   bars: MiniBar[];
   height?: number;
@@ -55,7 +55,7 @@ export function MiniBars({
         })}
       </div>
       {hover !== null && bars[hover]?.label && (
-        <div className="pointer-events-none absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full rounded-md border border-white/10 bg-[#09090b] px-2 py-1 text-[11px] text-white/80 whitespace-nowrap shadow-lg">
+        <div className="pointer-events-none absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full rounded-md border border-foreground/10 theme-warm bg-popover text-foreground px-2 py-1 text-[11px] text-foreground/80 whitespace-nowrap shadow-lg">
           {bars[hover].label}
         </div>
       )}
