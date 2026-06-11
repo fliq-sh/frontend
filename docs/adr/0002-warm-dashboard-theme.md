@@ -53,6 +53,23 @@ dragged the (intentionally dark) marketing pages with it. Token-overriding under
 a single `.theme-warm` class keeps the blast radius to the dashboard, leaves
 ADR 0001 intact for everything else, and is trivially reversible.
 
+## No vibe-coding tells
+
+The warm restyle deliberately avoids the AI-generated-landing-page signatures
+ADR 0001 warned about:
+
+- **No iridescent/holographic F-mark in the dashboard.** The `FliqIcon`
+  holographic lettermark (cold teal→indigo→purple→pink spectrum) is a marketing-
+  brand device for the *dark* site; on warm cream it both clashes and reads as
+  generic AI gloss. The dashboard sidebar uses the **landing wordmark** instead —
+  `fliq.` in Bricolage with an orange period — matching `fliq.sh`. `FliqIcon` is
+  untouched and still used by the marketing navbar/footer.
+- **No rainbow chart ramp.** The `--chart-*` ramp is a single-hue orange-into-
+  warm-neutral progression, not a multi-hue spectrum. Job/execution status is
+  encoded by the green/amber/red traffic-light tokens, never by chart hues.
+- No decorative gradients, glow blobs, glassmorphism, or emoji in the dashboard
+  UI; the only blur is the frosted sticky header (mirrors the landing nav).
+
 ## Consequences
 
 - The brand accent is no longer "white only" inside the dashboard — orange is now

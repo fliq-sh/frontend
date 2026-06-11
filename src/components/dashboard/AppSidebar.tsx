@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
-import FliqIcon from "@/components/ui/FliqIcon";
 import {
   LayoutDashboard,
   Zap,
@@ -100,9 +99,12 @@ export default function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="h-14 flex justify-center px-4 border-b border-foreground/10">
-        <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-          <FliqIcon size={24} />
-          Fliq
+        <Link
+          href="/"
+          aria-label="Fliq home"
+          className="font-display flex items-center text-2xl font-extrabold tracking-tight"
+        >
+          fliq<span className="text-primary">.</span>
         </Link>
       </SidebarHeader>
 

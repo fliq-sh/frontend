@@ -306,12 +306,14 @@
   --sidebar-border: rgba(33, 23, 16, 0.13);
   --sidebar-ring: #e8590c;
 
-  /* Warm chart ramp: accent → gold → green → deep → ink (used by Mini charts). */
+  /* Restrained single-hue chart ramp: the orange accent fading into warm
+     neutrals. Deliberately not a rainbow — multi-hue ramps read as decorative.
+     Status is encoded by the green/amber/red traffic-light tokens, not here. */
   --chart-1: #e8590c;
-  --chart-2: #f2b544;
-  --chart-3: #3d9a6a;
-  --chart-4: #b33e05;
-  --chart-5: #6b5b4e;
+  --chart-2: #c2410c;
+  --chart-3: #9a7b63;
+  --chart-4: #bcab97;
+  --chart-5: #d8c9b5;
 
   /* Re-point the font-family vars the utilities resolve to. Body → Inter,
      mono → JetBrains, matching the landing. Headings get Bricolage below. */
