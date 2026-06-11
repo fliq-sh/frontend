@@ -381,7 +381,7 @@ export default function BuffersTable() {
   const showGettingStarted = !list.loading && list.items.length === 0 && !list.hasPrev;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6 sm:gap-8">
       <PageHeader
         title="Buffers"
         description="Push a firehose of requests; Fliq releases them at a fixed rate with 429 retries."

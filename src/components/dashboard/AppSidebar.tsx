@@ -72,7 +72,7 @@ function NavLink({ item, onNavigate }: { item: NavItem; onNavigate: () => void }
           onClick={onNavigate}
           {...(item.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
           className={cn(
-            "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
+            "flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm transition-colors",
             active ? "border-l-2 border-primary bg-primary/10 font-medium text-foreground" : "text-foreground/55 hover:text-foreground",
           )}
         >

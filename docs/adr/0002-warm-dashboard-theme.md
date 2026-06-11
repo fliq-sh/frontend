@@ -44,6 +44,12 @@ warm marketing → monochrome-dark app was a jarring seam at sign-in.
 - **Dark code terminal.** `ApiCodeBlock` stays a dark panel (`#1B120B`) on the
   cream canvas with an orange active-tab underline — mirroring the landing's
   terminal block, and keeping code legible.
+- **Airier spacing scale.** The dashboard reads spacious, not dense: generous
+  `<main>` padding, `gap-8`/`gap-10` between page sections, roomier card padding
+  (`p-5`/`p-6`), `rounded-2xl` paper cards on `bg-card` (the lighter `--surface`,
+  not a grey tint), a larger Bricolage page title, and taller list rows. The
+  spacing levers live in the shared kit (`PageHeader`, `SectionCard`,
+  `MetricCard`, the `/app` layout) so every route inherits the rhythm.
 
 ## Why scope it instead of flipping the global theme
 

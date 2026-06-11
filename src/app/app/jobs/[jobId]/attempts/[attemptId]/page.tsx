@@ -105,7 +105,7 @@ export default function AttemptDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto flex flex-col gap-6">
+      <div className="max-w-2xl mx-auto flex flex-col gap-8">
         <Skeleton className="h-6 w-48" />
         <Skeleton className="h-40 w-full" />
         <Skeleton className="h-32 w-full" />
@@ -140,7 +140,7 @@ export default function AttemptDetailPage() {
   const prettyHeaders = job.headers ? JSON.stringify(job.headers, null, 2) : null;
 
   return (
-    <div className="max-w-2xl mx-auto flex flex-col gap-6">
+    <div className="max-w-2xl mx-auto flex flex-col gap-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

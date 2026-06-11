@@ -96,7 +96,7 @@ export default function OverviewDashboard() {
   usePoll(load, 30_000, auto);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8 sm:gap-10">
       <PageHeader
         title="Overview"
         description="Your scheduling activity at a glance."
@@ -176,9 +176,9 @@ function OverviewBody({
   const isEmpty = jobs.length === 0 && schedules.length === 0 && buffers.length === 0;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8 sm:gap-10">
       {/* Metric row */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
         <MetricCard
           icon={Coins}
           label="Credit balance"
@@ -236,7 +236,7 @@ function OverviewBody({
       ) : (
         <>
           {/* Execution volume chart + resource summary */}
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-3">
             <SectionCard
               className="lg:col-span-2"
               title="Execution volume"
@@ -265,7 +265,7 @@ function OverviewBody({
           </div>
 
           {/* Recent jobs + upcoming runs */}
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-2">
             <SectionCard title="Recent jobs" action={<SectionLink href="/app/jobs">View all →</SectionLink>} noPadding>
               {recentJobs.length === 0 ? (
                 <Empty icon={Zap} title="No jobs yet" />
@@ -275,7 +275,7 @@ function OverviewBody({
                     <li key={job.id}>
                       <Link
                         href="/app/jobs"
-                        className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-foreground/[0.03] sm:px-5"
+                        className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-foreground/[0.03] sm:px-6"
                       >
                         <StatusPill tone={jobStatusTone(job.status)} label={job.status} pulse={job.status === "running"} />
                         <span className="min-w-0 flex-1 truncate font-mono text-xs text-foreground/60">{job.url}</span>
@@ -293,7 +293,7 @@ function OverviewBody({
               ) : (
                 <ul className="divide-y divide-foreground/5">
                   {upcoming.map((s) => (
-                    <li key={s.id} className="flex items-center gap-3 px-4 py-2.5 sm:px-5">
+                    <li key={s.id} className="flex items-center gap-3 px-5 py-3.5 sm:px-6">
                       <CalendarClock className="h-3.5 w-3.5 shrink-0 text-foreground/30" />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm text-foreground/80">{s.name}</p>
@@ -343,17 +343,17 @@ function ResourceRow({
 
 function OverviewSkeleton() {
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="flex flex-col gap-8 sm:gap-10">
+      <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-24 w-full rounded-xl" />
         ))}
       </div>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-3">
         <Skeleton className="h-48 w-full rounded-xl lg:col-span-2" />
         <Skeleton className="h-48 w-full rounded-xl" />
       </div>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-2">
         <Skeleton className="h-56 w-full rounded-xl" />
         <Skeleton className="h-56 w-full rounded-xl" />
       </div>

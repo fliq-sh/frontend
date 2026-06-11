@@ -373,7 +373,7 @@ export default function SchedulesTable() {
   const showGettingStarted = !list.loading && list.items.length === 0 && !list.hasPrev;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6 sm:gap-8">
       <PageHeader
         title="Schedules"
         description="Recurring jobs on a cron expression — fired on time, every time."

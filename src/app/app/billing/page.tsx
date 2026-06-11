@@ -154,7 +154,7 @@ export default function BillingPage() {
   const dailyQuota = balance?.daily_limit && usage ? usage.today / balance.daily_limit : undefined;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8 sm:gap-10">
       <PageHeader title="Billing" description="Credits, usage, and account activity. One credit = one execution attempt." />
 
       {balanceLoading && !balance ? (
@@ -166,7 +166,7 @@ export default function BillingPage() {
       )}
 
       {/* Usage metrics */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">
         <MetricCard
           icon={Activity}
           label="Executions today"

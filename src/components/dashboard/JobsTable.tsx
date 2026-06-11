@@ -304,7 +304,7 @@ export default function JobsTable() {
   const showGettingStarted = !list.loading && list.items.length === 0 && status === "all" && !list.hasPrev;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6 sm:gap-8">
       <PageHeader
         title="Jobs"
         description="One-off HTTP jobs — scheduled, executed, and retried with full history."

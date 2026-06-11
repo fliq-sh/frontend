@@ -269,7 +269,7 @@ function SigningSecretCard() {
 
 export default function SettingsPage() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8 sm:gap-10">
       <PageHeader title="Settings" description="API access, webhook signing, and your account." />
       <APITokensCard />
       <SigningSecretCard />
