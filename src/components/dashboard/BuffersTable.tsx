@@ -11,12 +11,14 @@ import {
   Pause,
   Play,
   Gauge,
+  RotateCcw,
 } from "lucide-react";
 import {
   useApi,
   createBuffersApi,
   Buffer,
   BufferItem,
+  BufferStats,
 } from "@/lib/api";
 import { useCursorList } from "@/hooks/use-cursor-list";
 import { usePoll } from "@/hooks/use-poll";
@@ -59,7 +61,7 @@ import {
   FormError,
   parseJsonObject,
 } from "./ui";
-import { httpStatusTone } from "@/lib/dashboard";
+import { httpStatusTone, formatPercent } from "@/lib/dashboard";
 
 type Filter = "all" | "active" | "paused";
 const FILTER_TABS: FilterTab<Filter>[] = [
@@ -257,22 +259,41 @@ function GettingStarted() {
 function BufferItems({ bufferId, reloadKey }: { bufferId: string; reloadKey: number }) {
   const { apiFetch } = useApi();
   const [items, setItems] = useState<BufferItem[] | null>(null);
+  const [stats, setStats] = useState<BufferStats | null>(null);
+  const [replaying, setReplaying] = useState<string | null>(null);
+  // Local counter so a replay can refresh this panel without touching the parent.
+  const [nonce, setNonce] = useState(0);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     const api = createBuffersApi(apiFetch);
     setItems(null);
-    api
-      .listItems(bufferId, { limit: 20 })
-      .then((r) => setItems(r.items ?? []))
-      .catch(() => setItems([]));
+    api.listItems(bufferId, { limit: 20 }).then((r) => setItems(r.items ?? [])).catch(() => setItems([]));
+    // Stats are server-aggregated over the whole buffer (not just this page) — best-effort.
+    api.stats(bufferId).then(setStats).catch(() => setStats(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bufferId, reloadKey]);
+  }, [bufferId]);
 
+  useEffect(() => {
+    load();
+  }, [load, reloadKey, nonce]);
+
+  // Fall back to counting the current page when server stats aren't available.
   const counts = useMemo(() => {
+    if (stats) return { pending: stats.pending, running: stats.running, completed: stats.completed, failed: stats.failed };
     const c: Record<string, number> = { pending: 0, running: 0, completed: 0, failed: 0 };
     for (const it of items ?? []) c[it.status] = (c[it.status] ?? 0) + 1;
-    return c;
-  }, [items]);
+    return c as Record<BufferItem["status"], number>;
+  }, [stats, items]);
+
+  async function replayItem(itemId: string) {
+    setReplaying(itemId);
+    try {
+      await createBuffersApi(apiFetch).replayItem(bufferId, itemId);
+      setNonce((n) => n + 1);
+    } finally {
+      setReplaying(null);
+    }
+  }
 
   return (
     <div className="bg-foreground/[0.015] px-4 py-3 sm:px-5">
@@ -280,6 +301,9 @@ function BufferItems({ bufferId, reloadKey }: { bufferId: string; reloadKey: num
         {ITEM_STATES.map(({ key, label }) => (
           <StatusPill key={key} tone={jobStatusTone(key)} label={`${counts[key] ?? 0} ${label.toLowerCase()}`} />
         ))}
+        {stats && stats.completed + stats.failed > 0 && (
+          <span className="text-xs text-foreground/58">{formatPercent(stats.success_rate)} success</span>
+        )}
       </div>
       {items === null ? (
         <Skeleton className="h-5 w-48" />
@@ -294,7 +318,19 @@ function BufferItems({ bufferId, reloadKey }: { bufferId: string; reloadKey: num
               {it.status_code != null && <StatusPill tone={httpStatusTone(it.status_code)} label={`HTTP ${it.status_code}`} />}
               {it.retry_count > 0 && <span className="text-foreground/60">retry {it.retry_count}/{it.max_retries}</span>}
               {it.last_error && <span className="min-w-0 flex-1 truncate text-red-400/80" title={it.last_error}>{it.last_error}</span>}
-              <RelativeTime date={it.created_at} className="ml-auto text-foreground/58" />
+              <div className="ml-auto flex items-center gap-3">
+                {it.status === "failed" && (
+                  <button
+                    disabled={replaying === it.id}
+                    onClick={() => replayItem(it.id)}
+                    className="inline-flex items-center gap-1 text-foreground/70 hover:text-foreground disabled:opacity-50"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    {replaying === it.id ? "Replaying…" : "Replay"}
+                  </button>
+                )}
+                <RelativeTime date={it.created_at} className="text-foreground/58" />
+              </div>
             </li>
           ))}
         </ul>
