@@ -54,6 +54,8 @@ export interface Job {
   idempotency_key: string | null;
   webhook_url?: string | null;
   webhook_headers?: Record<string, string> | null;
+  /** Set when this job was created by replaying a failed one — the source job id. */
+  replay_of?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -184,7 +186,20 @@ export function createJobsApi(apiFetch: <T>(path: string, init?: RequestInit) =>
     listAttempts(id: string) {
       return apiFetch<JobAttempt[]>(`/jobs/${id}/attempts`);
     },
+    // Re-run a permanently-failed job. Clones it into a fresh pending job
+    // (passes the same credit gate as a create). 409 if the job isn't failed.
+    replay(id: string) {
+      return apiFetch<ReplayJobResponse>(`/jobs/${id}/replay`, { method: "POST" });
+    },
   };
+}
+
+export interface ReplayJobResponse {
+  id: string;
+  status: JobStatus;
+  replay_of?: string | null;
+  scheduled_at: string;
+  created_at: string;
 }
 
 // ─── Schedules API ────────────────────────────────────────────────────────────
@@ -268,8 +283,21 @@ export interface BufferItem {
   retry_count: number;
   max_retries: number;
   last_error: string | null;
+  /** Set when this item was created by replaying a failed one — the source item id. */
+  replay_of?: string | null;
   created_at: string;
   completed_at: string | null;
+}
+
+/** Per-buffer item status breakdown — server-aggregated (not page-limited). */
+export interface BufferStats {
+  pending: number;
+  running: number;
+  completed: number;
+  failed: number;
+  total: number;
+  /** completed / (completed + failed), in [0,1]; 0 when none have finished. */
+  success_rate: number;
 }
 
 export interface ListBuffersParams {
@@ -340,6 +368,14 @@ export function createBuffersApi(apiFetch: <T>(path: string, init?: RequestInit)
     getItem(bufferId: string, itemId: string) {
       return apiFetch<BufferItem>(`/buffers/${bufferId}/items/${itemId}`);
     },
+    stats(bufferId: string) {
+      return apiFetch<BufferStats>(`/buffers/${bufferId}/stats`);
+    },
+    // Re-run a permanently-failed item. Clones it onto the tail of the buffer so
+    // it drains in order after the current queue. 409 if the item isn't failed.
+    replayItem(bufferId: string, itemId: string) {
+      return apiFetch<BufferItem>(`/buffers/${bufferId}/items/${itemId}/replay`, { method: "POST" });
+    },
   };
 }
 
@@ -397,6 +433,93 @@ export function createBillingApi(apiFetch: <T>(path: string, init?: RequestInit)
       return apiFetch<{ transactions: CreditTransaction[]; next_cursor: string | null }>(
         `/billing/transactions${buildQuery(params as Record<string, string | number | undefined>)}`,
       );
+    },
+  };
+}
+
+// ─── Alert channels ────────────────────────────────────────────────────────
+// Notified when one of your jobs or buffer items exhausts its retries (a
+// permanent failure — your endpoint is down and Fliq has given up). `email` is
+// not supported yet; the backend rejects anything but webhook/slack.
+
+export type AlertChannelType = "webhook" | "slack";
+
+export interface AlertChannel {
+  id: string;
+  type: AlertChannelType;
+  target: string;
+  name: string;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateAlertChannelInput {
+  type: AlertChannelType;
+  target: string;
+  name?: string;
+}
+
+export function createAlertsApi(apiFetch: <T>(path: string, init?: RequestInit) => Promise<T>) {
+  return {
+    list() {
+      return apiFetch<{ channels: AlertChannel[] }>("/alerts");
+    },
+    create(input: CreateAlertChannelInput) {
+      return apiFetch<AlertChannel>("/alerts", {
+        method: "POST",
+        body: JSON.stringify(input),
+      });
+    },
+    setEnabled(id: string, enabled: boolean) {
+      return apiFetch<void>(`/alerts/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ enabled }),
+      });
+    },
+    delete(id: string) {
+      return apiFetch<void>(`/alerts/${id}`, { method: "DELETE" });
+    },
+  };
+}
+
+// ─── Analytics ─────────────────────────────────────────────────────────────
+// Read-only aggregates over data the engine already records. `days` defaults to
+// 30 server-side and is clamped to [1, 365].
+
+export interface JobStats {
+  total_executions: number;
+  succeeded: number;
+  failed: number;
+  /** succeeded / total_executions, in [0,1]. */
+  success_rate: number;
+  avg_duration_ms: number;
+  p95_duration_ms: number;
+  since_days: number;
+}
+
+export interface UsageBucket {
+  date: string; // UTC day, "YYYY-MM-DD"
+  job_executions: number;
+  buffer_executions: number;
+}
+
+export interface UsageSummary {
+  buckets: UsageBucket[];
+  total_job_executions: number;
+  total_buffer_executions: number;
+  balance: number;
+  plan: "free" | "paid";
+  since_days: number;
+}
+
+export function createStatsApi(apiFetch: <T>(path: string, init?: RequestInit) => Promise<T>) {
+  return {
+    jobs(days?: number) {
+      return apiFetch<JobStats>(`/stats/jobs${buildQuery({ days })}`);
+    },
+    usage(days?: number) {
+      return apiFetch<UsageSummary>(`/stats/usage${buildQuery({ days })}`);
     },
   };
 }

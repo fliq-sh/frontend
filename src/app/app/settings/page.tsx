@@ -2,14 +2,17 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { UserProfile } from "@clerk/nextjs";
-import { KeyRound, ShieldCheck } from "lucide-react";
+import { KeyRound, ShieldCheck, Bell } from "lucide-react";
 import {
   useApi,
   createTokensApi,
   createSigningApi,
+  createAlertsApi,
   APIToken,
   CreateTokenResponse,
   SigningSecretResponse,
+  AlertChannel,
+  AlertChannelType,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +21,9 @@ import {
   CopyButton,
   RelativeTime,
   Empty,
+  Field,
   TextInput,
+  Select,
   FormError,
 } from "@/components/dashboard/ui";
 
@@ -267,12 +272,182 @@ function SigningSecretCard() {
   );
 }
 
+// ─── Alert channels ────────────────────────────────────────────────────────
+
+function NewAlertForm({ onCreated }: { onCreated: () => void }) {
+  const { apiFetch } = useApi();
+  const [type, setType] = useState<AlertChannelType>("webhook");
+  const [target, setTarget] = useState("");
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      await createAlertsApi(apiFetch).create({ type, target: target.trim(), name: name.trim() || undefined });
+      setTarget("");
+      setName("");
+      onCreated();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to add channel");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-lg border border-foreground/10 bg-foreground/[0.02] p-3">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Type">
+          <Select value={type} onChange={(e) => setType(e.target.value as AlertChannelType)}>
+            <option value="webhook">Webhook</option>
+            <option value="slack">Slack</option>
+          </Select>
+        </Field>
+        <Field label="Name" hint="Optional label">
+          <TextInput value={name} maxLength={256} onChange={(e) => setName(e.target.value)} placeholder="On-call webhook" />
+        </Field>
+      </div>
+      <Field
+        label={type === "slack" ? "Slack incoming-webhook URL" : "Webhook URL"}
+        hint={type === "slack" ? "Receives a Slack message on permanent failure" : "Receives a JSON failure payload"}
+      >
+        <TextInput
+          required
+          type="url"
+          value={target}
+          maxLength={2048}
+          onChange={(e) => setTarget(e.target.value)}
+          placeholder="https://hooks.slack.com/services/…"
+        />
+      </Field>
+      <FormError message={error} />
+      <Button type="submit" size="sm" disabled={loading || !target.trim()} className="w-fit">
+        {loading ? "Adding…" : "Add channel"}
+      </Button>
+    </form>
+  );
+}
+
+function AlertRow({ channel, onChanged }: { channel: AlertChannel; onChanged: () => void }) {
+  const { apiFetch } = useApi();
+  const [busy, setBusy] = useState(false);
+
+  async function run(fn: () => Promise<unknown>) {
+    setBusy(true);
+    try {
+      await fn();
+      onChanged();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-4 py-3">
+      <div className="min-w-0">
+        <p className="flex items-center gap-2 text-sm font-medium">
+          <span className="truncate">{channel.name || (channel.type === "slack" ? "Slack" : "Webhook")}</span>
+          <span className="rounded border border-foreground/15 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-foreground/60">
+            {channel.type}
+          </span>
+          {!channel.enabled && <span className="text-[11px] text-foreground/50">disabled</span>}
+        </p>
+        <p className="mt-0.5 truncate font-mono text-xs text-foreground/60">{channel.target}</p>
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={busy}
+          className="text-foreground/70 hover:text-foreground"
+          onClick={() => run(() => createAlertsApi(apiFetch).setEnabled(channel.id, !channel.enabled))}
+        >
+          {channel.enabled ? "Disable" : "Enable"}
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={busy}
+          className="text-red-400 hover:text-red-300"
+          onClick={() => run(() => createAlertsApi(apiFetch).delete(channel.id))}
+        >
+          Remove
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function AlertChannelsCard() {
+  const { apiFetch } = useApi();
+  const [channels, setChannels] = useState<AlertChannel[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      setChannels((await createAlertsApi(apiFetch).list()).channels ?? []);
+    } catch {
+      // empty state covers failure
+    } finally {
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return (
+    <SectionCard
+      title="Failure alerts"
+      description="Get notified when a job or buffer item exhausts its retries — your endpoint is down and Fliq has given up. Retries don't alert; only permanent failures do."
+      action={!showForm ? <Button size="sm" onClick={() => setShowForm(true)}>Add channel</Button> : undefined}
+    >
+      <div className="flex flex-col gap-4">
+        {showForm && (
+          <div className="flex flex-col gap-2">
+            <NewAlertForm
+              onCreated={() => {
+                setShowForm(false);
+                load();
+              }}
+            />
+            <button className="text-left text-xs text-foreground/50 hover:text-foreground/68" onClick={() => setShowForm(false)}>
+              Cancel
+            </button>
+          </div>
+        )}
+
+        {loading ? (
+          <p className="py-2 text-sm text-foreground/50">Loading…</p>
+        ) : channels.length === 0 ? (
+          <Empty icon={Bell} title="No alert channels yet" description="Add a Slack or webhook channel to hear about permanent failures." />
+        ) : (
+          <div className="divide-y divide-foreground/5">
+            {channels.map((ch) => (
+              <AlertRow key={ch.id} channel={ch} onChanged={load} />
+            ))}
+          </div>
+        )}
+      </div>
+    </SectionCard>
+  );
+}
+
 export default function SettingsPage() {
   return (
     <div className="flex flex-col gap-8 sm:gap-10">
-      <PageHeader title="Settings" description="API access, webhook signing, and your account." />
+      <PageHeader title="Settings" description="API access, webhook signing, alerts, and your account." />
       <APITokensCard />
       <SigningSecretCard />
+      <AlertChannelsCard />
       <SectionCard title="Account" noPadding bodyClassName="p-0">
         <div className="overflow-x-auto p-2 sm:p-4">
           <UserProfile routing="hash" />

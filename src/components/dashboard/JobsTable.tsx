@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronRight,
   Code2,
+  RotateCcw,
   Settings,
   Zap,
 } from "lucide-react";
@@ -243,6 +244,31 @@ function GettingStarted() {
 
 function JobActions({ job, onChanged }: { job: Job; onChanged: () => void }) {
   const { apiFetch } = useApi();
+  const [replaying, setReplaying] = useState(false);
+
+  if (job.status === "failed") {
+    return (
+      <Button
+        size="sm"
+        variant="ghost"
+        disabled={replaying}
+        className="gap-1.5 text-foreground/75 hover:text-foreground"
+        onClick={async () => {
+          setReplaying(true);
+          try {
+            await createJobsApi(apiFetch).replay(job.id);
+            onChanged();
+          } finally {
+            setReplaying(false);
+          }
+        }}
+      >
+        <RotateCcw className="h-3.5 w-3.5" />
+        {replaying ? "Replaying…" : "Replay"}
+      </Button>
+    );
+  }
+
   const cancellable = job.status === "pending" || job.status === "running";
   if (!cancellable) return null;
   return (
