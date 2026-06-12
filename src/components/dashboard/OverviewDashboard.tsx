@@ -278,8 +278,8 @@ function OverviewBody({
                         className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-foreground/[0.03] sm:px-6"
                       >
                         <StatusPill tone={jobStatusTone(job.status)} label={job.status} pulse={job.status === "running"} />
-                        <span className="min-w-0 flex-1 truncate font-mono text-xs text-foreground/60">{job.url}</span>
-                        <RelativeTime date={job.created_at} className="shrink-0 text-xs text-foreground/35" />
+                        <span className="min-w-0 flex-1 truncate font-mono text-xs text-foreground/75">{job.url}</span>
+                        <RelativeTime date={job.created_at} className="shrink-0 text-xs text-foreground/58" />
                       </Link>
                     </li>
                   ))}
@@ -294,12 +294,12 @@ function OverviewBody({
                 <ul className="divide-y divide-foreground/5">
                   {upcoming.map((s) => (
                     <li key={s.id} className="flex items-center gap-3 px-5 py-3.5 sm:px-6">
-                      <CalendarClock className="h-3.5 w-3.5 shrink-0 text-foreground/30" />
+                      <CalendarClock className="h-3.5 w-3.5 shrink-0 text-foreground/50" />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm text-foreground/80">{s.name}</p>
-                        <p className="truncate font-mono text-[11px] text-foreground/35">{s.cron_expr}</p>
+                        <p className="truncate text-sm text-foreground/85">{s.name}</p>
+                        <p className="truncate font-mono text-[11px] text-foreground/58">{s.cron_expr}</p>
                       </div>
-                      <RelativeTime date={s.next_run_at} className="shrink-0 text-xs text-foreground/50" />
+                      <RelativeTime date={s.next_run_at} className="shrink-0 text-xs text-foreground/68" />
                     </li>
                   ))}
                 </ul>
@@ -328,15 +328,15 @@ function ResourceRow({
   return (
     <Link href={href} className="group flex items-center gap-3 py-3 first:pt-0 last:pb-0">
       <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-foreground/10 bg-foreground/5">
-        <Icon className="h-4 w-4 text-foreground/50" />
+        <Icon className="h-4 w-4 text-foreground/68" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-foreground/80">{label}</p>
-        <p className="text-xs text-foreground/40">
+        <p className="text-sm font-medium text-foreground/85">{label}</p>
+        <p className="text-xs text-foreground/60">
           {primary} · {secondary}
         </p>
       </div>
-      <ArrowUpRight className="h-4 w-4 text-foreground/20 transition-colors group-hover:text-foreground/50" />
+      <ArrowUpRight className="h-4 w-4 text-foreground/45 transition-colors group-hover:text-foreground/68" />
     </Link>
   );
 }

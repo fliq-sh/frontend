@@ -61,7 +61,7 @@ export function ConfirmButton({
       <DialogContent className="theme-warm bg-popover text-foreground border-foreground/10 sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription className="text-foreground/50">{description}</DialogDescription>}
+          {description && <DialogDescription className="text-foreground/68">{description}</DialogDescription>}
         </DialogHeader>
         {error && (
           <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</div>

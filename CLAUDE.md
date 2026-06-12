@@ -51,7 +51,7 @@ Each execution attempt — including retries — counts as one billable unit.
 src/
 ├── app/
 │   ├── layout.tsx              # Root layout (Clerk + TooltipProvider)
-│   ├── page.tsx                # Landing page — wires all landing sections
+│   ├── page.tsx                # Root — redirects to /app (dash.fliq.sh is dashboard-only; marketing homepage lives on the standalone landing service at fliq.sh)
 │   ├── globals.css             # Tailwind + CSS custom properties
 │   ├── pricing/page.tsx        # Full pricing page (/pricing)
 │   ├── sign-in/[[...sign-in]]/ # Clerk-hosted sign-in

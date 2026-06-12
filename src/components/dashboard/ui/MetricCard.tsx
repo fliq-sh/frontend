@@ -44,7 +44,7 @@ export function MetricCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           {Icon && <Icon className={cn("h-4 w-4 shrink-0", t.icon)} />}
-          <p className="truncate text-[11px] font-medium uppercase tracking-[0.12em] text-foreground/40">{label}</p>
+          <p className="truncate text-[11px] font-medium uppercase tracking-[0.12em] text-foreground/60">{label}</p>
         </div>
         {chart && <div className="shrink-0 opacity-80">{chart}</div>}
       </div>
@@ -62,7 +62,7 @@ export function MetricCard({
         </div>
       )}
 
-      {sub && <p className="mt-3 text-xs text-foreground/45">{sub}</p>}
+      {sub && <p className="mt-3 text-xs text-foreground/62">{sub}</p>}
     </div>
   );
 

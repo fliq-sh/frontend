@@ -27,11 +27,11 @@ export function RelativeTime({
     return () => clearInterval(id);
   }, []);
 
-  if (!date) return <span className={cn("text-foreground/30", className)}>{emptyLabel}</span>;
+  if (!date) return <span className={cn("text-foreground/50", className)}>{emptyLabel}</span>;
 
   const d = date instanceof Date ? date : new Date(date);
   if (Number.isNaN(d.getTime())) {
-    return <span className={cn("text-foreground/30", className)}>{emptyLabel}</span>;
+    return <span className={cn("text-foreground/50", className)}>{emptyLabel}</span>;
   }
 
   return (
