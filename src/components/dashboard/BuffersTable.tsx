@@ -200,7 +200,7 @@ function PushItemDialog({ bufferId, onPushed }: { bufferId: string; onPushed: ()
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setError(null); } }}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="border-foreground/10 text-foreground/70 hover:text-foreground">Push item</Button>
+        <Button size="sm" variant="outline" className="border-foreground/10 text-foreground/80 hover:text-foreground">Push item</Button>
       </DialogTrigger>
       <DialogContent className="border-foreground/10 theme-warm bg-popover text-foreground">
         <DialogHeader>
@@ -240,7 +240,7 @@ function GettingStarted() {
         },
         {
           title: "Create a buffer",
-          description: (<>Set a target URL and a rate limit (req/s) via <span className="text-foreground/70">New buffer</span> or the API.</>),
+          description: (<>Set a target URL and a rate limit (req/s) via <span className="text-foreground/80">New buffer</span> or the API.</>),
           action: <ApiCodeBlock snippets={BUFFER_SNIPPETS} />,
         },
         {
@@ -284,17 +284,17 @@ function BufferItems({ bufferId, reloadKey }: { bufferId: string; reloadKey: num
       {items === null ? (
         <Skeleton className="h-5 w-48" />
       ) : items.length === 0 ? (
-        <p className="text-xs text-foreground/35">No items yet — push one to get started.</p>
+        <p className="text-xs text-foreground/58">No items yet — push one to get started.</p>
       ) : (
         <ul className="flex flex-col gap-1">
           {items.map((it) => (
             <li key={it.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border border-foreground/5 bg-foreground/[0.02] px-3 py-2 text-xs">
               <StatusPill tone={jobStatusTone(it.status)} label={it.status} pulse={it.status === "running"} />
-              <span className="font-mono text-foreground/40">{it.id.slice(0, 8)}…</span>
+              <span className="font-mono text-foreground/60">{it.id.slice(0, 8)}…</span>
               {it.status_code != null && <StatusPill tone={httpStatusTone(it.status_code)} label={`HTTP ${it.status_code}`} />}
-              {it.retry_count > 0 && <span className="text-foreground/40">retry {it.retry_count}/{it.max_retries}</span>}
+              {it.retry_count > 0 && <span className="text-foreground/60">retry {it.retry_count}/{it.max_retries}</span>}
               {it.last_error && <span className="min-w-0 flex-1 truncate text-red-400/80" title={it.last_error}>{it.last_error}</span>}
-              <RelativeTime date={it.created_at} className="ml-auto text-foreground/35" />
+              <RelativeTime date={it.created_at} className="ml-auto text-foreground/58" />
             </li>
           ))}
         </ul>
@@ -314,7 +314,7 @@ function BufferActions({ b, onChanged, onPushed }: { b: Buffer; onChanged: () =>
       <Button
         size="sm"
         variant="ghost"
-        className="gap-1.5 text-foreground/60 hover:text-foreground"
+        className="gap-1.5 text-foreground/75 hover:text-foreground"
         onClick={async () => {
           if (b.paused) await api.resume(b.id);
           else await api.pause(b.id);
@@ -388,7 +388,7 @@ export default function BuffersTable() {
         actions={
           <>
             <RefreshControls onRefresh={list.reload} loading={list.loading} auto={auto} onToggleAuto={setAuto} />
-            <Button size="sm" variant="outline" className="gap-1.5 border-foreground/10 text-foreground/60 hover:text-foreground" onClick={() => setShowCode((v) => !v)}>
+            <Button size="sm" variant="outline" className="gap-1.5 border-foreground/10 text-foreground/75 hover:text-foreground" onClick={() => setShowCode((v) => !v)}>
               <Code2 className="h-3.5 w-3.5" />
               API
             </Button>
@@ -414,12 +414,12 @@ export default function BuffersTable() {
               <TableHeader>
                 <TableRow className="border-foreground/10 hover:bg-transparent">
                   <TableHead className="w-8" />
-                  <TableHead className="text-foreground/40">Name</TableHead>
-                  <TableHead className="text-foreground/40">Endpoint</TableHead>
-                  <TableHead className="text-foreground/40">Rate</TableHead>
-                  <TableHead className="text-foreground/40">Status</TableHead>
-                  <TableHead className="text-foreground/40">Created</TableHead>
-                  <TableHead className="text-right text-foreground/40">Actions</TableHead>
+                  <TableHead className="text-foreground/60">Name</TableHead>
+                  <TableHead className="text-foreground/60">Endpoint</TableHead>
+                  <TableHead className="text-foreground/60">Rate</TableHead>
+                  <TableHead className="text-foreground/60">Status</TableHead>
+                  <TableHead className="text-foreground/60">Created</TableHead>
+                  <TableHead className="text-right text-foreground/60">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -443,26 +443,26 @@ export default function BuffersTable() {
                     return (
                       <>
                         <TableRow key={b.id} className="cursor-pointer border-foreground/10 hover:bg-foreground/[0.03]" onClick={() => toggle(b.id)}>
-                          <TableCell className="pl-3 pr-0 text-foreground/30">
+                          <TableCell className="pl-3 pr-0 text-foreground/50">
                             {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                           </TableCell>
                           <TableCell className="font-medium text-foreground/85">{b.name}</TableCell>
                           <TableCell className="max-w-[260px]">
                             <div className="flex items-center gap-2">
                               <MethodChip method={b.method} />
-                              <span className="truncate text-sm text-foreground/70" title={b.url}>{b.url}</span>
+                              <span className="truncate text-sm text-foreground/80" title={b.url}>{b.url}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="whitespace-nowrap text-sm text-foreground/70">
+                          <TableCell className="whitespace-nowrap text-sm text-foreground/80">
                             <span className="inline-flex items-center gap-1">
-                              <Gauge className="h-3.5 w-3.5 text-foreground/30" />
+                              <Gauge className="h-3.5 w-3.5 text-foreground/50" />
                               {b.rate_limit}/s
                             </span>
                           </TableCell>
                           <TableCell>
                             <StatusPill tone={b.paused ? "warning" : "success"} label={b.paused ? "Paused" : "Active"} pulse={!b.paused} />
                           </TableCell>
-                          <TableCell className="text-sm text-foreground/55"><RelativeTime date={b.created_at} /></TableCell>
+                          <TableCell className="text-sm text-foreground/70"><RelativeTime date={b.created_at} /></TableCell>
                           <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                             <BufferActions b={b} onChanged={list.reload} onPushed={() => bumpItems(b.id)} />
                           </TableCell>
@@ -497,10 +497,10 @@ export default function BuffersTable() {
                           <span className="truncate font-medium text-foreground/85">{b.name}</span>
                           <StatusPill tone={b.paused ? "warning" : "success"} label={b.paused ? "Paused" : "Active"} />
                         </div>
-                        <p className="truncate font-mono text-xs text-foreground/60">{b.method} {b.url}</p>
-                        <p className="mt-1 text-[11px] text-foreground/40">{b.rate_limit} req/s</p>
+                        <p className="truncate font-mono text-xs text-foreground/75">{b.method} {b.url}</p>
+                        <p className="mt-1 text-[11px] text-foreground/60">{b.rate_limit} req/s</p>
                       </div>
-                      {isOpen ? <ChevronDown className="h-4 w-4 shrink-0 text-foreground/30" /> : <ChevronRight className="h-4 w-4 shrink-0 text-foreground/30" />}
+                      {isOpen ? <ChevronDown className="h-4 w-4 shrink-0 text-foreground/50" /> : <ChevronRight className="h-4 w-4 shrink-0 text-foreground/50" />}
                     </button>
                     {isOpen && (
                       <div className="border-t border-foreground/10">

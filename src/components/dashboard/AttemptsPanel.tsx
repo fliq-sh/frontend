@@ -39,16 +39,16 @@ export function AttemptsPanel({ job }: { job: Job }) {
   return (
     <div className="flex flex-col gap-2 bg-foreground/[0.015] px-4 py-3 sm:px-5">
       {job.webhook_url && (
-        <p className="text-xs text-foreground/40">
-          <span className="font-medium uppercase tracking-wider text-foreground/30">Webhook</span>{" "}
-          <span className="font-mono text-foreground/55">{job.webhook_url}</span>
+        <p className="text-xs text-foreground/60">
+          <span className="font-medium uppercase tracking-wider text-foreground/50">Webhook</span>{" "}
+          <span className="font-mono text-foreground/70">{job.webhook_url}</span>
         </p>
       )}
 
       {loading ? (
         <Skeleton className="h-5 w-48" />
       ) : !attempts || attempts.length === 0 ? (
-        <p className="py-1 text-xs text-foreground/35">No attempts yet — this job hasn&apos;t run.</p>
+        <p className="py-1 text-xs text-foreground/58">No attempts yet — this job hasn&apos;t run.</p>
       ) : (
         <ul className="flex flex-col gap-1">
           {attempts.map((a) => {
@@ -58,14 +58,14 @@ export function AttemptsPanel({ job }: { job: Job }) {
                 key={a.id}
                 className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border border-foreground/5 bg-foreground/[0.02] px-3 py-2 text-xs"
               >
-                <span className="font-mono text-foreground/50">#{a.attempt_num}</span>
+                <span className="font-mono text-foreground/68">#{a.attempt_num}</span>
                 {a.status_code ? (
                   <StatusPill tone={tone} label={`HTTP ${a.status_code}`} />
                 ) : (
                   <StatusPill tone="neutral" label="no response" />
                 )}
-                <span className="text-foreground/45">{formatDuration(a)}</span>
-                <RelativeTime date={a.started_at} className="text-foreground/35" />
+                <span className="text-foreground/62">{formatDuration(a)}</span>
+                <RelativeTime date={a.started_at} className="text-foreground/58" />
                 {a.error && (
                   <span className="min-w-0 flex-1 truncate text-red-400/80" title={a.error}>
                     {a.error}
@@ -73,7 +73,7 @@ export function AttemptsPanel({ job }: { job: Job }) {
                 )}
                 <Link
                   href={`/app/jobs/${job.id}/attempts/${a.id}`}
-                  className="ml-auto inline-flex items-center gap-1 text-foreground/40 transition-colors hover:text-foreground"
+                  className="ml-auto inline-flex items-center gap-1 text-foreground/60 transition-colors hover:text-foreground"
                   title="View attempt details"
                 >
                   <Eye className="h-3.5 w-3.5" />

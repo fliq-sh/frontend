@@ -43,7 +43,7 @@ export function FilterTabs<T extends string>({
             onClick={() => onChange(tab.value)}
             className={cn(
               "inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-              active ? "bg-foreground/10 text-foreground" : "text-foreground/45 hover:text-foreground/70",
+              active ? "bg-foreground/10 text-foreground" : "text-foreground/62 hover:text-foreground/80",
             )}
           >
             {tab.tone && tab.tone !== "neutral" && (
@@ -51,7 +51,7 @@ export function FilterTabs<T extends string>({
             )}
             {tab.label}
             {typeof tab.count === "number" && (
-              <span className={cn("tabular-nums", active ? "text-foreground/60" : "text-foreground/30")}>{tab.count}</span>
+              <span className={cn("tabular-nums", active ? "text-foreground/75" : "text-foreground/50")}>{tab.count}</span>
             )}
           </button>
         );

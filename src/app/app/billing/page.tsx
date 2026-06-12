@@ -47,17 +47,17 @@ function BalanceHero({ balance }: { balance: BillingBalance }) {
     <div className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="mb-1 flex items-center gap-1.5 text-xs uppercase tracking-wider text-foreground/40">
+          <p className="mb-1 flex items-center gap-1.5 text-xs uppercase tracking-wider text-foreground/60">
             <Coins className="h-3.5 w-3.5" /> Current balance
           </p>
           <p className="text-4xl font-bold tracking-tight tabular-nums">{formatNumber(balance.balance)}</p>
-          <p className="mt-1 text-sm text-foreground/45">credits · ≈ {formatUsd(usd)}</p>
+          <p className="mt-1 text-sm text-foreground/62">credits · ≈ {formatUsd(usd)}</p>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <span className="inline-flex items-center rounded-full border border-foreground/15 bg-foreground/10 px-2.5 py-1 text-xs font-medium text-foreground/80">
+          <span className="inline-flex items-center rounded-full border border-foreground/15 bg-foreground/10 px-2.5 py-1 text-xs font-medium text-foreground/85">
             {balance.plan === "paid" ? "Paid plan" : "Free plan"}
           </span>
-          <p className="text-xs text-foreground/35">{formatCompact(balance.daily_limit)} credits / day</p>
+          <p className="text-xs text-foreground/58">{formatCompact(balance.daily_limit)} credits / day</p>
         </div>
       </div>
     </div>
@@ -73,15 +73,15 @@ function txTone(amount: number): string {
 function TransactionRow({ tx }: { tx: CreditTransaction }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3 sm:px-5">
-      <span className="inline-flex shrink-0 items-center rounded-full border border-foreground/10 bg-foreground/5 px-2 py-0.5 text-[11px] font-medium text-foreground/55">
+      <span className="inline-flex shrink-0 items-center rounded-full border border-foreground/10 bg-foreground/5 px-2 py-0.5 text-[11px] font-medium text-foreground/70">
         {TX_LABEL[tx.type] ?? "Activity"}
       </span>
-      <span className="min-w-0 flex-1 truncate text-sm text-foreground/50">{tx.description ?? "—"}</span>
+      <span className="min-w-0 flex-1 truncate text-sm text-foreground/68">{tx.description ?? "—"}</span>
       <span className={`shrink-0 font-mono text-sm font-medium tabular-nums ${txTone(tx.amount)}`}>
         {tx.amount >= 0 ? "+" : ""}
         {formatNumber(tx.amount)}
       </span>
-      <RelativeTime date={tx.created_at} className="hidden shrink-0 text-xs text-foreground/35 sm:block sm:w-28 sm:text-right" />
+      <RelativeTime date={tx.created_at} className="hidden shrink-0 text-xs text-foreground/58 sm:block sm:w-28 sm:text-right" />
     </div>
   );
 }
@@ -162,7 +162,7 @@ export default function BillingPage() {
       ) : balance ? (
         <BalanceHero balance={balance} />
       ) : (
-        <SectionCard><p className="text-sm text-foreground/40">Failed to load billing information.</p></SectionCard>
+        <SectionCard><p className="text-sm text-foreground/60">Failed to load billing information.</p></SectionCard>
       )}
 
       {/* Usage metrics */}
@@ -208,9 +208,9 @@ export default function BillingPage() {
 
       {/* Beta note (paid top-ups not yet enabled) */}
       <SectionCard title="Add credits">
-        <p className="text-sm text-foreground/45">
+        <p className="text-sm text-foreground/62">
           Paid top-ups are coming soon. During the beta you get{" "}
-          <span className="text-foreground/70">{balance ? formatCompact(balance.daily_limit) : "100,000"} free credits per day</span> — no card required.
+          <span className="text-foreground/80">{balance ? formatCompact(balance.daily_limit) : "100,000"} free credits per day</span> — no card required.
         </p>
       </SectionCard>
 
@@ -221,7 +221,7 @@ export default function BillingPage() {
         noPadding
         footer={
           cursor ? (
-            <Button variant="ghost" size="sm" onClick={loadMore} disabled={loadingMore} className="text-foreground/55 hover:text-foreground">
+            <Button variant="ghost" size="sm" onClick={loadMore} disabled={loadingMore} className="text-foreground/70 hover:text-foreground">
               {loadingMore ? "Loading…" : "Load more"}
             </Button>
           ) : undefined

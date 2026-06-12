@@ -230,7 +230,7 @@ function GettingStarted() {
           description: (
             <>
               Jobs appear here with live status, attempt history, and error details. Prefer the UI?
-              Hit <span className="text-foreground/70">Schedule job</span> above.
+              Hit <span className="text-foreground/80">Schedule job</span> above.
             </>
           ),
         },
@@ -314,7 +314,7 @@ export default function JobsTable() {
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 border-foreground/10 text-foreground/60 hover:text-foreground"
+              className="gap-1.5 border-foreground/10 text-foreground/75 hover:text-foreground"
               onClick={() => setShowCode((v) => !v)}
             >
               <Code2 className="h-3.5 w-3.5" />
@@ -336,7 +336,7 @@ export default function JobsTable() {
             <SearchInput value={search} onChange={setSearch} placeholder="Filter by URL or ID…" className="sm:w-64" />
           </div>
 
-          <p className="text-xs text-foreground/35">
+          <p className="text-xs text-foreground/58">
             {list.loading ? "Loading…" : `${filtered.length} job${filtered.length === 1 ? "" : "s"} on this page`}
             {search && " (filtered)"}
           </p>
@@ -347,12 +347,12 @@ export default function JobsTable() {
               <TableHeader>
                 <TableRow className="border-foreground/10 hover:bg-transparent">
                   <TableHead className="w-8" />
-                  <TableHead className="text-foreground/40">Status</TableHead>
-                  <TableHead className="text-foreground/40">Endpoint</TableHead>
-                  <TableHead className="text-foreground/40">Scheduled</TableHead>
-                  <TableHead className="text-foreground/40">Created</TableHead>
-                  <TableHead className="text-foreground/40">Attempts</TableHead>
-                  <TableHead className="text-right text-foreground/40">Actions</TableHead>
+                  <TableHead className="text-foreground/60">Status</TableHead>
+                  <TableHead className="text-foreground/60">Endpoint</TableHead>
+                  <TableHead className="text-foreground/60">Scheduled</TableHead>
+                  <TableHead className="text-foreground/60">Created</TableHead>
+                  <TableHead className="text-foreground/60">Attempts</TableHead>
+                  <TableHead className="text-right text-foreground/60">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -380,7 +380,7 @@ export default function JobsTable() {
                           className="cursor-pointer border-foreground/10 hover:bg-foreground/[0.03]"
                           onClick={() => toggle(job.id)}
                         >
-                          <TableCell className="pl-3 pr-0 text-foreground/30">
+                          <TableCell className="pl-3 pr-0 text-foreground/50">
                             {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                           </TableCell>
                           <TableCell>
@@ -389,16 +389,16 @@ export default function JobsTable() {
                           <TableCell className="max-w-[280px]">
                             <div className="flex items-center gap-2">
                               <MethodChip method={job.method} />
-                              <span className="truncate text-sm text-foreground/80" title={job.url}>{job.url}</span>
+                              <span className="truncate text-sm text-foreground/85" title={job.url}>{job.url}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-sm text-foreground/55">
+                          <TableCell className="text-sm text-foreground/70">
                             <RelativeTime date={job.scheduled_at} />
                           </TableCell>
-                          <TableCell className="text-sm text-foreground/55">
+                          <TableCell className="text-sm text-foreground/70">
                             <RelativeTime date={job.created_at} />
                           </TableCell>
-                          <TableCell className="text-sm tabular-nums text-foreground/55">
+                          <TableCell className="text-sm tabular-nums text-foreground/70">
                             {job.attempts}/{job.max_retries + 1}
                           </TableCell>
                           <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
@@ -439,12 +439,12 @@ export default function JobsTable() {
                           <StatusPill tone={jobStatusTone(job.status)} label={job.status} pulse={job.status === "running"} />
                           <MethodChip method={job.method} />
                         </div>
-                        <p className="truncate font-mono text-xs text-foreground/70">{job.url}</p>
-                        <p className="mt-1 text-[11px] text-foreground/35">
+                        <p className="truncate font-mono text-xs text-foreground/80">{job.url}</p>
+                        <p className="mt-1 text-[11px] text-foreground/58">
                           Runs <RelativeTime date={job.scheduled_at} /> · {job.attempts}/{job.max_retries + 1} attempts
                         </p>
                       </div>
-                      {isOpen ? <ChevronDown className="h-4 w-4 shrink-0 text-foreground/30" /> : <ChevronRight className="h-4 w-4 shrink-0 text-foreground/30" />}
+                      {isOpen ? <ChevronDown className="h-4 w-4 shrink-0 text-foreground/50" /> : <ChevronRight className="h-4 w-4 shrink-0 text-foreground/50" />}
                     </button>
                     {isOpen && (
                       <div className="border-t border-foreground/10">

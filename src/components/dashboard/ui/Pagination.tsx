@@ -26,12 +26,12 @@ export function Pagination({
   if (!hasPrev && !hasNext) return null;
   return (
     <div className="flex items-center justify-between gap-2">
-      <span className="text-xs text-foreground/30">{page ? `Page ${page}` : ""}</span>
+      <span className="text-xs text-foreground/50">{page ? `Page ${page}` : ""}</span>
       <div className="flex items-center gap-2">
         <Button
           size="sm"
           variant="outline"
-          className="gap-1.5 border-foreground/10 text-foreground/60 hover:text-foreground disabled:opacity-40"
+          className="gap-1.5 border-foreground/10 text-foreground/75 hover:text-foreground disabled:opacity-40"
           onClick={onPrev}
           disabled={!hasPrev || disabled}
         >
@@ -41,7 +41,7 @@ export function Pagination({
         <Button
           size="sm"
           variant="outline"
-          className="gap-1.5 border-foreground/10 text-foreground/60 hover:text-foreground disabled:opacity-40"
+          className="gap-1.5 border-foreground/10 text-foreground/75 hover:text-foreground disabled:opacity-40"
           onClick={onNext}
           disabled={!hasNext || disabled}
         >

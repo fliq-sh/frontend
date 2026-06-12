@@ -74,16 +74,16 @@ function NewTokenBanner({ token, onDismiss }: { token: CreateTokenResponse; onDi
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-sm font-medium text-amber-200">Copy your token now — it won&apos;t be shown again</p>
-          <p className="mt-0.5 text-xs text-foreground/50">
-            <span className="font-medium text-foreground/70">{token.name}</span> · {token.prefix}…
+          <p className="mt-0.5 text-xs text-foreground/68">
+            <span className="font-medium text-foreground/80">{token.name}</span> · {token.prefix}…
           </p>
         </div>
-        <Button size="sm" variant="ghost" className="shrink-0 text-foreground/40 hover:text-foreground/70" onClick={onDismiss}>
+        <Button size="sm" variant="ghost" className="shrink-0 text-foreground/60 hover:text-foreground/80" onClick={onDismiss}>
           Dismiss
         </Button>
       </div>
       <div className="flex items-center gap-2">
-        <code className="flex-1 break-all rounded border border-foreground/10 bg-foreground/5 px-3 py-2 font-mono text-xs text-foreground/80">
+        <code className="flex-1 break-all rounded border border-foreground/10 bg-foreground/5 px-3 py-2 font-mono text-xs text-foreground/85">
           {token.token}
         </code>
         <CopyButton value={token.token} label="Copy" variant="outline" className="shrink-0 border-foreground/10" />
@@ -110,7 +110,7 @@ function TokenRow({ token, onRevoked }: { token: APIToken; onRevoked: () => void
     <div className="flex items-center justify-between gap-4 py-3">
       <div className="min-w-0">
         <p className="truncate text-sm font-medium">{token.name}</p>
-        <p className="mt-0.5 font-mono text-xs text-foreground/40">
+        <p className="mt-0.5 font-mono text-xs text-foreground/60">
           {token.prefix}… ·{" "}
           {token.last_used_at ? (
             <>last used <RelativeTime date={token.last_used_at} /></>
@@ -172,14 +172,14 @@ function APITokensCard() {
                 load();
               }}
             />
-            <button className="text-left text-xs text-foreground/30 hover:text-foreground/50" onClick={() => setShowForm(false)}>
+            <button className="text-left text-xs text-foreground/50 hover:text-foreground/68" onClick={() => setShowForm(false)}>
               Cancel
             </button>
           </div>
         )}
 
         {loading ? (
-          <p className="py-2 text-sm text-foreground/30">Loading…</p>
+          <p className="py-2 text-sm text-foreground/50">Loading…</p>
         ) : tokens.length === 0 ? (
           <Empty icon={KeyRound} title="No tokens yet" description="Create one to call the Fliq API from your code." />
         ) : (
@@ -238,11 +238,11 @@ function SigningSecretCard() {
       description="Verify that requests to your endpoints are genuinely from Fliq."
     >
       {loading ? (
-        <p className="py-2 text-sm text-foreground/30">Loading…</p>
+        <p className="py-2 text-sm text-foreground/50">Loading…</p>
       ) : secret ? (
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <code className="flex-1 break-all rounded border border-foreground/10 bg-foreground/5 px-3 py-2 font-mono text-xs text-foreground/80">
+            <code className="flex-1 break-all rounded border border-foreground/10 bg-foreground/5 px-3 py-2 font-mono text-xs text-foreground/85">
               {revealed ? secret.secret : "whsec_••••••••••••••••••••••••••••••••"}
             </code>
             <Button size="sm" variant="outline" className="shrink-0 border-foreground/10" onClick={() => setRevealed((v) => !v)}>
@@ -251,7 +251,7 @@ function SigningSecretCard() {
             {revealed && <CopyButton value={secret.secret} variant="outline" className="shrink-0 border-foreground/10" />}
           </div>
           <div className="flex items-center justify-between">
-            <p className="text-xs text-foreground/35">
+            <p className="text-xs text-foreground/58">
               Created <RelativeTime date={secret.created_at} />
             </p>
             <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300" disabled={rotating} onClick={handleRotate}>
