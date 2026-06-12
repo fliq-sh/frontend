@@ -28,17 +28,17 @@ function CollapsibleSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border border-white/10 rounded-md overflow-hidden">
+    <div className="border border-foreground/10 rounded-md overflow-hidden">
       <button
         type="button"
-        className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-white/50 hover:text-white/70 hover:bg-white/[0.03] transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-foreground/50 hover:text-foreground/70 hover:bg-foreground/[0.03] transition-colors"
         onClick={() => setOpen((v) => !v)}
       >
         <span>{title}</span>
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div className="border-t border-white/10 bg-white/[0.02] px-3 py-2.5 max-h-80 overflow-y-auto">
+        <div className="border-t border-foreground/10 bg-foreground/[0.02] px-3 py-2.5 max-h-80 overflow-y-auto">
           {children}
         </div>
       )}
@@ -59,7 +59,7 @@ function CopyLinkButton() {
     <Button
       size="sm"
       variant="ghost"
-      className="text-white/40 hover:text-white/70 gap-1.5"
+      className="text-foreground/40 hover:text-foreground/70 gap-1.5"
       onClick={handleCopy}
     >
       {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
@@ -105,7 +105,7 @@ export default function AttemptDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto flex flex-col gap-6">
+      <div className="max-w-2xl mx-auto flex flex-col gap-8">
         <Skeleton className="h-6 w-48" />
         <Skeleton className="h-40 w-full" />
         <Skeleton className="h-32 w-full" />
@@ -116,7 +116,7 @@ export default function AttemptDetailPage() {
   if (error || !job || !attempt) {
     return (
       <div className="max-w-2xl mx-auto flex flex-col gap-4">
-        <Link href="/app/jobs" className="text-sm text-white/40 hover:text-white/60 flex items-center gap-1">
+        <Link href="/app/jobs" className="text-sm text-foreground/40 hover:text-foreground/60 flex items-center gap-1">
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to Jobs
         </Link>
@@ -140,33 +140,33 @@ export default function AttemptDetailPage() {
   const prettyHeaders = job.headers ? JSON.stringify(job.headers, null, 2) : null;
 
   return (
-    <div className="max-w-2xl mx-auto flex flex-col gap-6">
+    <div className="max-w-2xl mx-auto flex flex-col gap-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/app/jobs" className="text-white/40 hover:text-white/60 transition-colors">
+          <Link href="/app/jobs" className="text-foreground/40 hover:text-foreground/60 transition-colors">
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <h1 className="text-lg font-semibold">
-            Attempt <span className="font-mono text-white/50">#{attempt.attempt_num}</span>
+            Attempt <span className="font-mono text-foreground/50">#{attempt.attempt_num}</span>
           </h1>
         </div>
         <CopyLinkButton />
       </div>
 
       {/* Request */}
-      <section className="rounded-lg border border-white/10 bg-white/[0.02] p-5 flex flex-col gap-3">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-white/30">Request</p>
+      <section className="rounded-lg border border-foreground/10 bg-foreground/[0.02] p-5 flex flex-col gap-3">
+        <p className="text-[11px] font-medium uppercase tracking-wider text-foreground/30">Request</p>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono font-bold text-white/80 bg-white/10 border border-white/20 rounded px-1.5 py-0.5">
+          <span className="text-[10px] font-mono font-bold text-foreground/80 bg-foreground/10 border border-foreground/20 rounded px-1.5 py-0.5">
             {job.method}
           </span>
-          <span className="text-sm font-mono text-white/70 break-all">{job.url}</span>
+          <span className="text-sm font-mono text-foreground/70 break-all">{job.url}</span>
         </div>
 
         {prettyHeaders && (
           <CollapsibleSection title="Headers">
-            <pre className="text-[11px] font-mono text-white/60 whitespace-pre-wrap break-all leading-relaxed">
+            <pre className="text-[11px] font-mono text-foreground/60 whitespace-pre-wrap break-all leading-relaxed">
               {prettyHeaders}
             </pre>
           </CollapsibleSection>
@@ -174,7 +174,7 @@ export default function AttemptDetailPage() {
 
         {prettyBody && (
           <CollapsibleSection title="Body">
-            <pre className="text-[11px] font-mono text-white/60 whitespace-pre-wrap break-all leading-relaxed">
+            <pre className="text-[11px] font-mono text-foreground/60 whitespace-pre-wrap break-all leading-relaxed">
               {prettyBody}
             </pre>
           </CollapsibleSection>
@@ -182,17 +182,17 @@ export default function AttemptDetailPage() {
       </section>
 
       {/* Response */}
-      <section className="rounded-lg border border-white/10 bg-white/[0.02] p-5 flex flex-col gap-3">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-white/30">Response</p>
+      <section className="rounded-lg border border-foreground/10 bg-foreground/[0.02] p-5 flex flex-col gap-3">
+        <p className="text-[11px] font-medium uppercase tracking-wider text-foreground/30">Response</p>
         <div className="flex items-center gap-3">
           {attempt.status_code ? (
             <span className={`inline-flex items-center rounded border px-2 py-0.5 text-sm font-medium font-mono ${statusColorClass}`}>
               {attempt.status_code}
             </span>
           ) : (
-            <span className="text-sm text-white/30">No response</span>
+            <span className="text-sm text-foreground/30">No response</span>
           )}
-          <span className="text-sm text-white/50">{duration}</span>
+          <span className="text-sm text-foreground/50">{duration}</span>
         </div>
         {attempt.error && (
           <div className="rounded-md border border-red-500/20 bg-red-500/[0.07] px-3 py-2.5">
@@ -202,18 +202,18 @@ export default function AttemptDetailPage() {
       </section>
 
       {/* Timing */}
-      <section className="rounded-lg border border-white/10 bg-white/[0.02] p-5 flex flex-col gap-3">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-white/30">Timing</p>
+      <section className="rounded-lg border border-foreground/10 bg-foreground/[0.02] p-5 flex flex-col gap-3">
+        <p className="text-[11px] font-medium uppercase tracking-wider text-foreground/30">Timing</p>
         <div className="grid grid-cols-2 gap-x-6 gap-y-3">
           <div>
-            <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">Started</p>
-            <p className="text-sm font-mono text-white/60">
+            <p className="text-[10px] text-foreground/30 uppercase tracking-wider mb-1">Started</p>
+            <p className="text-sm font-mono text-foreground/60">
               {format(new Date(attempt.started_at), "MMM d, yyyy HH:mm:ss")}
             </p>
           </div>
           <div>
-            <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">Completed</p>
-            <p className="text-sm font-mono text-white/60">
+            <p className="text-[10px] text-foreground/30 uppercase tracking-wider mb-1">Completed</p>
+            <p className="text-sm font-mono text-foreground/60">
               {attempt.completed_at
                 ? format(new Date(attempt.completed_at), "MMM d, yyyy HH:mm:ss")
                 : "—"}
@@ -223,26 +223,26 @@ export default function AttemptDetailPage() {
       </section>
 
       {/* Metadata */}
-      <section className="rounded-lg border border-white/10 bg-white/[0.02] p-5 flex flex-col gap-3">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-white/30">Metadata</p>
+      <section className="rounded-lg border border-foreground/10 bg-foreground/[0.02] p-5 flex flex-col gap-3">
+        <p className="text-[11px] font-medium uppercase tracking-wider text-foreground/30">Metadata</p>
         <div className="grid grid-cols-2 gap-x-6 gap-y-3">
           <div>
-            <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">Attempt #</p>
-            <p className="text-sm font-mono text-white/60">{attempt.attempt_num}</p>
+            <p className="text-[10px] text-foreground/30 uppercase tracking-wider mb-1">Attempt #</p>
+            <p className="text-sm font-mono text-foreground/60">{attempt.attempt_num}</p>
           </div>
           <div>
-            <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">Worker ID</p>
-            <p className="text-sm font-mono text-white/60 truncate" title={attempt.worker_id}>
+            <p className="text-[10px] text-foreground/30 uppercase tracking-wider mb-1">Worker ID</p>
+            <p className="text-sm font-mono text-foreground/60 truncate" title={attempt.worker_id}>
               {attempt.worker_id}
             </p>
           </div>
           <div>
-            <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">Attempt ID</p>
-            <p className="text-sm font-mono text-white/40 break-all">{attempt.id}</p>
+            <p className="text-[10px] text-foreground/30 uppercase tracking-wider mb-1">Attempt ID</p>
+            <p className="text-sm font-mono text-foreground/40 break-all">{attempt.id}</p>
           </div>
           <div>
-            <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">Job ID</p>
-            <p className="text-sm font-mono text-white/40 break-all">{job.id}</p>
+            <p className="text-[10px] text-foreground/30 uppercase tracking-wider mb-1">Job ID</p>
+            <p className="text-sm font-mono text-foreground/40 break-all">{job.id}</p>
           </div>
         </div>
       </section>

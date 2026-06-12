@@ -51,16 +51,16 @@ function BalancePill() {
   return (
     <Link
       href="/app/billing"
-      className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs font-medium text-white/70 transition-colors hover:border-white/20 hover:text-white"
+      className="inline-flex items-center gap-1.5 rounded-md border border-foreground/10 bg-foreground/5 px-2.5 py-1.5 text-xs font-medium text-foreground/70 transition-colors hover:border-foreground/20 hover:text-foreground"
       title="Credit balance"
     >
-      <Coins className="h-3.5 w-3.5 text-white/40" />
+      <Coins className="h-3.5 w-3.5 text-foreground/40" />
       {loading || !balance ? (
-        <span className="h-3 w-10 animate-pulse rounded bg-white/10" />
+        <span className="h-3 w-10 animate-pulse rounded bg-foreground/10" />
       ) : (
         <>
           <span className="tabular-nums">{formatCompact(balance.balance)}</span>
-          <span className="hidden text-white/40 sm:inline">credits</span>
+          <span className="hidden text-foreground/40 sm:inline">credits</span>
         </>
       )}
     </Link>
@@ -72,21 +72,21 @@ export default function DashboardHeader() {
   const crumbs = buildCrumbs(pathname);
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b border-white/10 bg-[#09090b]/80 px-4 backdrop-blur">
+    <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b border-foreground/10 bg-background/80 px-4 backdrop-blur">
       <SidebarTrigger className="-ml-1" />
-      <div className="h-5 w-px bg-white/10" />
+      <div className="h-5 w-px bg-foreground/10" />
       <nav className="flex min-w-0 items-center gap-1.5 text-sm" aria-label="Breadcrumb">
         {crumbs.map((c, i) => {
           const last = i === crumbs.length - 1;
           return (
             <span key={i} className="flex min-w-0 items-center gap-1.5">
-              {i > 0 && <span className="text-white/20">/</span>}
+              {i > 0 && <span className="text-foreground/20">/</span>}
               {c.href && !last ? (
-                <Link href={c.href} className="truncate text-white/45 transition-colors hover:text-white/80">
+                <Link href={c.href} className="truncate text-foreground/45 transition-colors hover:text-foreground/80">
                   {c.label}
                 </Link>
               ) : (
-                <span className="truncate font-medium text-white/90">{c.label}</span>
+                <span className="truncate font-medium text-foreground/90">{c.label}</span>
               )}
             </span>
           );

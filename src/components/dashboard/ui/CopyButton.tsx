@@ -42,7 +42,7 @@ export function CopyButton({
       size={label ? "sm" : size}
       variant={variant}
       onClick={handleCopy}
-      className={cn("text-white/40 hover:text-white/80", className)}
+      className={cn("text-foreground/40 hover:text-foreground/80", className)}
       title="Copy"
       aria-label="Copy to clipboard"
     >

@@ -44,20 +44,20 @@ const TX_LABEL: Record<CreditTxType, string> = {
 function BalanceHero({ balance }: { balance: BillingBalance }) {
   const usd = balance.credits_per_dollar > 0 ? balance.balance / balance.credits_per_dollar : 0;
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6">
+    <div className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="mb-1 flex items-center gap-1.5 text-xs uppercase tracking-wider text-white/40">
+          <p className="mb-1 flex items-center gap-1.5 text-xs uppercase tracking-wider text-foreground/40">
             <Coins className="h-3.5 w-3.5" /> Current balance
           </p>
           <p className="text-4xl font-bold tracking-tight tabular-nums">{formatNumber(balance.balance)}</p>
-          <p className="mt-1 text-sm text-white/45">credits · ≈ {formatUsd(usd)}</p>
+          <p className="mt-1 text-sm text-foreground/45">credits · ≈ {formatUsd(usd)}</p>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <span className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-xs font-medium text-white/80">
+          <span className="inline-flex items-center rounded-full border border-foreground/15 bg-foreground/10 px-2.5 py-1 text-xs font-medium text-foreground/80">
             {balance.plan === "paid" ? "Paid plan" : "Free plan"}
           </span>
-          <p className="text-xs text-white/35">{formatCompact(balance.daily_limit)} credits / day</p>
+          <p className="text-xs text-foreground/35">{formatCompact(balance.daily_limit)} credits / day</p>
         </div>
       </div>
     </div>
@@ -73,15 +73,15 @@ function txTone(amount: number): string {
 function TransactionRow({ tx }: { tx: CreditTransaction }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3 sm:px-5">
-      <span className="inline-flex shrink-0 items-center rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] font-medium text-white/55">
+      <span className="inline-flex shrink-0 items-center rounded-full border border-foreground/10 bg-foreground/5 px-2 py-0.5 text-[11px] font-medium text-foreground/55">
         {TX_LABEL[tx.type] ?? "Activity"}
       </span>
-      <span className="min-w-0 flex-1 truncate text-sm text-white/50">{tx.description ?? "—"}</span>
+      <span className="min-w-0 flex-1 truncate text-sm text-foreground/50">{tx.description ?? "—"}</span>
       <span className={`shrink-0 font-mono text-sm font-medium tabular-nums ${txTone(tx.amount)}`}>
         {tx.amount >= 0 ? "+" : ""}
         {formatNumber(tx.amount)}
       </span>
-      <RelativeTime date={tx.created_at} className="hidden shrink-0 text-xs text-white/35 sm:block sm:w-28 sm:text-right" />
+      <RelativeTime date={tx.created_at} className="hidden shrink-0 text-xs text-foreground/35 sm:block sm:w-28 sm:text-right" />
     </div>
   );
 }
@@ -154,7 +154,7 @@ export default function BillingPage() {
   const dailyQuota = balance?.daily_limit && usage ? usage.today / balance.daily_limit : undefined;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8 sm:gap-10">
       <PageHeader title="Billing" description="Credits, usage, and account activity. One credit = one execution attempt." />
 
       {balanceLoading && !balance ? (
@@ -162,11 +162,11 @@ export default function BillingPage() {
       ) : balance ? (
         <BalanceHero balance={balance} />
       ) : (
-        <SectionCard><p className="text-sm text-white/40">Failed to load billing information.</p></SectionCard>
+        <SectionCard><p className="text-sm text-foreground/40">Failed to load billing information.</p></SectionCard>
       )}
 
       {/* Usage metrics */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">
         <MetricCard
           icon={Activity}
           label="Executions today"
@@ -208,9 +208,9 @@ export default function BillingPage() {
 
       {/* Beta note (paid top-ups not yet enabled) */}
       <SectionCard title="Add credits">
-        <p className="text-sm text-white/45">
+        <p className="text-sm text-foreground/45">
           Paid top-ups are coming soon. During the beta you get{" "}
-          <span className="text-white/70">{balance ? formatCompact(balance.daily_limit) : "100,000"} free credits per day</span> — no card required.
+          <span className="text-foreground/70">{balance ? formatCompact(balance.daily_limit) : "100,000"} free credits per day</span> — no card required.
         </p>
       </SectionCard>
 
@@ -221,14 +221,14 @@ export default function BillingPage() {
         noPadding
         footer={
           cursor ? (
-            <Button variant="ghost" size="sm" onClick={loadMore} disabled={loadingMore} className="text-white/55 hover:text-white">
+            <Button variant="ghost" size="sm" onClick={loadMore} disabled={loadingMore} className="text-foreground/55 hover:text-foreground">
               {loadingMore ? "Loading…" : "Load more"}
             </Button>
           ) : undefined
         }
       >
         {loading ? (
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-foreground/5">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex items-center gap-4 px-5 py-3">
                 <Skeleton className="h-5 w-20 rounded-full" />
@@ -239,12 +239,12 @@ export default function BillingPage() {
           </div>
         ) : error ? (
           <Empty icon={Coins} title="Couldn't load transactions" description={error} action={
-            <Button size="sm" variant="outline" className="border-white/10" onClick={loadInitial}>Try again</Button>
+            <Button size="sm" variant="outline" className="border-foreground/10" onClick={loadInitial}>Try again</Button>
           } />
         ) : txns.length === 0 ? (
           <Empty icon={Coins} title="No transactions yet" description="Daily grants and executions will appear here." />
         ) : (
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-foreground/5">
             {txns.map((tx) => (
               <TransactionRow key={tx.id} tx={tx} />
             ))}

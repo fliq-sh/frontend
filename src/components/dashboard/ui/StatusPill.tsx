@@ -5,7 +5,7 @@ const SURFACE: Record<Tone, string> = {
   success: "border-green-500/30 bg-green-500/10 text-green-300",
   warning: "border-amber-500/30 bg-amber-500/10 text-amber-300",
   danger: "border-red-500/30 bg-red-500/10 text-red-300",
-  neutral: "border-white/15 bg-white/5 text-white/70",
+  neutral: "border-foreground/15 bg-foreground/5 text-foreground/70",
 };
 
 /**
@@ -47,7 +47,7 @@ export function MethodChip({ method, className }: { method: string; className?: 
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded border border-white/15 bg-white/5 px-1.5 py-0.5 text-[10px] font-mono font-semibold tracking-wide text-white/70",
+        "inline-flex items-center rounded border border-foreground/15 bg-foreground/5 px-1.5 py-0.5 text-[10px] font-mono font-semibold tracking-wide text-foreground/70",
         className,
       )}
     >

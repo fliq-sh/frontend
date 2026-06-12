@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
-import FliqIcon from "@/components/ui/FliqIcon";
 import {
   LayoutDashboard,
   Zap,
@@ -73,13 +72,13 @@ function NavLink({ item, onNavigate }: { item: NavItem; onNavigate: () => void }
           onClick={onNavigate}
           {...(item.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
           className={cn(
-            "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
-            active ? "border-l-2 border-white bg-white/10 text-white" : "text-white/55 hover:text-white",
+            "flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm transition-colors",
+            active ? "border-l-2 border-primary bg-primary/10 font-medium text-foreground" : "text-foreground/55 hover:text-foreground",
           )}
         >
-          <Icon className={cn("h-4 w-4", active ? "text-white" : "text-white/40")} />
+          <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-foreground/40")} />
           <span>{item.label}</span>
-          {item.external && <ExternalLink className="ml-auto h-3 w-3 text-white/25" />}
+          {item.external && <ExternalLink className="ml-auto h-3 w-3 text-foreground/25" />}
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -99,10 +98,13 @@ export default function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="h-14 flex justify-center px-4 border-b border-white/10">
-        <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-          <FliqIcon size={24} />
-          Fliq
+      <SidebarHeader className="h-14 flex justify-center px-4 border-b border-foreground/10">
+        <Link
+          href="/"
+          aria-label="Fliq home"
+          className="font-display flex items-center text-2xl font-extrabold tracking-tight"
+        >
+          fliq<span className="text-primary">.</span>
         </Link>
       </SidebarHeader>
 
@@ -113,7 +115,7 @@ export default function AppSidebar() {
           ))}
         </SidebarMenu>
 
-        <div className="my-3 mx-3 h-px bg-white/10" />
+        <div className="my-3 mx-3 h-px bg-foreground/10" />
 
         <SidebarMenu>
           {SECONDARY_NAV.map((item) => (
@@ -122,31 +124,31 @@ export default function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="px-2 py-3 border-t border-white/10">
+      <SidebarFooter className="px-2 py-3 border-t border-foreground/10">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left outline-none transition-colors hover:bg-white/5">
+            <button className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left outline-none transition-colors hover:bg-foreground/5">
               <Avatar url={avatarUrl} name={displayName} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{displayName}</p>
-                <p className="truncate text-xs text-white/40">{email}</p>
+                <p className="truncate text-xs text-foreground/40">{email}</p>
               </div>
-              <ChevronsUpDown className="h-4 w-4 shrink-0 text-white/30" />
+              <ChevronsUpDown className="h-4 w-4 shrink-0 text-foreground/30" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             side="top"
             align="start"
-            className="w-[--radix-dropdown-menu-trigger-width] border-white/10 bg-[#09090b]"
+            className="w-[--radix-dropdown-menu-trigger-width] border-foreground/10 theme-warm bg-popover text-foreground"
           >
             <div className="flex items-center gap-3 px-2 py-2">
               <Avatar url={avatarUrl} name={displayName} />
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{displayName}</p>
-                <p className="truncate text-xs text-white/40">{email}</p>
+                <p className="truncate text-xs text-foreground/40">{email}</p>
               </div>
             </div>
-            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuSeparator className="bg-foreground/10" />
             <DropdownMenuItem asChild>
               <Link href="/app/billing" onClick={closeMobile} className="cursor-pointer">
                 <CreditCard className="h-4 w-4" />
@@ -159,7 +161,7 @@ export default function AppSidebar() {
                 Settings
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuSeparator className="bg-foreground/10" />
             <DropdownMenuItem
               onClick={() => signOut({ redirectUrl: "/" })}
               className="cursor-pointer text-red-400 focus:text-red-400"
@@ -180,7 +182,7 @@ function Avatar({ url, name }: { url?: string; name: string }) {
     return <img src={url} alt={name} width={32} height={32} className="h-8 w-8 rounded-full" />;
   }
   return (
-    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-xs font-medium text-white/80">
+    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground/10 text-xs font-medium text-foreground/80">
       {name[0]?.toUpperCase()}
     </div>
   );

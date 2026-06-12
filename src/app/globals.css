@@ -265,3 +265,70 @@
     animation: none;
   }
 }
+
+/* ─── Warm "fliq.sh" theme — scoped to the dashboard ──────────────────────── */
+/* The signed-in /app surface adopts the fliq.sh landing palette (warm cream +
+   burnt-orange accent, Bricolage Grotesque display). Scoped to `.theme-warm`
+   so the public marketing site stays on its own (dark) theme untouched. Every
+   shadcn token is overridden here, so primitives that read `bg-card`,
+   `text-muted-foreground`, `border-border`, `bg-primary`, etc. re-skin
+   automatically. Hand-written dashboard classes use `*-foreground/N`, which
+   resolves to dark ink here and to white on marketing — one source, two skins.
+   Radix portals (dialogs, dropdowns) render outside this subtree, so they carry
+   `theme-warm` on their own content. Supersedes ADR 0001 for the dashboard. */
+.theme-warm {
+  --background: #fbf5ec;
+  --foreground: #211710;
+  --card: #fffbf4;
+  --card-foreground: #211710;
+  --popover: #fffbf4;
+  --popover-foreground: #211710;
+  --primary: #e8590c;
+  --primary-foreground: #ffffff;
+  --secondary: #f5ecdd;
+  --secondary-foreground: #211710;
+  --muted: #f5ecdd;
+  --muted-foreground: #6b5b4e;
+  --accent: #f1e6d4;
+  --accent-foreground: #211710;
+  --destructive: #c0392b;
+  --border: rgba(33, 23, 16, 0.13);
+  --input: rgba(33, 23, 16, 0.18);
+  --ring: #e8590c;
+  --radius: 0.9rem;
+
+  --sidebar: #fffbf4;
+  --sidebar-foreground: #211710;
+  --sidebar-primary: #e8590c;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1e6d4;
+  --sidebar-accent-foreground: #211710;
+  --sidebar-border: rgba(33, 23, 16, 0.13);
+  --sidebar-ring: #e8590c;
+
+  /* Restrained single-hue chart ramp: the orange accent fading into warm
+     neutrals. Deliberately not a rainbow — multi-hue ramps read as decorative.
+     Status is encoded by the green/amber/red traffic-light tokens, not here. */
+  --chart-1: #e8590c;
+  --chart-2: #c2410c;
+  --chart-3: #9a7b63;
+  --chart-4: #bcab97;
+  --chart-5: #d8c9b5;
+
+  /* Re-point the font-family vars the utilities resolve to. Body → Inter,
+     mono → JetBrains, matching the landing. Headings get Bricolage below. */
+  --font-geist-sans: var(--font-inter);
+  --font-geist-mono: var(--font-jetbrains);
+
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+.theme-warm h1,
+.theme-warm h2,
+.theme-warm h3,
+.theme-warm .font-display {
+  font-family: var(--font-display), var(--font-inter), sans-serif;
+  letter-spacing: -0.02em;
+}

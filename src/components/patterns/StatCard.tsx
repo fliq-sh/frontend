@@ -25,14 +25,13 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "rounded-lg border border-white/10 border-l-2 bg-white/5 px-4 py-3",
-        t.borderL,
+        "rounded-lg border border-foreground/10 bg-foreground/5 px-4 py-3",
         className,
       )}
     >
       <div className="flex items-center gap-2">
         {Icon && <Icon className={cn("h-3.5 w-3.5", t.icon)} />}
-        <p className="text-xs text-white/40 uppercase tracking-wider">{label}</p>
+        <p className="text-xs text-foreground/40 uppercase tracking-wider">{label}</p>
       </div>
       <div className="text-2xl font-bold mt-1">{value}</div>
     </div>

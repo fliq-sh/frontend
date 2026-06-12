@@ -24,8 +24,8 @@ export function ApiCodeBlock({ snippets }: { snippets: ApiSnippets }) {
   }
 
   return (
-    <div className="rounded-lg border border-white/10 bg-black/40 overflow-hidden min-w-0">
-      <div className="flex items-center border-b border-white/10 bg-white/[0.02]">
+    <div className="rounded-xl border border-black/10 bg-[#1b120b] overflow-hidden min-w-0">
+      <div className="flex items-center border-b border-white/10 bg-white/[0.03]">
         <div className="flex flex-1">
           {LANGS.map((lang) => (
             <button
@@ -33,7 +33,7 @@ export function ApiCodeBlock({ snippets }: { snippets: ApiSnippets }) {
               onClick={() => setActive(lang)}
               className={`px-3 py-2 text-xs font-medium transition-colors ${
                 active === lang
-                  ? "text-white border-b-2 border-white"
+                  ? "text-white border-b-2 border-[#ff7a1a]"
                   : "text-white/40 hover:text-white/60"
               }`}
             >

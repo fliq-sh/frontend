@@ -9,7 +9,7 @@ export default function BillingSuccessPage() {
         <CheckCircle2 size={48} className="text-green-400" />
         <div>
           <h2 className="text-xl font-semibold">Credits Added!</h2>
-          <p className="text-sm text-white/50 mt-1">
+          <p className="text-sm text-foreground/50 mt-1">
             Your credits have been added to your account.
           </p>
         </div>

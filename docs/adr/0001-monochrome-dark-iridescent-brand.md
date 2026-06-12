@@ -1,6 +1,6 @@
 # The frontend is dark + monochrome, with iridescence confined to the F-mark
 
-Status: accepted
+Status: accepted (marketing site) — superseded for the `/app` dashboard by [ADR 0002](0002-warm-dashboard-theme.md)
 
 ## Decision
 

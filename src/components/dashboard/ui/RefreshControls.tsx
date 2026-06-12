@@ -24,7 +24,7 @@ export function RefreshControls({
       <Button
         size="sm"
         variant="outline"
-        className="gap-1.5 border-white/10 text-white/55 hover:text-white"
+        className="gap-1.5 border-foreground/10 text-foreground/55 hover:text-foreground"
         onClick={onRefresh}
         disabled={loading}
         title="Refresh now"
@@ -40,10 +40,10 @@ export function RefreshControls({
           "inline-flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-xs font-medium transition-colors",
           auto
             ? "border-green-500/30 bg-green-500/10 text-green-300"
-            : "border-white/10 text-white/40 hover:text-white/70",
+            : "border-foreground/10 text-foreground/40 hover:text-foreground/70",
         )}
       >
-        <span className={cn("h-1.5 w-1.5 rounded-full", auto ? "bg-green-400" : "bg-white/30")} />
+        <span className={cn("h-1.5 w-1.5 rounded-full", auto ? "bg-green-400" : "bg-foreground/30")} />
         Live
       </button>
     </div>

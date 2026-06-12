@@ -10,8 +10,8 @@ export function Sparkline({
   width = 120,
   height = 32,
   className,
-  strokeClass = "stroke-white/70",
-  fillClass = "fill-white/10",
+  strokeClass = "stroke-foreground/70",
+  fillClass = "fill-foreground/10",
 }: {
   data: number[];
   width?: number;

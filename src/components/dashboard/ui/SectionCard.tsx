@@ -27,18 +27,18 @@ export function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className={cn("flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.02]", className)}>
+    <section className={cn("flex flex-col overflow-hidden rounded-2xl border border-border bg-card", className)}>
       {(title || action) && (
-        <header className="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-3 sm:px-5">
+        <header className="flex items-start justify-between gap-3 border-b border-foreground/10 px-5 py-4 sm:px-6 sm:py-5">
           <div className="min-w-0">
-            {title && <h3 className="text-sm font-semibold text-white/90">{title}</h3>}
-            {description && <p className="mt-0.5 text-xs text-white/40">{description}</p>}
+            {title && <h3 className="text-[15px] font-semibold text-foreground/90">{title}</h3>}
+            {description && <p className="mt-1 text-xs text-foreground/45">{description}</p>}
           </div>
           {action && <div className="shrink-0">{action}</div>}
         </header>
       )}
-      <div className={cn(!noPadding && "p-4 sm:p-5", bodyClassName)}>{children}</div>
-      {footer && <footer className="border-t border-white/10 px-4 py-3 sm:px-5">{footer}</footer>}
+      <div className={cn(!noPadding && "p-5 sm:p-6", bodyClassName)}>{children}</div>
+      {footer && <footer className="border-t border-foreground/10 px-5 py-4 sm:px-6">{footer}</footer>}
     </section>
   );
 }
@@ -46,7 +46,7 @@ export function SectionCard({
 /** A small "see all →" link used in section headers. */
 export function SectionLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="text-xs font-medium text-white/50 transition-colors hover:text-white">
+    <Link href={href} className="text-xs font-medium text-foreground/50 transition-colors hover:text-foreground">
       {children}
     </Link>
   );
