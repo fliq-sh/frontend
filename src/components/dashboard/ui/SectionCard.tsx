@@ -32,7 +32,7 @@ export function SectionCard({
         <header className="flex items-start justify-between gap-3 border-b border-foreground/10 px-5 py-4 sm:px-6 sm:py-5">
           <div className="min-w-0">
             {title && <h3 className="text-[15px] font-semibold text-foreground/90">{title}</h3>}
-            {description && <p className="mt-1 text-xs text-foreground/45">{description}</p>}
+            {description && <p className="mt-1 text-xs text-foreground/62">{description}</p>}
           </div>
           {action && <div className="shrink-0">{action}</div>}
         </header>
@@ -46,7 +46,7 @@ export function SectionCard({
 /** A small "see all →" link used in section headers. */
 export function SectionLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="text-xs font-medium text-foreground/50 transition-colors hover:text-foreground">
+    <Link href={href} className="text-xs font-medium text-foreground/68 transition-colors hover:text-foreground">
       {children}
     </Link>
   );

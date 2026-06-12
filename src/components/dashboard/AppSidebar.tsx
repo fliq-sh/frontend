@@ -72,11 +72,13 @@ function NavLink({ item, onNavigate }: { item: NavItem; onNavigate: () => void }
           onClick={onNavigate}
           {...(item.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
           className={cn(
-            "flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm transition-colors",
-            active ? "border-l-2 border-primary bg-primary/10 font-medium text-foreground" : "text-foreground/55 hover:text-foreground",
+            "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
+            active
+              ? "bg-foreground/[0.07] font-medium text-foreground"
+              : "text-foreground/70 hover:bg-foreground/[0.04] hover:text-foreground",
           )}
         >
-          <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-foreground/40")} />
+          <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-foreground/55")} />
           <span>{item.label}</span>
           {item.external && <ExternalLink className="ml-auto h-3 w-3 text-foreground/25" />}
         </Link>
