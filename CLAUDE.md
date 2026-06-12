@@ -85,10 +85,11 @@ src/
 ### Dashboard UI kit (`src/components/dashboard/ui/`)
 
 Composites layered on the shadcn primitives + `patterns/` tokens, shared by every
-`/app` route so the tables/pages stay consistent. There is **no server-side stats
-endpoint** (see core-api router) — Overview/Billing metrics are derived client-side
-from the existing list endpoints (`bucketByTime`/`countSince` in `lib/dashboard.ts`)
-and **labelled honestly** when the sample is capped. Pieces: `PageHeader`,
+`/app` route so the tables/pages stay consistent. Overview/Billing metrics come
+from the **server-side stats endpoints** (`/stats/jobs`, `/stats/usage`,
+`/buffers/:id/stats` — see `createStatsApi`/`buffers.stats()` in `lib/api.ts`), so
+the numbers are true totals (no client-side sampling). `lib/dashboard.ts` is now
+just formatting + small status mappers. Pieces: `PageHeader`,
 `MetricCard` (value + progress quota bar + inline chart slot), `SectionCard`,
 `Sparkline`/`MiniBars` (dependency-free monochrome SVG charts — no chart lib),
 `StatusPill`/`MethodChip`, `FilterTabs`, `SearchInput`, `Pagination`,

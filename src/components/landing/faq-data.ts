@@ -25,7 +25,7 @@ export const faqs = [
   {
     question: "Can AI agents use it?",
     answer:
-      "Yes. Fliq ships an MCP server, so agents (Claude, Cursor, your own) can create, inspect, and cancel scheduled jobs as tool calls — a durable way for an agent to run on a schedule and pick work back up.",
+      "An MCP server is in beta (coming soon), so agents (Claude, Cursor, your own) will be able to create, inspect, and cancel scheduled jobs as tool calls — a durable way for an agent to run on a schedule and pick work back up. Until then, agents can drive Fliq directly through the HTTP API.",
   },
   {
     question: "Do I need to change my codebase?",

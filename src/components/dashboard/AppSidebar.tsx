@@ -9,6 +9,7 @@ import {
   Zap,
   CalendarClock,
   Layers,
+  AlertTriangle,
   CreditCard,
   Settings,
   ChevronsUpDown,
@@ -47,6 +48,7 @@ const PRIMARY_NAV: NavItem[] = [
   { label: "Jobs", href: "/app/jobs", icon: Zap },
   { label: "Schedules", href: "/app/schedules", icon: CalendarClock },
   { label: "Buffers", href: "/app/buffers", icon: Layers },
+  { label: "Failures", href: "/app/failures", icon: AlertTriangle },
   { label: "Billing", href: "/app/billing", icon: CreditCard },
 ];
 

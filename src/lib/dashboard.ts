@@ -1,7 +1,8 @@
-// Dashboard-only helpers: number/time formatting and the client-side
-// aggregation we use to derive metrics from the existing list endpoints
-// (there is no server-side stats endpoint — see core-api router). Everything
-// here is pure so it stays SSR-safe and easy to test.
+// Dashboard-only helpers: number/time formatting and a couple of small status
+// mappers. Overview/Billing metrics now come from the server-side /stats
+// endpoints (see createStatsApi in lib/api.ts), so the old client-side
+// time-bucketing aggregation lives in core-api instead. Everything here is pure
+// so it stays SSR-safe and easy to test.
 
 import type { Tone } from "@/components/patterns";
 
@@ -38,56 +39,6 @@ const usdFmt = new Intl.NumberFormat("en-US", {
 
 export function formatUsd(n: number): string {
   return usdFmt.format(n);
-}
-
-/**
- * Bucket timestamped items into a fixed number of equal time buckets ending
- * "now". Returns one count per bucket, oldest → newest, so it can feed a
- * sparkline / mini bar chart directly.
- */
-export function bucketByTime<T>(
-  items: T[],
-  getDate: (item: T) => string | Date | null | undefined,
-  opts: { buckets: number; windowMs: number; now: number },
-): number[] {
-  const { buckets, windowMs, now } = opts;
-  const slot = windowMs / buckets;
-  const start = now - windowMs;
-  const out = new Array<number>(buckets).fill(0);
-  for (const item of items) {
-    const raw = getDate(item);
-    if (!raw) continue;
-    const t = raw instanceof Date ? raw.getTime() : new Date(raw).getTime();
-    if (Number.isNaN(t) || t < start || t > now) continue;
-    let idx = Math.floor((t - start) / slot);
-    if (idx < 0) idx = 0;
-    if (idx >= buckets) idx = buckets - 1;
-    out[idx] += 1;
-  }
-  return out;
-}
-
-/** Count items whose timestamp is on/after `since` (ms epoch). */
-export function countSince<T>(
-  items: T[],
-  getDate: (item: T) => string | Date | null | undefined,
-  since: number,
-): number {
-  let n = 0;
-  for (const item of items) {
-    const raw = getDate(item);
-    if (!raw) continue;
-    const t = raw instanceof Date ? raw.getTime() : new Date(raw).getTime();
-    if (!Number.isNaN(t) && t >= since) n += 1;
-  }
-  return n;
-}
-
-/** ms epoch of the start of today in the viewer's local timezone. */
-export function startOfTodayLocal(now = Date.now()): number {
-  const d = new Date(now);
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
 }
 
 /** Map an HTTP status code to a traffic-light tone. */

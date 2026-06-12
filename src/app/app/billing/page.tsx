@@ -1,14 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Coins, Activity, TrendingDown, CalendarDays } from "lucide-react";
 import {
   useApi,
   createBillingApi,
+  createStatsApi,
   BillingBalance,
   CreditTransaction,
   CreditTxType,
+  UsageSummary,
 } from "@/lib/api";
 import { useBalance } from "@/components/dashboard/BalanceContext";
 import { Button } from "@/components/ui/button";
@@ -21,17 +23,10 @@ import {
   RelativeTime,
   Empty,
 } from "@/components/dashboard/ui";
-import {
-  formatNumber,
-  formatUsd,
-  formatCompact,
-  bucketByTime,
-  countSince,
-  startOfTodayLocal,
-} from "@/lib/dashboard";
+import { formatNumber, formatUsd, formatCompact } from "@/lib/dashboard";
 
-const DAY = 24 * 60 * 60 * 1000;
-const TX_SAMPLE = 250;
+const USAGE_DAYS = 14;
+const TX_PAGE = 50;
 
 const TX_LABEL: Record<CreditTxType, string> = {
   stripe_topup: "Top-up",
@@ -97,20 +92,21 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [now, setNow] = useState<number | null>(null);
-  const [capped, setCapped] = useState(false);
+  const [usage, setUsage] = useState<UsageSummary | null>(null);
 
   const loadInitial = useCallback(async () => {
-    const api = createBillingApi(apiFetch);
+    const billingApi = createBillingApi(apiFetch);
+    const statsApi = createStatsApi(apiFetch);
     setLoading(true);
     setError(null);
     try {
-      const res = await api.listTransactions({ limit: TX_SAMPLE });
-      const list = res.transactions ?? [];
-      setTxns(list);
+      const [res, summary] = await Promise.all([
+        billingApi.listTransactions({ limit: TX_PAGE }),
+        statsApi.usage(USAGE_DAYS).catch(() => null),
+      ]);
+      setTxns(res.transactions ?? []);
       setCursor(res.next_cursor);
-      setCapped(list.length >= TX_SAMPLE);
-      setNow(Date.now());
+      setUsage(summary);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load transactions");
     } finally {
@@ -128,7 +124,7 @@ export default function BillingPage() {
     const api = createBillingApi(apiFetch);
     setLoadingMore(true);
     try {
-      const res = await api.listTransactions({ cursor, limit: 50 });
+      const res = await api.listTransactions({ cursor, limit: TX_PAGE });
       setTxns((prev) => [...prev, ...(res.transactions ?? [])]);
       setCursor(res.next_cursor);
     } catch {
@@ -138,20 +134,13 @@ export default function BillingPage() {
     }
   }
 
-  // Derived usage (executions = job_execution debits).
-  const usage = useMemo(() => {
-    if (now == null) return null;
-    const exec = txns.filter((t) => t.type === "job_execution");
-    const startToday = startOfTodayLocal(now);
-    const oldest = txns.length ? new Date(txns[txns.length - 1].created_at).getTime() : now;
-    const coversWindow = !capped || oldest <= now - 14 * DAY;
-    const today = countSince(exec, (e) => e.created_at, startToday);
-    const last7 = countSince(exec, (e) => e.created_at, now - 7 * DAY);
-    const daily = bucketByTime(exec, (e) => e.created_at, { buckets: 14, windowMs: 14 * DAY, now });
-    return { today, last7, daily, coversWindow };
-  }, [txns, now, capped]);
+  // Usage comes straight from /stats/usage (true totals, server-aggregated).
+  const buckets = usage?.buckets ?? [];
+  const daily = buckets.map((b) => b.job_executions + b.buffer_executions);
+  const execToday = daily.length ? daily[daily.length - 1] : 0;
+  const execWindow = (usage?.total_job_executions ?? 0) + (usage?.total_buffer_executions ?? 0);
 
-  const dailyQuota = balance?.daily_limit && usage ? usage.today / balance.daily_limit : undefined;
+  const dailyQuota = balance?.daily_limit ? execToday / balance.daily_limit : undefined;
 
   return (
     <div className="flex flex-col gap-8 sm:gap-10">
@@ -170,14 +159,14 @@ export default function BillingPage() {
         <MetricCard
           icon={Activity}
           label="Executions today"
-          value={loading || !usage ? "—" : `${formatNumber(usage.today)}`}
+          value={loading || !usage ? "—" : formatNumber(execToday)}
           progress={dailyQuota}
           sub={balance ? `of ${formatCompact(balance.daily_limit)}/day free limit` : undefined}
         />
         <MetricCard
           icon={TrendingDown}
-          label="Last 7 days"
-          value={loading || !usage ? "—" : `${formatNumber(usage.last7)}${usage.coversWindow ? "" : "+"}`}
+          label={`Last ${usage?.since_days ?? USAGE_DAYS} days`}
+          value={loading || !usage ? "—" : formatNumber(execWindow)}
           sub="executions"
         />
         <MetricCard
@@ -190,18 +179,18 @@ export default function BillingPage() {
       </div>
 
       {/* Usage chart */}
-      <SectionCard title="Usage" description={usage?.coversWindow ? "Executions per day, last 14 days" : "Recent execution activity, per day"}>
+      <SectionCard title="Usage" description={`Executions per day, last ${usage?.since_days ?? USAGE_DAYS} days`}>
         {loading || !usage ? (
           <Skeleton className="h-28 w-full" />
-        ) : usage.daily.every((v) => v === 0) ? (
+        ) : execWindow === 0 ? (
           <Empty icon={Activity} title="No executions yet" description="Usage will chart here as your jobs run." />
         ) : (
           <MiniBars
             height={120}
-            bars={usage.daily.map((v, i) => {
-              const day = new Date(now! - (13 - i) * DAY);
-              return { value: v, label: `${format(day, "MMM d")} · ${v} exec` };
-            })}
+            bars={buckets.map((b) => ({
+              value: b.job_executions + b.buffer_executions,
+              label: `${format(new Date(`${b.date}T00:00:00Z`), "MMM d")} · ${b.job_executions + b.buffer_executions} exec`,
+            }))}
           />
         )}
       </SectionCard>

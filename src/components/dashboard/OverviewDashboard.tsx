@@ -10,6 +10,8 @@ import {
   Coins,
   Activity,
   CheckCircle2,
+  Timer,
+  AlertTriangle,
   ArrowUpRight,
   Plus,
 } from "lucide-react";
@@ -18,11 +20,12 @@ import {
   createJobsApi,
   createSchedulesApi,
   createBuffersApi,
-  createBillingApi,
+  createStatsApi,
   Job,
   Schedule,
   Buffer,
-  CreditTransaction,
+  JobStats,
+  UsageSummary,
 } from "@/lib/api";
 import { useBalance } from "./BalanceContext";
 import { usePoll } from "@/hooks/use-poll";
@@ -38,30 +41,20 @@ import {
   RefreshControls,
   Empty,
 } from "./ui";
+import { TestJobButton } from "./TestJobButton";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { jobStatusTone, type Tone } from "@/components/patterns";
-import {
-  formatNumber,
-  formatCompact,
-  formatPercent,
-  bucketByTime,
-  countSince,
-  startOfTodayLocal,
-} from "@/lib/dashboard";
+import { formatNumber, formatCompact, formatPercent } from "@/lib/dashboard";
 
-const HOUR = 60 * 60 * 1000;
-const TX_SAMPLE = 250;
+const STATS_DAYS = 14;
 
 interface OverviewData {
   jobs: Job[];
   schedules: Schedule[];
   buffers: Buffer[];
-  txns: CreditTransaction[];
-  txnCapped: boolean;
-  /** Wall-clock at fetch time — captured here (an event, not render) so the
-   *  derived time windows stay pure/stable across re-renders. */
-  now: number;
+  jobStats: JobStats | null;
+  usage: UsageSummary | null;
 }
 
 export default function OverviewDashboard() {
@@ -75,15 +68,16 @@ export default function OverviewDashboard() {
     const jobsApi = createJobsApi(apiFetch);
     const schedulesApi = createSchedulesApi(apiFetch);
     const buffersApi = createBuffersApi(apiFetch);
-    const billingApi = createBillingApi(apiFetch);
+    const statsApi = createStatsApi(apiFetch);
     try {
-      const [jobs, schedules, buffers, txns] = await Promise.all([
+      const [jobs, schedules, buffers, jobStats, usage] = await Promise.all([
         jobsApi.list({ limit: 50 }).then((r) => r.jobs ?? []).catch(() => []),
         schedulesApi.list({ limit: 100 }).then((r) => r.schedules ?? []).catch(() => []),
         buffersApi.list({ limit: 100 }).then((r) => r.buffers ?? []).catch(() => []),
-        billingApi.listTransactions({ limit: TX_SAMPLE }).then((r) => r.transactions ?? []).catch(() => []),
+        statsApi.jobs(STATS_DAYS).catch(() => null),
+        statsApi.usage(STATS_DAYS).catch(() => null),
       ]);
-      setData({ jobs, schedules, buffers, txns, txnCapped: txns.length >= TX_SAMPLE, now: Date.now() });
+      setData({ jobs, schedules, buffers, jobStats, usage });
     } finally {
       setLoading(false);
     }
@@ -116,7 +110,13 @@ export default function OverviewDashboard() {
       {loading && !data ? (
         <OverviewSkeleton />
       ) : data ? (
-        <OverviewBody data={data} balanceCredits={balance?.balance ?? null} dailyLimit={balance?.daily_limit ?? null} plan={balance?.plan ?? null} />
+        <OverviewBody
+          data={data}
+          balanceCredits={balance?.balance ?? null}
+          dailyLimit={balance?.daily_limit ?? null}
+          plan={balance?.plan ?? null}
+          onReload={load}
+        />
       ) : null}
     </div>
   );
@@ -127,38 +127,33 @@ function OverviewBody({
   balanceCredits,
   dailyLimit,
   plan,
+  onReload,
 }: {
   data: OverviewData;
   balanceCredits: number | null;
   dailyLimit: number | null;
   plan: string | null;
+  onReload: () => void;
 }) {
-  const { jobs, schedules, buffers, txns, txnCapped, now } = data;
+  const { jobs, schedules, buffers, jobStats, usage } = data;
 
-  // Executions are derived from credit transactions (1 job_execution = 1 credit).
-  const executions = txns.filter((t) => t.type === "job_execution");
-  const startToday = startOfTodayLocal(now);
-  const oldestTxTime = txns.length ? new Date(txns[txns.length - 1].created_at).getTime() : now;
-  // Full coverage = we fetched the entire window (didn't hit the sample cap, or
-  // the oldest sampled txn predates the window boundary).
-  const coversToday = !txnCapped || oldestTxTime <= startToday;
-  const covers24h = !txnCapped || oldestTxTime <= now - 24 * HOUR;
+  // Daily execution volume (job + buffer) straight from the server, oldest → newest.
+  const buckets = usage?.buckets ?? [];
+  const daily = buckets.map((b) => b.job_executions + b.buffer_executions);
+  // The last bucket is today (UTC). Server windows always end "today".
+  const execToday = daily.length ? daily[daily.length - 1] : 0;
+  const execWindow = (usage?.total_job_executions ?? 0) + (usage?.total_buffer_executions ?? 0);
 
-  const execToday = countSince(executions, (e) => e.created_at, startToday);
-  const exec24h = countSince(executions, (e) => e.created_at, now - 24 * HOUR);
-  const hourly = bucketByTime(executions, (e) => e.created_at, { buckets: 24, windowMs: 24 * HOUR, now });
-
-  // Success rate over the recent jobs page (finished jobs only).
-  const finished = jobs.filter((j) => j.status === "completed" || j.status === "failed");
-  const succeeded = jobs.filter((j) => j.status === "completed").length;
-  const successRate = finished.length ? succeeded / finished.length : NaN;
-  const successTone: Tone = !finished.length
+  // Success rate + p95 from /stats/jobs (real window, not a last-N proxy).
+  const successRate = jobStats && jobStats.total_executions > 0 ? jobStats.success_rate : NaN;
+  const successTone: Tone = !jobStats || jobStats.total_executions === 0
     ? "neutral"
     : successRate >= 0.95
       ? "success"
       : successRate >= 0.8
         ? "warning"
         : "danger";
+  const failedInWindow = jobStats?.failed ?? 0;
 
   const activeSchedules = schedules.filter((s) => !s.paused).length;
   const activeBuffers = buffers.filter((b) => !b.paused).length;
@@ -189,29 +184,26 @@ function OverviewBody({
         <MetricCard
           icon={Activity}
           label="Executions today"
-          value={`${formatNumber(execToday)}${coversToday ? "" : "+"}`}
+          value={formatNumber(execToday)}
           progress={quota}
-          sub={
-            dailyLimit
-              ? `of ${formatCompact(dailyLimit)}/day free limit`
-              : coversToday
-                ? "since midnight"
-                : "latest activity (sampled)"
-          }
-        />
-        <MetricCard
-          icon={Zap}
-          label="Executions · 24h"
-          value={`${formatNumber(exec24h)}${covers24h ? "" : "+"}`}
-          chart={<Sparkline data={hourly} width={84} height={28} />}
-          sub="hourly volume"
+          sub={dailyLimit ? `of ${formatCompact(dailyLimit)}/day free limit` : "executions (UTC day)"}
         />
         <MetricCard
           icon={CheckCircle2}
           label="Success rate"
           tone={successTone}
-          value={finished.length ? formatPercent(successRate) : "—"}
-          sub={finished.length ? `last ${finished.length} finished jobs` : "no finished jobs yet"}
+          value={jobStats && jobStats.total_executions > 0 ? formatPercent(successRate) : "—"}
+          sub={jobStats && jobStats.total_executions > 0
+            ? `${formatCompact(jobStats.total_executions)} executions · ${jobStats.since_days}d`
+            : "no executions yet"}
+        />
+        <MetricCard
+          icon={Timer}
+          label="p95 duration"
+          value={jobStats && jobStats.total_executions > 0 ? `${formatNumber(jobStats.p95_duration_ms)}ms` : "—"}
+          sub={jobStats && jobStats.total_executions > 0
+            ? `avg ${formatNumber(jobStats.avg_duration_ms)}ms · ${jobStats.since_days}d`
+            : "response time"}
         />
       </div>
 
@@ -220,10 +212,11 @@ function OverviewBody({
           <Empty
             icon={Zap}
             title="Nothing scheduled yet"
-            description="Schedule a one-off job, a recurring cron, or push items through a rate-limited buffer."
+            description="Fire a real test job in one click and watch it run end-to-end — no token, no curl. Or schedule your own."
             action={
               <div className="flex flex-wrap justify-center gap-2">
-                <Button asChild size="sm">
+                <TestJobButton onScheduled={onReload} />
+                <Button asChild size="sm" variant="outline" className="border-foreground/10">
                   <Link href="/app/jobs">Schedule a job</Link>
                 </Button>
                 <Button asChild size="sm" variant="outline" className="border-foreground/10">
@@ -235,22 +228,38 @@ function OverviewBody({
         </SectionCard>
       ) : (
         <>
+          {failedInWindow > 0 && (
+            <Link
+              href="/app/failures"
+              className="group flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/[0.06] px-5 py-3.5 transition-colors hover:bg-red-500/[0.1]"
+            >
+              <AlertTriangle className="h-4 w-4 shrink-0 text-red-400" />
+              <span className="min-w-0 flex-1 text-sm text-foreground/85">
+                <span className="font-medium text-foreground">{formatNumber(failedInWindow)}</span> permanent
+                {" "}failure{failedInWindow === 1 ? "" : "s"} in the last {jobStats?.since_days ?? STATS_DAYS} days.
+                {" "}Review and replay them.
+              </span>
+              <ArrowUpRight className="h-4 w-4 shrink-0 text-red-400/70 transition-colors group-hover:text-red-400" />
+            </Link>
+          )}
+
           {/* Execution volume chart + resource summary */}
           <div className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-3">
             <SectionCard
               className="lg:col-span-2"
               title="Execution volume"
-              description={covers24h ? "Last 24 hours, hourly" : "Latest execution activity, hourly"}
+              description={`Last ${usage?.since_days ?? STATS_DAYS} days, per day`}
+              action={daily.length ? <Sparkline data={daily} width={96} height={24} /> : undefined}
             >
-              {exec24h === 0 ? (
+              {execWindow === 0 ? (
                 <Empty icon={Activity} title="No executions in this window" description="Runs will show up here as your jobs fire." />
               ) : (
                 <MiniBars
                   height={120}
-                  bars={hourly.map((v, i) => {
-                    const slotStart = new Date(now - (24 - i) * HOUR);
-                    return { value: v, label: `${format(slotStart, "HH:00")} · ${v} exec` };
-                  })}
+                  bars={buckets.map((b) => ({
+                    value: b.job_executions + b.buffer_executions,
+                    label: `${format(new Date(`${b.date}T00:00:00Z`), "MMM d")} · ${b.job_executions + b.buffer_executions} exec`,
+                  }))}
                 />
               )}
             </SectionCard>
