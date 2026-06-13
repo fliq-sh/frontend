@@ -130,23 +130,28 @@ export default async function ApiReference() {
         <DocLI>Schedules inherit <DocCode>webhook_url</DocCode> and <DocCode>webhook_headers</DocCode> — every spawned job gets the same webhook config</DocLI>
       </DocUL>
 
-      {/* ── Executions ── */}
-      <DocH2>Executions</DocH2>
+      {/* ── Attempts ── */}
+      <DocH2>Attempts</DocH2>
 
-      <DocH3>List executions for a job</DocH3>
-      <DocPre label="Request" lang="http">{`GET /jobs/{job_id}/executions`}</DocPre>
-      <DocPre label="Response" lang="json">{`{
-  "executions": [
-    {
-      "id":           "exec_01hx...",
-      "attempt_num":  1,
-      "status":       "success",
-      "status_code":  200,
-      "duration_ms":  143,
-      "executed_at":  "2026-04-01T09:00:00Z"
-    }
-  ]
-}`}</DocPre>
+      <DocH3>List attempts for a job</DocH3>
+      <DocP>
+        Each execution attempt (including retries) is recorded as an attempt.
+        Returns a JSON array, most recent first.
+      </DocP>
+      <DocPre label="Request" lang="http">{`GET /jobs/{job_id}/attempts`}</DocPre>
+      <DocPre label="Response" lang="json">{`[
+  {
+    "id":           "att_01hx...",
+    "job_id":       "job_01hx...",
+    "attempt_num":  1,
+    "worker_id":    "scheduler-0",
+    "started_at":   "2026-04-01T09:00:00Z",
+    "completed_at": "2026-04-01T09:00:01Z",
+    "status_code":  200,
+    "error":        null,
+    "duration_ms":  143
+  }
+]`}</DocPre>
 
       {/* ── Errors ── */}
       <DocH2>Errors</DocH2>
