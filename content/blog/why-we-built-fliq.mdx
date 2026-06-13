@@ -68,7 +68,7 @@ Fliq is an HTTP workflow engine. You tell it:
 And it handles the rest: dispatching the request from the nearest edge region, retrying on failure with exponential backoff, and recording the full execution history.
 
 ```bash
-curl -X POST https://api.fliq.sh/v1/jobs \
+curl -X POST https://api.fliq.sh/jobs \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

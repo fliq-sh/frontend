@@ -1,10 +1,14 @@
 export default function ComparisonTable({
-  headers,
-  rows,
+  headers = [],
+  rows = [],
 }: {
-  headers: string[];
-  rows: string[][];
+  headers?: string[];
+  rows?: string[][];
 }) {
+  // Defensive: under next-mdx-remote v6 expression-valued props (`rows={[...]}`)
+  // reach the component as `undefined` (see BLOG_GUIDE.md). Defaulting to []
+  // makes a bad authoring render an empty table instead of crashing the build.
+  if (headers.length === 0) return null;
   return (
     <div className="my-6 overflow-x-auto rounded-xl border border-white/10">
       <table className="w-full text-sm">
@@ -26,7 +30,7 @@ export default function ComparisonTable({
               key={ri}
               className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
             >
-              {row.map((cell, ci) => (
+              {(row ?? []).map((cell, ci) => (
                 <td
                   key={ci}
                   className={`px-4 py-3 ${

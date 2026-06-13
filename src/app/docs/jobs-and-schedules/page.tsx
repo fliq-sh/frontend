@@ -22,7 +22,7 @@ export default async function JobsAndSchedules() {
       </DocP>
 
       <DocH3>Fields</DocH3>
-      <DocPre label="POST /v1/jobs" lang="json">{`{
+      <DocPre label="POST /jobs" lang="json">{`{
   "url":           string,   // required — the endpoint Fliq will call
   "http_method":   string,   // optional — GET | POST | PUT | PATCH | DELETE (default: POST)
   "scheduled_at":  string,   // required — ISO 8601 UTC timestamp
@@ -53,7 +53,7 @@ export default async function JobsAndSchedules() {
       </DocP>
 
       <DocH3>Fields</DocH3>
-      <DocPre label="POST /v1/schedules" lang="json">{`{
+      <DocPre label="POST /schedules" lang="json">{`{
   "url":          string,   // required
   "http_method":  string,   // optional (default: POST)
   "cron":         string,   // required — 5-part cron expression (UTC)
