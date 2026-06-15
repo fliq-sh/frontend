@@ -599,6 +599,11 @@ export const COMPARISONS: Comparison[] = [
         competitor: "Parallelism + requests/period",
       },
       {
+        dimension: "Target backpressure",
+        fliq: "Honors target's Retry-After on 429",
+        competitor: "Retries on 429; static flow caps",
+      },
+      {
         dimension: "Retries on failure",
         fliq: "Configurable backoff, per attempt",
         competitor: "Automatic retries",
@@ -657,6 +662,11 @@ export const COMPARISONS: Comparison[] = [
         competitor: "Per-destination delivery rate",
       },
       {
+        dimension: "Target backpressure",
+        fliq: "Honors target's Retry-After on 429",
+        competitor: "Retries failed deliveries",
+      },
+      {
         dimension: "Retries on failure",
         fliq: "Configurable backoff, per attempt",
         competitor: "Automatic retries",
@@ -713,6 +723,11 @@ export const COMPARISONS: Comparison[] = [
         dimension: "Distributed coordination",
         fliq: "Built in — shared per-buffer limit",
         competitor: "Yes, via Redis datastore",
+      },
+      {
+        dimension: "Target backpressure (429)",
+        fliq: "Reschedules on Retry-After",
+        competitor: "Static limit; blind to 429s",
       },
       {
         dimension: "Language support",
