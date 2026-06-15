@@ -7,7 +7,7 @@ import { COMPARISONS } from "@/lib/comparisons";
 export const metadata: Metadata = {
   title: "Fliq vs alternatives — cron & HTTP scheduler comparisons",
   description:
-    "Honest, side-by-side comparisons of Fliq against cron-job.org, EasyCron, QStash, Trigger.dev, Inngest, Google Cloud Scheduler, Cronhub, and GitHub Actions.",
+    "Honest, side-by-side comparisons of Fliq against schedulers (cron-job.org, EasyCron, QStash, Trigger.dev, Inngest, Cloud Scheduler, GitHub Actions) and outbound rate limiters (QStash Flow Control, Hookdeck, Bottleneck + Redis).",
   alternates: { canonical: "/vs" },
   openGraph: {
     title: "Fliq vs alternatives — cron & HTTP scheduler comparisons",
