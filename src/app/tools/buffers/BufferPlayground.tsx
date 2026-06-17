@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Zap, ShieldCheck, TriangleAlert, Clock, Play } from "lucide-react";
+import { Zap, ShieldCheck, TriangleAlert, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BETA } from "@/lib/site";
 import {
@@ -16,11 +16,16 @@ import {
   type LaneState,
 } from "@/lib/buffers";
 
-// How many dots to draw per lane. Each dot represents count/DOTS requests, so
-// the field stays readable whether you fire 60 or 600.
-const DOTS = 100;
-// Wall-clock window the burst animates over, clamped so it's neither a blink
-// nor a chore.
+// The one sanctioned brand gradient — the iridescent F-mark spectrum (ADR 0001).
+// It's the visual signature of "the Fliq way": the buffered lane fills with it.
+const IRIDESCENT =
+  "linear-gradient(115deg,#5eead4 0%,#818cf8 30%,#c084fc 55%,#f0abfc 78%,#fcd34d 100%)";
+
+// How many tiles to draw per lane. Each tile stands for count/DOTS requests, so
+// the field stays legible whether you fire 60 or 600.
+const DOTS = 120;
+const COLS = 24;
+const ROWS = DOTS / COLS;
 const MIN_WALL_MS = 1400;
 const MAX_WALL_MS = 5000;
 
@@ -36,6 +41,28 @@ function dotsFor(state: LaneState, total: number): DotKind[] {
   });
 }
 
+function GradientText({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <span
+      className={className}
+      style={{
+        backgroundImage: IRIDESCENT,
+        WebkitBackgroundClip: "text",
+        backgroundClip: "text",
+        color: "transparent",
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
 export default function BufferPlayground() {
   const [scenario, setScenario] = useState<BufferScenario>(
     BUFFER_PRESETS[0].scenario,
@@ -48,10 +75,8 @@ export default function BufferPlayground() {
 
   const norm = useMemo(() => normalizeScenario(scenario), [scenario]);
   const totalDuration = useMemo(() => duration(norm), [norm]);
-
   const wallMs = useMemo(
-    () =>
-      Math.max(MIN_WALL_MS, Math.min(MAX_WALL_MS, totalDuration * 120)),
+    () => Math.max(MIN_WALL_MS, Math.min(MAX_WALL_MS, totalDuration * 120)),
     [totalDuration],
   );
 
@@ -67,8 +92,7 @@ export default function BufferPlayground() {
     setVirtualT(0);
     startRef.current = performance.now();
     const tick = (nowMs: number) => {
-      const elapsed = nowMs - startRef.current;
-      const progress = Math.min(1, elapsed / wallMs);
+      const progress = Math.min(1, (nowMs - startRef.current) / wallMs);
       setVirtualT(progress * (totalDuration + 0.001));
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(tick);
@@ -80,21 +104,23 @@ export default function BufferPlayground() {
     rafRef.current = requestAnimationFrame(tick);
   }, [stop, wallMs, totalDuration]);
 
-  // Clean up any in-flight animation on unmount.
   useEffect(() => stop, [stop]);
 
+  const idle: LaneState = {
+    sent: 0,
+    ok: 0,
+    rejected: 0,
+    pending: norm.count,
+    elapsed: 0,
+    done: false,
+  };
   const direct = useMemo(() => simulateDirect(norm), [norm]);
   const buffered = useMemo(
-    () =>
-      hasRun
-        ? simulateBufferedAt(norm, virtualT)
-        : { sent: 0, ok: 0, rejected: 0, pending: norm.count, elapsed: 0, done: false },
+    () => (hasRun ? simulateBufferedAt(norm, virtualT) : idle),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [norm, virtualT, hasRun],
   );
-  // Direct lane resolves instantly; reveal it only once a burst has started.
-  const directShown: LaneState = hasRun
-    ? direct
-    : { sent: 0, ok: 0, rejected: 0, pending: norm.count, elapsed: 0, done: false };
+  const directShown = hasRun ? direct : idle;
 
   function update(patch: Partial<BufferScenario>) {
     stop();
@@ -107,12 +133,13 @@ export default function BufferPlayground() {
   const overPacing = norm.bufferRate > norm.targetLimit;
 
   return (
-    <div className="max-w-5xl mx-auto w-full">
-      {/* Controls */}
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-        <div className="grid gap-5 sm:grid-cols-3">
+    <div className="mx-auto w-full max-w-5xl">
+      {/* ── Controls ─────────────────────────────────────────────── */}
+      <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-6 sm:p-8">
+        <div className="grid gap-6 sm:grid-cols-3">
           <Field
-            label="Requests to send"
+            label="Requests"
+            sub="in the burst"
             value={norm.count}
             min={1}
             max={2000}
@@ -120,7 +147,8 @@ export default function BufferPlayground() {
             onChange={(v) => update({ count: v })}
           />
           <Field
-            label="API rate limit (req/s)"
+            label="API limit"
+            sub="requests / sec"
             value={norm.targetLimit}
             min={1}
             max={200}
@@ -128,7 +156,8 @@ export default function BufferPlayground() {
             onChange={(v) => update({ targetLimit: v })}
           />
           <Field
-            label="Fliq buffer rate (req/s)"
+            label="Buffer pace"
+            sub="requests / sec"
             value={norm.bufferRate}
             min={1}
             max={200}
@@ -139,65 +168,73 @@ export default function BufferPlayground() {
         </div>
 
         {overPacing && (
-          <p className="mt-4 flex items-center gap-2 text-sm text-amber-400/90">
+          <p className="mt-5 flex items-center gap-2 text-sm text-amber-400/90">
             <TriangleAlert className="size-4 shrink-0" />
-            Your buffer is pacing <strong>faster</strong> than the API allows —
-            you&apos;ll still hit 429s. Set the buffer rate at or below the API
-            limit.
+            The buffer is pacing <strong>faster</strong> than the API allows —
+            you&apos;ll still hit 429s. Keep the pace at or below the API limit.
           </p>
         )}
 
-        {/* Presets */}
-        <div className="mt-5 flex flex-wrap items-center gap-2">
-          <span className="text-xs uppercase tracking-wider text-white/40 mr-1">
-            Try
-          </span>
-          {BUFFER_PRESETS.map((p) => {
-            const active =
-              p.scenario.count === norm.count &&
-              p.scenario.targetLimit === norm.targetLimit &&
-              p.scenario.bufferRate === norm.bufferRate;
-            return (
-              <button
-                key={p.label}
-                onClick={() => update(p.scenario)}
-                className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                  active
-                    ? "border-white/30 bg-white/10 text-white"
-                    : "border-white/10 bg-white/[0.03] text-white/60 hover:border-white/20 hover:text-white/80"
-                }`}
-              >
-                <span className="font-medium">{p.label}</span>
-                <span className="ml-2 text-xs text-white/30">{p.hint}</span>
-              </button>
-            );
-          })}
-        </div>
+        <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-[11px] uppercase tracking-widest text-white/35">
+              Try
+            </span>
+            {BUFFER_PRESETS.map((p) => {
+              const active =
+                p.scenario.count === norm.count &&
+                p.scenario.targetLimit === norm.targetLimit &&
+                p.scenario.bufferRate === norm.bufferRate;
+              return (
+                <button
+                  key={p.label}
+                  onClick={() => update(p.scenario)}
+                  className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                    active
+                      ? "border-white/40 bg-white/10 text-white"
+                      : "border-white/10 bg-white/[0.02] text-white/55 hover:border-white/25 hover:text-white/80"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
 
-        <div className="mt-6">
-          <Button size="lg" onClick={run} className="font-medium">
-            <Play className="size-4" />
+          <Button
+            size="lg"
+            onClick={run}
+            className="shrink-0 font-medium shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_-12px_rgba(192,132,252,0.5)]"
+          >
+            <Play className="size-4 fill-current" />
             {running ? "Running…" : hasRun ? "Run again" : "Blast the API"}
           </Button>
         </div>
       </div>
 
-      {/* Lanes */}
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
+      {/* ── Lanes ────────────────────────────────────────────────── */}
+      <div className="mt-5 grid gap-5 md:grid-cols-2">
         <Lane
-          tone="bad"
+          variant="mono"
           icon={<Zap className="size-4" />}
-          title="Direct — no buffer"
+          title="Direct"
           subtitle="Fire all at once"
+          headline={`${directShown.rejected.toLocaleString()} dropped`}
+          headlineClass="text-red-400"
           state={directShown}
           total={norm.count}
           timeLabel={hasRun ? "instant" : "—"}
         />
         <Lane
-          tone="good"
+          variant="iridescent"
           icon={<ShieldCheck className="size-4" />}
-          title="Through a Fliq buffer"
+          title="Through a buffer"
           subtitle={`Paced at ${norm.bufferRate}/s`}
+          headline={
+            <GradientText>
+              {(buffered.ok + buffered.rejected).toLocaleString()} delivered
+            </GradientText>
+          }
           state={buffered}
           total={norm.count}
           timeLabel={
@@ -208,34 +245,40 @@ export default function BufferPlayground() {
         />
       </div>
 
-      {/* Verdict */}
+      {/* ── Verdict ──────────────────────────────────────────────── */}
       {hasRun && (
         <Verdict
           lost={directShown.rejected}
-          delivered={buffered.ok + buffered.pending}
+          delivered={norm.count - (overPacing ? buffered.rejected : 0)}
           total={norm.count}
           time={formatDuration(totalDuration)}
           overPacing={overPacing}
         />
       )}
 
-      {/* CTA */}
-      <div className="mt-10 rounded-2xl border border-white/15 bg-white/5 p-6 sm:p-8 text-center">
-        <h2 className="text-xl font-bold tracking-tight mb-2">
-          Stop writing rate-limiter glue
-        </h2>
-        <p className="text-white/60 max-w-md mx-auto mb-6">
-          A Fliq buffer is a queue with a speed limit: POST as fast as you like,
-          Fliq drains to your downstream API under its rate cap — no Redis, no
-          429 storms. {BETA.headline}.
-        </p>
-        <div className="flex flex-wrap justify-center gap-3">
-          <Button size="lg" asChild>
-            <Link href="/sign-up">Start for free →</Link>
-          </Button>
-          <Button size="lg" variant="outline" asChild>
-            <Link href="/docs/buffers">Read the buffers docs</Link>
-          </Button>
+      {/* ── CTA ──────────────────────────────────────────────────── */}
+      <div className="relative mt-12 overflow-hidden rounded-3xl border border-white/10 p-8 sm:p-12 text-center">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          style={{ backgroundImage: IRIDESCENT }}
+        />
+        <div className="relative">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            Stop writing rate-limiter glue
+          </h2>
+          <p className="mx-auto mt-3 mb-7 max-w-md text-white/60">
+            A Fliq buffer is a queue with a speed limit: POST as fast as you
+            like, Fliq drains to your downstream API under its cap — no Redis,
+            no 429 storms. {BETA.headline}.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Button size="lg" asChild>
+              <Link href="/sign-up">Start for free →</Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link href="/docs/buffers">Read the docs</Link>
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -244,6 +287,7 @@ export default function BufferPlayground() {
 
 function Field({
   label,
+  sub,
   value,
   min,
   max,
@@ -252,6 +296,7 @@ function Field({
   warn,
 }: {
   label: string;
+  sub: string;
   value: number;
   min: number;
   max: number;
@@ -261,14 +306,21 @@ function Field({
 }) {
   return (
     <div>
-      <label className="flex items-baseline justify-between text-xs uppercase tracking-wider text-white/40 mb-2">
-        <span>{label}</span>
+      <div className="flex items-baseline justify-between">
+        <div>
+          <p className="text-sm font-medium text-white/80">{label}</p>
+          <p className="text-[11px] uppercase tracking-wider text-white/35">
+            {sub}
+          </p>
+        </div>
         <span
-          className={`font-mono text-sm ${warn ? "text-amber-400" : "text-white/80"}`}
+          className={`font-mono text-2xl font-semibold tabular-nums ${
+            warn ? "text-amber-400" : "text-white"
+          }`}
         >
           {value}
         </span>
-      </label>
+      </div>
       <input
         type="range"
         min={min}
@@ -276,44 +328,50 @@ function Field({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-amber-400 cursor-pointer"
-        aria-label={label}
+        className="mt-3 w-full cursor-pointer accent-[#a78bfa]"
+        aria-label={`${label} (${sub})`}
       />
     </div>
   );
 }
 
 function Lane({
-  tone,
+  variant,
   icon,
   title,
   subtitle,
+  headline,
+  headlineClass,
   state,
   total,
   timeLabel,
 }: {
-  tone: "good" | "bad";
+  variant: "iridescent" | "mono";
   icon: React.ReactNode;
   title: string;
   subtitle: string;
+  headline: React.ReactNode;
+  headlineClass?: string;
   state: LaneState;
   total: number;
   timeLabel: string;
 }) {
   const dots = useMemo(() => dotsFor(state, total), [state, total]);
-  const okPct = (state.ok / total) * 100;
-  const rejPct = (state.rejected / total) * 100;
+  const iri = variant === "iridescent";
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+    <div
+      className={`rounded-3xl border p-6 ${
+        iri ? "border-white/15 bg-white/[0.03]" : "border-white/10 bg-white/[0.02]"
+      }`}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-2.5">
           <span
-            className={`grid size-7 place-items-center rounded-lg ${
-              tone === "good"
-                ? "bg-emerald-500/15 text-emerald-400"
-                : "bg-red-500/15 text-red-400"
+            className={`grid size-8 place-items-center rounded-xl ${
+              iri ? "text-white" : "bg-white/5 text-white/70"
             }`}
+            style={iri ? { backgroundImage: IRIDESCENT } : undefined}
           >
             {icon}
           </span>
@@ -322,53 +380,65 @@ function Lane({
             <p className="text-xs text-white/40">{subtitle}</p>
           </div>
         </div>
-        <span className="flex items-center gap-1.5 font-mono text-xs text-white/50">
-          <Clock className="size-3.5" />
-          {timeLabel}
-        </span>
+        <span className="font-mono text-xs text-white/40">{timeLabel}</span>
       </div>
 
-      {/* Dot field */}
-      <div className="mt-4 grid grid-cols-[repeat(20,minmax(0,1fr))] gap-1">
-        {dots.map((kind, i) => (
-          <span
-            key={i}
-            className={`aspect-square rounded-[2px] transition-colors duration-300 ${
-              kind === "ok"
-                ? "bg-emerald-400"
-                : kind === "rejected"
-                  ? "bg-red-500"
-                  : "bg-white/10"
-            }`}
-          />
-        ))}
-      </div>
+      {/* Headline metric */}
+      <p
+        className={`mt-5 text-3xl font-bold tracking-tight tabular-nums ${headlineClass ?? ""}`}
+      >
+        {headline}
+      </p>
 
-      {/* Stacked bar */}
-      <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-white/10 flex">
+      {/* Pixel field — each delivered tile lights up with its slice of the
+          spectrum, so the buffered lane fills as one continuous iridescent
+          surface (the brand mark, pixelated). */}
+      <div className="relative mt-5 overflow-hidden rounded-xl bg-[#0a0a0c] p-1">
         <div
-          className="h-full bg-emerald-400 transition-all duration-300"
-          style={{ width: `${okPct}%` }}
-        />
-        <div
-          className="h-full bg-red-500 transition-all duration-300"
-          style={{ width: `${rejPct}%` }}
-        />
+          className="grid gap-[3px]"
+          style={{ gridTemplateColumns: `repeat(${COLS}, minmax(0, 1fr))` }}
+        >
+          {dots.map((kind, i) => {
+            const col = i % COLS;
+            const row = Math.floor(i / COLS);
+            const lit =
+              kind === "ok" && iri
+                ? {
+                    backgroundImage: IRIDESCENT,
+                    backgroundSize: `${COLS * 100}% ${ROWS * 100}%`,
+                    backgroundPosition: `${(col / (COLS - 1)) * 100}% ${
+                      (row / (ROWS - 1)) * 100
+                    }%`,
+                  }
+                : undefined;
+            return (
+              <span
+                key={i}
+                style={lit}
+                className={`aspect-square rounded-[2px] transition-colors duration-300 ${
+                  kind === "rejected"
+                    ? "bg-red-500"
+                    : kind === "ok"
+                      ? iri
+                        ? ""
+                        : "bg-white/85"
+                      : "bg-white/[0.05]"
+                }`}
+              />
+            );
+          })}
+        </div>
       </div>
 
       {/* Counters */}
-      <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-        <Counter label="Delivered" value={state.ok} className="text-emerald-400" />
+      <div className="mt-5 grid grid-cols-3 gap-2">
         <Counter
-          label="429 rejected"
-          value={state.rejected}
-          className="text-red-400"
+          label="Delivered"
+          value={state.ok}
+          variant={iri ? "iridescent" : "mono"}
         />
-        <Counter
-          label="Pending"
-          value={state.pending}
-          className="text-white/50"
-        />
+        <Counter label="429" value={state.rejected} variant="bad" />
+        <Counter label="Pending" value={state.pending} variant="muted" />
       </div>
     </div>
   );
@@ -377,18 +447,30 @@ function Lane({
 function Counter({
   label,
   value,
-  className,
+  variant,
 }: {
   label: string;
   value: number;
-  className?: string;
+  variant: "iridescent" | "mono" | "bad" | "muted";
 }) {
+  const cls =
+    variant === "bad"
+      ? "text-red-400"
+      : variant === "muted"
+        ? "text-white/40"
+        : "text-white";
   return (
     <div>
-      <p className={`font-mono text-xl font-semibold tabular-nums ${className}`}>
-        {value}
-      </p>
-      <p className="text-[10px] uppercase tracking-wider text-white/40">
+      {variant === "iridescent" ? (
+        <GradientText className="font-mono text-2xl font-semibold tabular-nums">
+          {value}
+        </GradientText>
+      ) : (
+        <p className={`font-mono text-2xl font-semibold tabular-nums ${cls}`}>
+          {value}
+        </p>
+      )}
+      <p className="mt-0.5 text-[10px] uppercase tracking-widest text-white/35">
         {label}
       </p>
     </div>
@@ -410,22 +492,26 @@ function Verdict({
 }) {
   if (overPacing) {
     return (
-      <p className="mt-6 text-center text-sm text-white/60">
-        Pace the buffer at or below the API limit and every request lands —
-        try lowering the buffer rate.
+      <p className="mt-6 text-center text-sm text-white/55">
+        Pace the buffer at or below the API limit and every request lands — try
+        lowering the buffer rate.
       </p>
     );
   }
   return (
-    <div className="mt-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.04] p-5 text-center">
-      <p className="text-sm sm:text-base text-white/80">
+    <div className="relative mt-6 overflow-hidden rounded-2xl border border-white/10 p-6 text-center">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px"
+        style={{ backgroundImage: IRIDESCENT }}
+      />
+      <p className="text-base sm:text-lg leading-relaxed text-white/80">
         Blasting directly,{" "}
         <strong className="text-red-400">{lost.toLocaleString()}</strong> of{" "}
         {total.toLocaleString()} requests bounced with a{" "}
         <span className="font-mono">429</span>. Through a buffer, all{" "}
-        <strong className="text-emerald-400">
+        <GradientText className="font-bold">
           {delivered.toLocaleString()}
-        </strong>{" "}
+        </GradientText>{" "}
         landed in <span className="font-mono">{time}</span> — zero rejected.
       </p>
     </div>

@@ -103,19 +103,55 @@ export default function BufferToolPage() {
       />
       <Navbar />
 
-      <main className="pt-14">
-        <section className="py-24 px-4">
-          <div className="max-w-3xl mx-auto text-center mb-12">
-            <div className="inline-block rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs text-white/70 mb-6">
+      <main className="relative pt-14">
+        {/* Pixel-grid motif — a faint lattice echoing the dot fields below. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-[60vh] opacity-[0.4]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+            maskImage:
+              "radial-gradient(ellipse 70% 55% at 50% 0%, #000 0%, transparent 75%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 70% 55% at 50% 0%, #000 0%, transparent 75%)",
+          }}
+        />
+
+        <section className="relative px-4 pt-20 pb-24">
+          <div className="mx-auto mb-14 max-w-3xl text-center">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs text-white/70">
+              <span
+                className="size-2 rounded-full"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(115deg,#818cf8,#c084fc,#fcd34d)",
+                }}
+              />
               Free interactive tool
             </div>
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
-              Rate Limit Playground
+            <h1 className="text-balance text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
+              Send 500 requests.
+              <br />
+              Get{" "}
+              <span
+                style={{
+                  backgroundImage:
+                    "linear-gradient(115deg,#5eead4 0%,#818cf8 30%,#c084fc 55%,#f0abfc 78%,#fcd34d 100%)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                }}
+              >
+                zero 429s
+              </span>
+              .
             </h1>
-            <p className="text-lg text-white/60 max-w-xl mx-auto">
-              Blast a burst of requests at a rate-limited API and watch the 429s
-              pile up. Then send the same burst through a buffer — paced under
-              the limit, every request lands. No Redis, no retry glue.
+            <p className="mx-auto mt-5 max-w-xl text-lg text-white/55">
+              Blast a burst at a rate-limited API and watch the rejections pile
+              up. Then send the same burst through a buffer — paced under the
+              limit, every request lands. No Redis, no retry glue.
             </p>
           </div>
 
