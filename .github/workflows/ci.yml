@@ -30,9 +30,11 @@ jobs:
       # so a green build covers compile + types in one step.
       - name: Build
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://api.fliq.sh' }}
-          # Clerk validates the publishable key *format* at prerender. Prefer the
-          # real secret (matches deploy.yml); fall back to a syntactically-valid
-          # throwaway key so the build is self-contained when no secret is set.
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_ZmFrZS1jaS5jbGVyay5hY2NvdW50cy5kZXYk' }}
+          NEXT_PUBLIC_API_URL: https://api.fliq.sh
+          # CI only validates that the app compiles, type-checks and prerenders —
+          # it doesn't need the real Clerk instance. Clerk validates the
+          # publishable key's *format* at prerender, so use its documented public
+          # example key (see frontend CLAUDE.md). Keeping CI independent of the
+          # deploy secret means it can't be broken by a stale/placeholder secret.
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlcmsuZXhhbXBsZS5jb20k
         run: npm run build
