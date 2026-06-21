@@ -34,7 +34,7 @@ export default async function GettingStarted() {
 
       <DocH2>3. Schedule a job</DocH2>
       <DocP>
-        POST to <DocCode>/v1/jobs</DocCode> with a URL and a fire time. All timestamps are
+        POST to <DocCode>/jobs</DocCode> with a URL and a fire time. All timestamps are
         ISO 8601 in UTC.
       </DocP>
 
@@ -45,7 +45,7 @@ export default async function GettingStarted() {
           <TabsTrigger value="node">Node.js</TabsTrigger>
         </TabsList>
         <TabsContent value="curl">
-          <DocPre lang="bash">{`curl -X POST https://api.fliq.sh/v1/jobs \\
+          <DocPre lang="bash">{`curl -X POST https://api.fliq.sh/jobs \\
   -H "Authorization: Bearer fliq_sk_your_token" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -56,7 +56,7 @@ export default async function GettingStarted() {
   }'`}</DocPre>
         </TabsContent>
         <TabsContent value="http">
-          <DocPre lang="http">{`POST https://api.fliq.sh/v1/jobs
+          <DocPre lang="http">{`POST https://api.fliq.sh/jobs
 Authorization: Bearer fliq_sk_your_token
 Content-Type: application/json
 
@@ -68,7 +68,7 @@ Content-Type: application/json
 }`}</DocPre>
         </TabsContent>
         <TabsContent value="node">
-          <DocPre lang="javascript">{`const res = await fetch("https://api.fliq.sh/v1/jobs", {
+          <DocPre lang="javascript">{`const res = await fetch("https://api.fliq.sh/jobs", {
   method: "POST",
   headers: {
     "Authorization": "Bearer fliq_sk_your_token",
@@ -104,7 +104,7 @@ console.log(job.id); // save this if you want to cancel later`}</DocPre>
       <DocP>
         If the fire time hasn&apos;t passed yet, you can cancel by sending a DELETE request.
       </DocP>
-      <DocPre label="curl" lang="bash">{`curl -X DELETE https://api.fliq.sh/v1/jobs/{job_id} \\
+      <DocPre label="curl" lang="bash">{`curl -X DELETE https://api.fliq.sh/jobs/{job_id} \\
   -H "Authorization: Bearer fliq_sk_your_token"`}</DocPre>
 
       <DocH2>Next steps</DocH2>

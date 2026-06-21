@@ -25,6 +25,31 @@ featured: true                               # Optional — shows as large card 
 ---
 ```
 
+## ⚠️ MDX prop constraint: string attributes only
+
+We render posts with `next-mdx-remote@6` (`/rsc`). In this setup **only quoted
+string attributes survive** — an expression-valued prop reaches the component as
+`undefined`:
+
+```mdx
+<CTA href="/pricing" />          {/* ✅ string attr — works */}
+<CTA href={"/pricing"} />        {/* ❌ expression — href is undefined at render */}
+<ComparisonTable rows={[...]} /> {/* ❌ expression — rows is undefined → crash */}
+```
+
+A prop that arrives `undefined` and is then mapped/parsed (`rows.map(...)`,
+`href.startsWith(...)`) throws **at prerender, which fails the entire deploy**.
+The components now default such props (so a bad authoring degrades gracefully
+instead of taking the build down), but the rule stands: **use quoted string
+attributes only.**
+
+Practical consequences:
+- **Comparisons:** `<ComparisonTable>` needs array props, which can't be
+  expressed as string attrs — so **use a Markdown table** for comparisons
+  (every shipped post does). The component is kept for a future fix.
+- **Steps:** `<Step number={1}>` renders a blank badge under this constraint.
+  Prefer Markdown headings/ordered lists, or accept the cosmetic gap.
+
 ## Available MDX components
 
 These are available in every `.mdx` file without imports:
@@ -47,31 +72,33 @@ Types: `info` (indigo), `warning` (amber), `tip` (green)
 
 ### `<Step>`
 
-Numbered tutorial steps.
+Numbered tutorial steps. **Note:** `number` is an expression prop and renders as
+a blank badge under the current MDX pipeline (see the constraint above) — prefer
+Markdown headings or an ordered list for sequential steps until the pipeline is
+fixed.
 
 ```mdx
 <Step number={1} title="Install the SDK">
   Content for this step, including code blocks.
 </Step>
-
-<Step number={2} title="Configure your token">
-  More content here.
-</Step>
 ```
 
 ### `<ComparisonTable>`
 
-Feature comparison tables.
-
-```mdx
-<ComparisonTable
-  headers={["Feature", "Fliq", "DIY", "AWS"]}
-  rows={[
-    ["Setup time", "5 min", "Days", "Hours"],
-    ["Cost (100k jobs)", "$1", "$20+", "$10+"],
-  ]}
-/>
-```
+> **⚠️ Unusable under the current MDX pipeline** — see the prop constraint above.
+> It needs array props (`headers`/`rows`), which can only be passed as
+> expressions, and expressions arrive `undefined`. **Use a Markdown table
+> instead:**
+>
+> ```mdx
+> | Feature          | Fliq  | DIY   | AWS    |
+> | ---------------- | ----- | ----- | ------ |
+> | Setup time       | 5 min | Days  | Hours  |
+> | Cost (100k jobs) | $1    | $20+  | $10+   |
+> ```
+>
+> Kept in the tree for when the pipeline is fixed; until then it renders nothing
+> rather than crashing the build.
 
 ### `<CTA>`
 

@@ -15,7 +15,7 @@ export default async function ApiReference() {
       </DocLead>
 
       <DocH2>Base URL</DocH2>
-      <DocPre>{`https://api.fliq.sh/v1`}</DocPre>
+      <DocPre>{`https://api.fliq.sh`}</DocPre>
 
       <DocH2>Authentication</DocH2>
       <DocP>
@@ -31,7 +31,7 @@ export default async function ApiReference() {
       <DocH2>Jobs</DocH2>
 
       <DocH3>Create a job</DocH3>
-      <DocPre label="Request" lang="http">{`POST /v1/jobs
+      <DocPre label="Request" lang="http">{`POST /jobs
 
 {
   "url":             string,   // required
@@ -55,11 +55,11 @@ export default async function ApiReference() {
 }`}</DocPre>
 
       <DocH3>Get a job</DocH3>
-      <DocPre label="Request" lang="http">{`GET /v1/jobs/{job_id}`}</DocPre>
+      <DocPre label="Request" lang="http">{`GET /jobs/{job_id}`}</DocPre>
       <DocP>Returns the job object with current status and execution count.</DocP>
 
       <DocH3>List jobs</DocH3>
-      <DocPre label="Request" lang="http">{`GET /v1/jobs?status=scheduled&limit=50&cursor=...`}</DocPre>
+      <DocPre label="Request" lang="http">{`GET /jobs?status=scheduled&limit=50&cursor=...`}</DocPre>
       <DocUL>
         <DocLI><DocCode>status</DocCode> — filter by <DocCode>scheduled</DocCode> | <DocCode>success</DocCode> | <DocCode>failed</DocCode> | <DocCode>cancelled</DocCode></DocLI>
         <DocLI><DocCode>limit</DocCode> — max results per page (default 20, max 100)</DocLI>
@@ -67,7 +67,7 @@ export default async function ApiReference() {
       </DocUL>
 
       <DocH3>Cancel a job</DocH3>
-      <DocPre label="Request" lang="http">{`DELETE /v1/jobs/{job_id}`}</DocPre>
+      <DocPre label="Request" lang="http">{`DELETE /jobs/{job_id}`}</DocPre>
       <DocP>
         Cancels a job that has not yet fired. Returns <DocCode>404</DocCode> if the job
         doesn&apos;t exist or <DocCode>409</DocCode> if it has already executed.
@@ -77,7 +77,7 @@ export default async function ApiReference() {
       <DocH2>Schedules</DocH2>
 
       <DocH3>Create a schedule</DocH3>
-      <DocPre label="Request" lang="http">{`POST /v1/schedules
+      <DocPre label="Request" lang="http">{`POST /schedules
 
 {
   "url":             string,   // required
@@ -99,10 +99,10 @@ export default async function ApiReference() {
 }`}</DocPre>
 
       <DocH3>List schedules</DocH3>
-      <DocPre label="Request" lang="http">{`GET /v1/schedules?limit=50&cursor=...`}</DocPre>
+      <DocPre label="Request" lang="http">{`GET /schedules?limit=50&cursor=...`}</DocPre>
 
       <DocH3>Delete a schedule</DocH3>
-      <DocPre label="Request" lang="http">{`DELETE /v1/schedules/{schedule_id}`}</DocPre>
+      <DocPre label="Request" lang="http">{`DELETE /schedules/{schedule_id}`}</DocPre>
       <DocP>
         Stops all future executions immediately. Already-queued executions for the current
         interval may still fire.
@@ -130,23 +130,28 @@ export default async function ApiReference() {
         <DocLI>Schedules inherit <DocCode>webhook_url</DocCode> and <DocCode>webhook_headers</DocCode> — every spawned job gets the same webhook config</DocLI>
       </DocUL>
 
-      {/* ── Executions ── */}
-      <DocH2>Executions</DocH2>
+      {/* ── Attempts ── */}
+      <DocH2>Attempts</DocH2>
 
-      <DocH3>List executions for a job</DocH3>
-      <DocPre label="Request" lang="http">{`GET /v1/jobs/{job_id}/executions`}</DocPre>
-      <DocPre label="Response" lang="json">{`{
-  "executions": [
-    {
-      "id":           "exec_01hx...",
-      "attempt_num":  1,
-      "status":       "success",
-      "status_code":  200,
-      "duration_ms":  143,
-      "executed_at":  "2026-04-01T09:00:00Z"
-    }
-  ]
-}`}</DocPre>
+      <DocH3>List attempts for a job</DocH3>
+      <DocP>
+        Each execution attempt (including retries) is recorded as an attempt.
+        Returns a JSON array, most recent first.
+      </DocP>
+      <DocPre label="Request" lang="http">{`GET /jobs/{job_id}/attempts`}</DocPre>
+      <DocPre label="Response" lang="json">{`[
+  {
+    "id":           "att_01hx...",
+    "job_id":       "job_01hx...",
+    "attempt_num":  1,
+    "worker_id":    "scheduler-0",
+    "started_at":   "2026-04-01T09:00:00Z",
+    "completed_at": "2026-04-01T09:00:01Z",
+    "status_code":  200,
+    "error":        null,
+    "duration_ms":  143
+  }
+]`}</DocPre>
 
       {/* ── Errors ── */}
       <DocH2>Errors</DocH2>

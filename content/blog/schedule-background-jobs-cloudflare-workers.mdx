@@ -102,7 +102,7 @@ async function handleSignup(request: Request, env: Env) {
   const scheduledAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
   const workerUrl = new URL("/api/send-welcome-email", request.url).toString();
 
-  const fliqResponse = await fetch("https://api.fliq.sh/v1/jobs", {
+  const fliqResponse = await fetch("https://api.fliq.sh/jobs", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -169,7 +169,7 @@ You'll get back a response with the scheduled job ID. In 30 minutes, Fliq will P
 Fliq also supports cron expressions for recurring jobs. Here's how to schedule a daily cleanup job that runs every night at midnight UTC:
 
 ```typescript
-const response = await fetch("https://api.fliq.sh/v1/jobs", {
+const response = await fetch("https://api.fliq.sh/jobs", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -213,7 +213,7 @@ Since Fliq may retry your endpoint, make sure your handlers are idempotent. Use 
 Every job in Fliq has a full execution history. You can check the status of any job via the API:
 
 ```bash
-curl https://api.fliq.sh/v1/jobs/job_abc123 \
+curl https://api.fliq.sh/jobs/job_abc123 \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
@@ -273,7 +273,7 @@ async function scheduleOnboarding(
 
   const results = await Promise.all(
     jobs.map((job) =>
-      fetch("https://api.fliq.sh/v1/jobs", {
+      fetch("https://api.fliq.sh/jobs", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

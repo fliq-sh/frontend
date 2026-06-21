@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local-only Traefik preview compose (night-run previews)
+docker-compose.preview.yml
