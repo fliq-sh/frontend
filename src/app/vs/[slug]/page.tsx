@@ -127,8 +127,8 @@ export default async function ComparisonPage({
               Side by side
             </h2>
             <p className="text-white/60 mb-8">
-              How Fliq and {c.competitor} compare across the dimensions that
-              matter for scheduling HTTP jobs.
+              {c.tableSubhead ??
+                `How Fliq and ${c.competitor} compare across the dimensions that matter for scheduling HTTP jobs.`}
             </p>
             <ComparisonTable
               headers={["", "Fliq", c.competitor]}

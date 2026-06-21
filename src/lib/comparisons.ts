@@ -21,6 +21,10 @@ export type Comparison = {
   whenCompetitor: string;
   whenFliq: string;
   matrix: MatrixRow[];
+  // Optional override for the "Side by side" subhead. Scheduler comparisons use
+  // the default scheduling framing; buffers / rate-limiting comparisons set this
+  // so the page reads accurately for outbound rate limiting.
+  tableSubhead?: string;
 };
 
 // Fliq cells are constant across most rows — its capabilities don't change per
@@ -553,6 +557,212 @@ export const COMPARISONS: Comparison[] = [
         dimension: "Best for",
         fliq: "Precise, reliable HTTP scheduling",
         competitor: "CI-adjacent scheduled chores",
+      },
+    ],
+  },
+
+  // ─── Buffers angle: outbound rate limiting ──────────────────────────────────
+  // Fliq buffers let you fire requests at a buffer endpoint and have Fliq pace
+  // delivery under a rate limit — so you stay under a third-party API's limits
+  // and avoid 429s without running your own queue. Buffers are fire-and-forget
+  // (the executor discards the response body), so we scope examples to writes
+  // and side-effects, never response-returning reads.
+  {
+    slug: "qstash-flow-control",
+    competitor: "Upstash QStash Flow Control",
+    competitorTagline: "Rate-limited delivery on QStash",
+    metaTitle: "Fliq vs QStash Flow Control — outbound rate limiting compared",
+    metaDescription:
+      "Fliq buffers vs Upstash QStash Flow Control: pace your outbound API calls under a rate limit and avoid 429s. Compare a standalone, self-hostable buffer against QStash's queue-coupled flow control.",
+    intro:
+      "QStash's Flow Control caps how fast messages are delivered to your endpoint — parallelism and requests-per-period limits, managed at the edge. Fliq buffers solve the same outbound-rate-limiting problem from the other side: you POST your requests to a buffer and Fliq paces delivery to the target under your limit, retrying failures and keeping a per-attempt history. Both stop you flooding a downstream API; the difference is whether you want it coupled to QStash's queue or as a standalone, self-hostable endpoint.",
+    whenCompetitor:
+      "You're already publishing through QStash (or want its edge/serverless delivery and message queue), and Flow Control's parallelism + rate caps are exactly the knob you need. Staying inside one managed platform is worth it.",
+    whenFliq:
+      "You want outbound rate limiting as a standalone primitive — not tied to a message queue — that you can self-host next to your own Postgres, point at any HTTP target, and inspect per attempt. Fliq buffers pace fire-and-forget writes under a limit, retry on failure, and bill per execution, with an MCP server so agents can drive them too.",
+    tableSubhead:
+      "How Fliq buffers and QStash Flow Control compare across the dimensions that matter for pacing outbound calls.",
+    matrix: [
+      {
+        dimension: "Core model",
+        fliq: "Buffer endpoint paces delivery under a rate limit",
+        competitor: "Rate caps on QStash message delivery",
+      },
+      {
+        dimension: "Coupling",
+        fliq: "Standalone — independent of any queue",
+        competitor: "Part of the QStash message queue",
+      },
+      {
+        dimension: "Rate-limit unit",
+        fliq: "Configurable per-buffer rate",
+        competitor: "Parallelism + requests/period",
+      },
+      {
+        dimension: "Target backpressure",
+        fliq: "Honors target's Retry-After on 429",
+        competitor: "Retries on 429; static flow caps",
+      },
+      {
+        dimension: "Retries on failure",
+        fliq: "Configurable backoff, per attempt",
+        competitor: "Automatic retries",
+      },
+      {
+        dimension: "Execution history",
+        fliq: "Full per-attempt history",
+        competitor: "Message logs & events",
+      },
+      {
+        dimension: "AI agents (MCP)",
+        fliq: "MCP server included",
+        competitor: "No",
+      },
+      {
+        dimension: "Self-host",
+        fliq: "Yes (open source)",
+        competitor: "No (managed)",
+      },
+      {
+        dimension: "Pricing model",
+        fliq: "Free in beta, then $1/100k",
+        competitor: "Per-message, free tier",
+      },
+      {
+        dimension: "Best for",
+        fliq: "Standalone outbound rate limiting",
+        competitor: "Flow control inside QStash",
+      },
+    ],
+  },
+  {
+    slug: "hookdeck",
+    competitor: "Hookdeck",
+    competitorTagline: "Event gateway for inbound webhooks",
+    metaTitle: "Fliq vs Hookdeck — rate-limited delivery compared",
+    metaDescription:
+      "Fliq buffers vs Hookdeck: both can throttle delivery, but Hookdeck is built for ingesting inbound webhooks while Fliq buffers pace your own outbound API calls under a rate limit.",
+    intro:
+      "Hookdeck is an event gateway: it receives inbound webhooks, queues them, retries, and can rate-limit how fast they reach your destination — with strong observability over the whole flow. Fliq buffers point the other direction: when your app is the one calling a third-party API and needs to stay under that API's rate limit, you POST to a buffer and Fliq paces the outbound calls. There's overlap in 'managed, rate-limited delivery,' but the primary direction differs — inbound ingestion versus outbound pacing.",
+    whenCompetitor:
+      "Your problem is receiving webhooks reliably: ingest providers' events, fan them out to your services, retry, and watch every delivery. Hookdeck is purpose-built for that inbound path and its observability is excellent.",
+    whenFliq:
+      "Your problem is outbound: you're the producer flooding someone else's API (bulk writes, notifications, sync side-effects) and need to pace those calls under a limit without standing up your own queue. Fliq buffers throttle fire-and-forget writes, retry failures, keep per-attempt history, and self-host against your own Postgres.",
+    tableSubhead:
+      "How Fliq buffers and Hookdeck compare across the dimensions that matter for rate-limited delivery.",
+    matrix: [
+      {
+        dimension: "Primary direction",
+        fliq: "Outbound — pace your calls to a target",
+        competitor: "Inbound — ingest & route webhooks",
+      },
+      {
+        dimension: "Rate limiting",
+        fliq: "Per-buffer outbound rate",
+        competitor: "Per-destination delivery rate",
+      },
+      {
+        dimension: "Target backpressure",
+        fliq: "Honors target's Retry-After on 429",
+        competitor: "Retries failed deliveries",
+      },
+      {
+        dimension: "Retries on failure",
+        fliq: "Configurable backoff, per attempt",
+        competitor: "Automatic retries",
+      },
+      {
+        dimension: "Execution history",
+        fliq: "Full per-attempt history",
+        competitor: "Full event & delivery history",
+      },
+      {
+        dimension: "AI agents (MCP)",
+        fliq: "MCP server included",
+        competitor: "No",
+      },
+      {
+        dimension: "Self-host",
+        fliq: "Yes (open source)",
+        competitor: "No (managed)",
+      },
+      {
+        dimension: "Pricing model",
+        fliq: "Free in beta, then $1/100k",
+        competitor: "Usage-based, free tier",
+      },
+      {
+        dimension: "Best for",
+        fliq: "Pacing your own outbound API calls",
+        competitor: "Reliable inbound webhook delivery",
+      },
+    ],
+  },
+  {
+    slug: "bottleneck-redis",
+    competitor: "Bottleneck + Redis",
+    competitorTagline: "DIY distributed rate limiting in Node",
+    metaTitle: "Fliq vs Bottleneck + Redis — distributed rate limiting without the DIY",
+    metaDescription:
+      "Fliq buffers vs a DIY Bottleneck + Redis setup: get distributed outbound rate limiting as a managed, self-hostable endpoint instead of a library you wire into every Node process.",
+    intro:
+      "Bottleneck is a battle-tested Node.js rate limiter; with its Redis datastore it coordinates limits across processes, so a fleet of workers shares one budget. It's free and runs in-process — no extra network hop. Fliq buffers offer the same distributed outbound rate limiting as a standalone endpoint instead of a library: you POST requests to a buffer and Fliq paces delivery, survives process crashes, and keeps a per-attempt history — at the cost of one hop and being language-agnostic rather than Node-only.",
+    whenCompetitor:
+      "You're a Node shop, already run Redis, and want rate limiting embedded directly in your code with zero added latency and total control. Bottleneck + Redis is free, mature, and hard to beat for a single-language service.",
+    whenFliq:
+      "You don't want to run and babysit Redis, your producers aren't all Node, or you need pacing to survive a process crash and leave an audit trail. Fliq buffers give you durable, language-agnostic outbound rate limiting as a service — self-hostable against your own Postgres, with retries, history, and an MCP server.",
+    tableSubhead:
+      "How Fliq buffers and a Bottleneck + Redis setup compare across the dimensions that matter for distributed rate limiting.",
+    matrix: [
+      {
+        dimension: "Form factor",
+        fliq: "Managed/self-hosted endpoint",
+        competitor: "Library + Redis you run",
+      },
+      {
+        dimension: "Distributed coordination",
+        fliq: "Built in — shared per-buffer limit",
+        competitor: "Yes, via Redis datastore",
+      },
+      {
+        dimension: "Target backpressure (429)",
+        fliq: "Reschedules on Retry-After",
+        competitor: "Static limit; blind to 429s",
+      },
+      {
+        dimension: "Language support",
+        fliq: "Any — it's an HTTP endpoint",
+        competitor: "Node.js (JS/TS)",
+      },
+      {
+        dimension: "Durability on crash",
+        fliq: "Queued items survive restarts",
+        competitor: "In-process; depends on your code",
+      },
+      {
+        dimension: "Retries on failure",
+        fliq: "Configurable backoff, per attempt",
+        competitor: "DIY in your job code",
+      },
+      {
+        dimension: "Execution history",
+        fliq: "Full per-attempt history",
+        competitor: "DIY (logs/metrics you add)",
+      },
+      {
+        dimension: "Added latency",
+        fliq: "One network hop",
+        competitor: "None (in-process)",
+      },
+      {
+        dimension: "Pricing model",
+        fliq: "Free in beta, then $1/100k",
+        competitor: "Free (you run Redis)",
+      },
+      {
+        dimension: "Best for",
+        fliq: "Durable, language-agnostic pacing",
+        competitor: "Single Node service with Redis",
       },
     ],
   },
