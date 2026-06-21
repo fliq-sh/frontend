@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ChevronDown,
@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/dialog";
 import { ApiCodeBlock, JOB_SNIPPETS } from "./ApiCodeBlock";
 import { AttemptsPanel } from "./AttemptsPanel";
+import { TestJobButton } from "./TestJobButton";
 import { EmptyState } from "@/components/patterns";
 import { jobStatusTone } from "@/components/patterns";
 import {
@@ -204,34 +205,36 @@ function NewJobDialog({ onCreated }: { onCreated: () => void }) {
   );
 }
 
-function GettingStarted() {
+function GettingStarted({ onFire }: { onFire: (jobId: string) => void }) {
   return (
     <EmptyState
       title="Schedule your first job in 3 steps"
       steps={[
         {
-          title: "Create an API token",
-          description: "Your token authenticates requests from your code, cron, or Postman.",
-          action: (
-            <Link href="/app/settings">
-              <Button size="sm" variant="outline" className="w-fit gap-1.5 border-foreground/10 hover:bg-foreground/5">
-                <Settings className="h-3.5 w-3.5" />
-                Settings → API Tokens
-              </Button>
-            </Link>
-          ),
+          title: "Fire a test job — no token, no curl",
+          description: "Schedule a real job against our health endpoint, ~12s out, and watch it go pending → running → completed right here.",
+          action: <TestJobButton onScheduled={onFire} />,
         },
         {
-          title: "Schedule a job from your code",
-          description: "POST a URL + fire time — Fliq handles delivery, retries, and history.",
+          title: "Now from your code",
+          description: (
+            <>
+              POST a URL + fire time — Fliq handles delivery, retries, and history. Grab an API token in{" "}
+              <Link href="/app/settings" className="inline-flex items-center gap-1 text-foreground/85 underline-offset-2 hover:underline">
+                <Settings className="h-3.5 w-3.5" />
+                Settings → API Tokens
+              </Link>
+              .
+            </>
+          ),
           action: <ApiCodeBlock snippets={JOB_SNIPPETS} />,
         },
         {
           title: "Watch it run",
           description: (
             <>
-              Jobs appear here with live status, attempt history, and error details. Prefer the UI?
-              Hit <span className="text-foreground/80">Schedule job</span> above.
+              Jobs appear here with live status, attempt history, and error details. Prefer a form? Hit{" "}
+              <span className="text-foreground/80">Schedule job</span> above.
             </>
           ),
         },
@@ -298,6 +301,9 @@ export default function JobsTable() {
   const [showCode, setShowCode] = useState(false);
   const [auto, setAuto] = useState(true);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  // Set after firing a test job: once the row shows up we auto-expand it so the
+  // user watches pending → running → completed without lifting a finger.
+  const [pendingExpandId, setPendingExpandId] = useState<string | null>(null);
 
   const fetcher = useCallback(
     async (cursor: string | undefined) => {
@@ -311,6 +317,22 @@ export default function JobsTable() {
 
   const list = useCursorList<Job>(fetcher, [status]);
   usePoll(list.reload, 10_000, auto);
+
+  // Once the freshly-fired test job appears in the list, expand its row.
+  useEffect(() => {
+    if (!pendingExpandId) return;
+    if (list.items.some((j) => j.id === pendingExpandId)) {
+      setExpanded((prev) => new Set(prev).add(pendingExpandId));
+      setPendingExpandId(null);
+    }
+  }, [pendingExpandId, list.items]);
+
+  function fireTestJob(jobId: string) {
+    setStatus("all"); // make sure the new pending job is visible
+    setSearch("");
+    setPendingExpandId(jobId);
+    list.reload();
+  }
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -354,7 +376,7 @@ export default function JobsTable() {
       {showCode && <ApiCodeBlock snippets={JOB_SNIPPETS} />}
 
       {showGettingStarted ? (
-        <GettingStarted />
+        <GettingStarted onFire={fireTestJob} />
       ) : (
         <>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

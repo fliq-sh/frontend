@@ -51,5 +51,5 @@ export const FACTS = {
   history:
     "Full per-execution history: every fire, every retry, every response code, queryable via API and dashboard.",
   openSource: "Backend and frontend are open source on GitHub.",
-  mcp: "An MCP server lets AI agents schedule and manage jobs in natural language.",
+  mcp: "An MCP server — letting AI agents schedule and manage jobs in natural language — is in beta, coming soon.",
 } as const;
