@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  lint-and-build:
+    name: Lint & Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # `next build` also type-checks (next.config.ts does not ignore TS errors),
+      # so a green build covers compile + types in one step.
+      - name: Build
+        env:
+          NEXT_PUBLIC_API_URL: https://api.fliq.sh
+          # CI only validates that the app compiles, type-checks and prerenders —
+          # it doesn't need the real Clerk instance. Clerk validates the
+          # publishable key's *format* at prerender, so use its documented public
+          # example key (see frontend CLAUDE.md). Keeping CI independent of the
+          # deploy secret means it can't be broken by a stale/placeholder secret.
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlcmsuZXhhbXBsZS5jb20k
+        run: npm run build
