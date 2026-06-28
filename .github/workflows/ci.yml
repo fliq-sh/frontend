@@ -26,6 +26,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Unit tests
+        run: npm test
+
       # `next build` also type-checks (next.config.ts does not ignore TS errors),
       # so a green build covers compile + types in one step.
       - name: Build
